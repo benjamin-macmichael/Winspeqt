@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Winspeqt (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Winspeqt (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
