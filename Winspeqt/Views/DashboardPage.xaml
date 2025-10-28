@@ -1,5 +1,5 @@
 <Page
-    x:Class="Winspeqt.DashboardPage"
+    x:Class="Winspeqt.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -49,7 +49,7 @@
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 CornerRadius="8"
-                Click="SecurityCard_Click">
+                Command="{Binding SecurityCommand}">
                 <Grid Padding="32">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -105,7 +105,7 @@
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 CornerRadius="8"
-                Click="OptimizationCard_Click">
+                Command="{Binding OptimizationCommand}">
                 <Grid Padding="32">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -161,7 +161,7 @@
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 CornerRadius="8"
-                Click="MonitoringCard_Click">
+                Command="{Binding MonitoringCommand}">
                 <Grid Padding="32">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

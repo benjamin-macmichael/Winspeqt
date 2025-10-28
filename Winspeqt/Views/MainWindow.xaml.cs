@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace Winspeqt
+namespace Winspeqt.Views
 {
     public sealed partial class MainWindow : Window
     {
