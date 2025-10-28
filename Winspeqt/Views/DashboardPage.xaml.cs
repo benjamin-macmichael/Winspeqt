@@ -26,7 +26,7 @@ namespace Winspeqt.Views
             ContentDialog dialog = new ContentDialog
             {
                 Title = $"{feature} Feature",
-                Content = $"The {feature} module is coming soon! We're building an amazing experience for you.",
+                Content = $"The {feature} module is coming soon, we're building an amazing experience for you!",
                 CloseButtonText = "Got it",
                 XamlRoot = this.XamlRoot
             };
