@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using Winspeqt.ViewModels;
 
 namespace Winspeqt.Views
@@ -19,19 +18,21 @@ namespace Winspeqt.Views
             ViewModel.NavigationRequested += OnNavigationRequested;
         }
 
-        private async void OnNavigationRequested(object sender, string feature)
+        private void OnNavigationRequested(object sender, string feature)
         {
-            // TODO: Navigate to the actual page later
-            // For now, show a dialog
-            ContentDialog dialog = new ContentDialog
+            // Navigate to the appropriate dashboard page
+            switch (feature)
             {
-                Title = $"{feature} Feature",
-                Content = $"The {feature} module is coming soon, we're building an amazing experience for you!",
-                CloseButtonText = "Got it",
-                XamlRoot = this.XamlRoot
-            };
-
-            await dialog.ShowAsync();
+                case "Security":
+                    Frame.Navigate(typeof(Security.SecurityDashboardPage));
+                    break;
+                case "Optimization":
+                    Frame.Navigate(typeof(Optimization.OptimizationDashboardPage));
+                    break;
+                case "Monitoring":
+                    Frame.Navigate(typeof(Monitoring.MonitoringDashboardPage));
+                    break;
+            }
         }
     }
 }
