@@ -14,6 +14,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="DashboardPage.xaml" />
+    <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
+    <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
+    <None Remove="Views\Security\SecurityDashboardPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,9 +57,21 @@
     <Folder Include="ViewModels\Monitoring\" />
     <Folder Include="ViewModels\Optimization\" />
     <Folder Include="ViewModels\Security\" />
-    <Folder Include="Views\Monitoring\" />
-    <Folder Include="Views\Optimization\" />
-    <Folder Include="Views\Security\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Security\SecurityDashboardPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Optimization\OptimizationDashboardPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Monitoring\MonitoringDashboardPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
