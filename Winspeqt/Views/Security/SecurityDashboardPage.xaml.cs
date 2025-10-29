@@ -21,29 +21,25 @@ namespace Winspeqt.Views.Security
 
         private async void SecurityStatusCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Security Status page
             await ShowComingSoonDialog("Security Status Dashboard");
         }
 
-        private async void VulnerabilityCheckerCard_Click(object sender, RoutedEventArgs e)
+        private async void AppSecurityScannerCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Vulnerability Checker page
-            await ShowComingSoonDialog("App Vulnerability Checker");
+            await ShowComingSoonDialog("App Security Scanner");
         }
 
-        private async void UpdateRecommendationsCard_Click(object sender, RoutedEventArgs e)
+        private async void NetworkSecurityCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Update Recommendations page
-            await ShowComingSoonDialog("Update Recommendations");
+            await ShowComingSoonDialog("Network Security Monitor");
         }
 
         private async void SettingsRecommendationsCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Settings Recommendations page
             await ShowComingSoonDialog("Windows Settings Recommendations");
         }
 
-        private async System.Threading.Tasks.Task ShowComingSoonDialog(string feature)
+        private async System.Threading.Tasks.Task<ContentDialogResult> ShowComingSoonDialog(string feature)
         {
             ContentDialog dialog = new ContentDialog
             {
@@ -53,7 +49,7 @@ namespace Winspeqt.Views.Security
                 XamlRoot = this.XamlRoot
             };
 
-            await dialog.ShowAsync();
+            return await dialog.ShowAsync();
         }
     }
 }
