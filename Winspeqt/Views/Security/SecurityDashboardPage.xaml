@@ -25,9 +25,10 @@
                 <Button 
                     Grid.Column="0"
                     Content="← Back to Dashboard"
-                    Style="{StaticResource SubtleButtonStyle}"
                     Click="BackButton_Click"
-                    Margin="0,0,20,0"/>
+                    Margin="0,0,20,0"
+                    Background="Transparent"
+                    BorderThickness="0"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
@@ -105,7 +106,7 @@
                     </Grid>
                 </Button>
 
-                <!-- Vulnerability Checker Card -->
+                <!-- App Security Scanner Card (Vulnerability + Updates) -->
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="1"
@@ -116,7 +117,7 @@
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     CornerRadius="8"
-                    Click="VulnerabilityCheckerCard_Click">
+                    Click="AppSecurityScannerCard_Click">
                     <Grid Padding="28">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -133,12 +134,12 @@
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
-                                Text="App Vulnerability Checker" 
+                                Text="App Security Scanner" 
                                 FontSize="20" 
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,8"/>
                             <TextBlock 
-                                Text="Scan your installed apps for outdated versions and known security vulnerabilities"
+                                Text="Scan installed apps for vulnerabilities and get step-by-step update instructions"
                                 FontSize="13"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -157,7 +158,7 @@
                     </Grid>
                 </Button>
 
-                <!-- Update Recommendations Card -->
+                <!-- Network Security Monitor Card -->
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="0"
@@ -168,7 +169,7 @@
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     CornerRadius="8"
-                    Click="UpdateRecommendationsCard_Click">
+                    Click="NetworkSecurityCard_Click">
                     <Grid Padding="28">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -178,19 +179,19 @@
 
                         <FontIcon 
                             Grid.Row="0"
-                            Glyph="&#xE895;" 
+                            Glyph="&#xE968;" 
                             FontSize="42"
                             Foreground="#2196F3"
                             Margin="0,0,0,16"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
-                                Text="Update Recommendations" 
+                                Text="Network Security Monitor" 
                                 FontSize="20" 
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,8"/>
                             <TextBlock 
-                                Text="Get clear instructions on how to update vulnerable or outdated applications"
+                                Text="See what's connecting to the internet from your PC and detect suspicious network activity"
                                 FontSize="13"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -200,7 +201,7 @@
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
                             <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
-                                Text="View Updates" 
+                                Text="Monitor Network" 
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
@@ -209,7 +210,7 @@
                     </Grid>
                 </Button>
 
-                <!-- Settings Recommendations Card -->
+                <!-- Windows Settings Recommendations Card -->
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="1"
