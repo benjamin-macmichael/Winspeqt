@@ -8,7 +8,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
-        <Grid Padding="40">
+        <Grid Padding="60">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -32,21 +32,21 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
                         Text="System Monitoring" 
-                        FontSize="28" 
+                        FontSize="36" 
                         FontWeight="Bold"/>
                     <TextBlock 
                         Text="Understand what's slowing your PC down in plain English" 
-                        FontSize="14" 
+                        FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
+                        Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
 
             <!-- Feature Cards Grid -->
-            <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid Grid.Row="2" Margin="0,40,0,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -57,15 +57,16 @@
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="0"
-                    Margin="0,0,12,12"
+                    Margin="0,0,16,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="TaskManagerCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -75,32 +76,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE7C4;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#FF9800"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Friendly Task Manager" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See which apps are using CPU, RAM, Disk, and Network with easy-to-understand explanations"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Open Task Manager" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -109,15 +110,16 @@
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="1"
-                    Margin="12,0,0,12"
+                    Margin="16,0,0,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="ResourceTrendsCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -127,32 +129,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE9D9;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#4CAF50"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Resource Trends" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="View graphs showing how your CPU, memory, and disk usage change over time"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="View Trends" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -161,15 +163,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="0"
-                    Margin="0,12,12,0"
+                    Margin="0,16,16,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="StartupImpactCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -179,32 +182,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE7E8;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#2196F3"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Startup Impact Analyzer" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See which apps slow down your PC's startup and disable them with one click"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Analyze Startup" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -213,15 +216,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="1"
-                    Margin="12,12,0,0"
+                    Margin="16,16,0,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="BackgroundProcessCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -231,32 +235,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE8B5;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#9C27B0"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Background Process Insights" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Discover hidden apps running in the background that use significant resources"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="View Processes" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>

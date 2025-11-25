@@ -8,7 +8,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
-        <Grid Padding="40">
+        <Grid Padding="60">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -28,26 +28,27 @@
                     Click="BackButton_Click"
                     Margin="0,0,20,0"
                     Background="Transparent"
-                    BorderThickness="0"/>
+                    BorderThickness="0"
+                    FontSize="16"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
                         Text="Device Hardening &amp; Security" 
-                        FontSize="28" 
+                        FontSize="36" 
                         FontWeight="Bold"/>
                     <TextBlock 
                         Text="Make your system safer without needing technical knowledge" 
-                        FontSize="14" 
+                        FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
+                        Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
 
             <!-- Feature Cards Grid -->
-            <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid Grid.Row="2" Margin="0,40,0,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -58,15 +59,16 @@
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="0"
-                    Margin="0,0,12,12"
+                    Margin="0,0,16,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="SecurityStatusCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -76,49 +78,50 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE72E;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#4CAF50"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Security Status Dashboard" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="View all key security metrics in one place: Windows Update, Defender, Firewall, BitLocker, and more"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Check Status" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
 
-                <!-- App Security Scanner Card (Vulnerability + Updates) -->
+                <!-- App Security Scanner Card -->
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="1"
-                    Margin="12,0,0,12"
+                    Margin="16,0,0,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="AppSecurityScannerCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -128,32 +131,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE7BA;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#F44336"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="App Security Scanner" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Scan installed apps for vulnerabilities and get step-by-step update instructions"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Scan Apps" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -162,15 +165,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="0"
-                    Margin="0,12,12,0"
+                    Margin="0,16,16,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="NetworkSecurityCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -180,32 +184,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE968;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#2196F3"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Network Security Monitor" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See what's connecting to the internet from your PC and detect suspicious network activity"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Monitor Network" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -214,15 +218,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="1"
-                    Margin="12,12,0,0"
+                    Margin="16,16,0,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="SettingsRecommendationsCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -232,32 +237,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE713;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#FF9800"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Windows Settings Recommendations" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Learn about security settings like SmartScreen, remote access, and privacy options explained in plain language"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="View Settings" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
