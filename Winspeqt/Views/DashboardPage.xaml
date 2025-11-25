@@ -14,25 +14,28 @@
         </Grid.RowDefinitions>
 
         <!-- Header Section -->
-        <StackPanel Grid.Row="0" Padding="40,40,40,20">
+        <StackPanel Grid.Row="0" Padding="60,60,60,40" HorizontalAlignment="Center">
             <TextBlock 
                 Text="Winspeqt" 
-                FontSize="32" 
+                FontSize="48" 
                 FontWeight="Bold"
-                Margin="0,0,0,8"/>
+                Margin="0,0,0,12"
+                TextAlignment="Center"/>
             <TextBlock 
                 Text="Your Windows System Inspector and Optimizer" 
-                FontSize="16" 
+                FontSize="20" 
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Margin="0,0,0,4"/>
+                Margin="0,0,0,8"
+                TextAlignment="Center"/>
             <TextBlock 
                 Text="Choose a category to get started" 
-                FontSize="14" 
-                Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                FontSize="18" 
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                TextAlignment="Center"/>
         </StackPanel>
 
         <!-- Main Content Grid -->
-        <Grid Grid.Row="1" Padding="40,20,40,40">
+        <Grid Grid.Row="1" Padding="60,0,60,60" MaxWidth="1400">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -42,15 +45,16 @@
             <!-- Security Card -->
             <Button 
                 Grid.Column="0"
-                Margin="0,0,12,0"
+                Margin="0,0,20,0"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                CornerRadius="8"
+                BorderThickness="2"
+                CornerRadius="12"
                 Command="{Binding SecurityCommand}">
-                <Grid Padding="32">
+                <Grid Padding="40">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -61,52 +65,54 @@
                     <FontIcon 
                         Grid.Row="0"
                         Glyph="&#xE72E;" 
-                        FontSize="48"
+                        FontSize="64"
                         Foreground="#4CAF50"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,20"/>
+                        Margin="0,0,0,24"/>
 
                     <!-- Content -->
                     <StackPanel Grid.Row="1" VerticalAlignment="Center">
                         <TextBlock 
                             Text="Security" 
-                            FontSize="24" 
+                            FontSize="32" 
                             FontWeight="SemiBold"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,12"/>
+                            Margin="0,0,0,16"/>
                         <TextBlock 
                             Text="Check your system's security status, find vulnerabilities, and get recommendations to protect your PC"
-                            FontSize="14"
+                            FontSize="16"
                             TextWrapping="Wrap"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             HorizontalAlignment="Center"
-                            TextAlignment="Center"/>
+                            TextAlignment="Center"
+                            LineHeight="24"/>
                     </StackPanel>
 
                     <!-- Action Text -->
                     <TextBlock 
                         Grid.Row="2"
                         Text="Get Started →" 
-                        FontSize="14"
+                        FontSize="18"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         HorizontalAlignment="Center"
-                        Margin="0,20,0,0"/>
+                        Margin="0,24,0,0"/>
                 </Grid>
             </Button>
 
             <!-- Optimization Card -->
             <Button 
                 Grid.Column="1"
-                Margin="12,0,12,0"
+                Margin="20,0"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                CornerRadius="8"
+                BorderThickness="2"
+                CornerRadius="12"
                 Command="{Binding OptimizationCommand}">
-                <Grid Padding="32">
+                <Grid Padding="40">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -117,52 +123,54 @@
                     <FontIcon 
                         Grid.Row="0"
                         Glyph="&#xE73C;" 
-                        FontSize="48"
+                        FontSize="64"
                         Foreground="#2196F3"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,20"/>
+                        Margin="0,0,0,24"/>
 
                     <!-- Content -->
                     <StackPanel Grid.Row="1" VerticalAlignment="Center">
                         <TextBlock 
                             Text="Optimization" 
-                            FontSize="24" 
+                            FontSize="32" 
                             FontWeight="SemiBold"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,12"/>
+                            Margin="0,0,0,16"/>
                         <TextBlock 
                             Text="Free up disk space, find large files, remove unused apps, and speed up your system safely"
-                            FontSize="14"
+                            FontSize="16"
                             TextWrapping="Wrap"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             HorizontalAlignment="Center"
-                            TextAlignment="Center"/>
+                            TextAlignment="Center"
+                            LineHeight="24"/>
                     </StackPanel>
 
                     <!-- Action Text -->
                     <TextBlock 
                         Grid.Row="2"
                         Text="Get Started →" 
-                        FontSize="14"
+                        FontSize="18"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         HorizontalAlignment="Center"
-                        Margin="0,20,0,0"/>
+                        Margin="0,24,0,0"/>
                 </Grid>
             </Button>
 
             <!-- Monitoring Card -->
             <Button 
                 Grid.Column="2"
-                Margin="12,0,0,0"
+                Margin="20,0,0,0"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                CornerRadius="8"
+                BorderThickness="2"
+                CornerRadius="12"
                 Command="{Binding MonitoringCommand}">
-                <Grid Padding="32">
+                <Grid Padding="40">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -173,37 +181,38 @@
                     <FontIcon 
                         Grid.Row="0"
                         Glyph="&#xE9D9;" 
-                        FontSize="48"
+                        FontSize="64"
                         Foreground="#FF9800"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,20"/>
+                        Margin="0,0,0,24"/>
 
                     <!-- Content -->
                     <StackPanel Grid.Row="1" VerticalAlignment="Center">
                         <TextBlock 
                             Text="Monitoring" 
-                            FontSize="24" 
+                            FontSize="32" 
                             FontWeight="SemiBold"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,12"/>
+                            Margin="0,0,0,16"/>
                         <TextBlock 
                             Text="Monitor CPU, memory, and disk usage in real-time with friendly explanations of what's happening"
-                            FontSize="14"
+                            FontSize="16"
                             TextWrapping="Wrap"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             HorizontalAlignment="Center"
-                            TextAlignment="Center"/>
+                            TextAlignment="Center"
+                            LineHeight="24"/>
                     </StackPanel>
 
                     <!-- Action Text -->
                     <TextBlock 
                         Grid.Row="2"
                         Text="Get Started →" 
-                        FontSize="14"
+                        FontSize="18"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         HorizontalAlignment="Center"
-                        Margin="0,20,0,0"/>
+                        Margin="0,24,0,0"/>
                 </Grid>
             </Button>
         </Grid>

@@ -8,7 +8,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
-        <Grid Padding="40">
+        <Grid Padding="60">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -25,28 +25,30 @@
                 <Button 
                     Grid.Column="0"
                     Content="← Back to Dashboard"
-                    Style="{StaticResource SubtleButtonStyle}"
                     Click="BackButton_Click"
-                    Margin="0,0,20,0"/>
+                    Margin="0,0,20,0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
                         Text="System Optimization &amp; Cleanup" 
-                        FontSize="28" 
+                        FontSize="36" 
                         FontWeight="Bold"/>
                     <TextBlock 
                         Text="Free up space and improve performance safely" 
-                        FontSize="14" 
+                        FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
+                        Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
 
             <!-- Feature Cards Grid -->
-            <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid Grid.Row="2" Margin="0,40,0,0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
+                    <RowDefinition Height="*" MinHeight="280"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -57,15 +59,16 @@
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="0"
-                    Margin="0,0,12,12"
+                    Margin="0,0,16,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="LargeFileFinderCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -75,32 +78,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE8B7;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#F44336"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Large File Finder" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Scan your folders to find the largest files taking up space on your PC"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Find Large Files" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -109,15 +112,16 @@
                 <Button 
                     Grid.Row="0" 
                     Grid.Column="1"
-                    Margin="12,0,0,12"
+                    Margin="16,0,0,16"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="AppUsageTrackerCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -127,32 +131,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE74C;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#2196F3"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="App Usage Tracker" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See all installed apps with last used dates, sizes, and uninstall suggestions"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="View Apps" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -161,15 +165,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="0"
-                    Margin="0,12,12,0"
+                    Margin="0,16,16,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="AppDataCleanupCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -179,32 +184,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE74D;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#FF9800"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="Safe AppData Cleanup" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Identify and remove outdated cache, temp files, and unneeded data safely"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Start Cleanup" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
@@ -213,15 +218,16 @@
                 <Button 
                     Grid.Row="1" 
                     Grid.Column="1"
-                    Margin="12,12,0,0"
+                    Margin="16,16,0,0"
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    CornerRadius="8"
+                    BorderThickness="2"
+                    CornerRadius="12"
                     Click="OneClickOptimizationCard_Click">
-                    <Grid Padding="28">
+                    <Grid Padding="36">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -231,32 +237,32 @@
                         <FontIcon 
                             Grid.Row="0"
                             Glyph="&#xE73C;" 
-                            FontSize="42"
+                            FontSize="56"
                             Foreground="#4CAF50"
-                            Margin="0,0,0,16"/>
+                            Margin="0,0,0,20"/>
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
                                 Text="One-Click Optimization" 
-                                FontSize="20" 
+                                FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Run a complete cleanup: temp files, recycle bin, logs, and more in one click"
-                                FontSize="13"
+                                FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="20"/>
+                                LineHeight="22"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
-                            <FontIcon Glyph="&#xE76C;" FontSize="12" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
                                 Text="Optimize Now" 
-                                FontSize="13"
+                                FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="6,0,0,0"/>
+                                Margin="8,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Button>
