@@ -28,7 +28,7 @@ namespace Winspeqt.Views.Monitoring
         private async void ResourceTrendsCard_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Navigate to Resource Trends page
-            await ShowComingSoonDialog("Resource Trends");
+            Frame.Navigate(typeof(Monitoring.PerformanceTrendsPage));
         }
 
         private async void StartupImpactCard_Click(object sender, RoutedEventArgs e)
