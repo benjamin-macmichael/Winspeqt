@@ -15,6 +15,7 @@
   <ItemGroup>
     <None Remove="DashboardPage.xaml" />
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
+    <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
   </ItemGroup>
@@ -44,6 +45,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.1" />
+    <PackageReference Include="System.Management" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="DashboardPage.xaml">
@@ -53,10 +56,13 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Controls\" />
-    <Folder Include="Services\" />
-    <Folder Include="ViewModels\Monitoring\" />
     <Folder Include="ViewModels\Optimization\" />
     <Folder Include="ViewModels\Security\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Monitoring\TaskManagerPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Security\SecurityDashboardPage.xaml">

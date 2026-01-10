@@ -1,13 +1,45 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace Winspeqt.Models
+﻿namespace Winspeqt.Models
 {
-    public sealed class ProcessInfo
+    public class ProcessInfo
     {
-        public int Id { get; init; }
-        public string Name { get; init; } = "";
-        
-        public long Memory { get; init; } = 0;
+        // Basic process info (for resource trends view)
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public long Memory { get; set; } = 0;
+
+        // Extended info for Task Manager view
+        public int ProcessId { get; set; }
+        public string ProcessName { get; set; }
+        public string Description { get; set; }
+        public double CpuUsagePercent { get; set; }
+        public long MemoryUsageMB { get; set; }
+        public string Status { get; set; }
+        public string FriendlyExplanation { get; set; }
+        public string Icon { get; set; }
+
+        // Formatted strings for display
+        public string CpuUsageDisplay => $"{CpuUsagePercent:F1}%";
+        public string MemoryUsageDisplay => $"{MemoryUsageMB:N0} MB";
+
+        // Color coding for visual feedback
+        public string CpuUsageColor
+        {
+            get
+            {
+                if (CpuUsagePercent > 50) return "#F44336"; // Red
+                if (CpuUsagePercent > 20) return "#FF9800"; // Orange
+                return "#4CAF50"; // Green
+            }
+        }
+
+        public string MemoryUsageColor
+        {
+            get
+            {
+                if (MemoryUsageMB > 1000) return "#F44336"; // Red (>1GB)
+                if (MemoryUsageMB > 500) return "#FF9800"; // Orange (>500MB)
+                return "#4CAF50"; // Green
+            }
+        }
     }
 }
