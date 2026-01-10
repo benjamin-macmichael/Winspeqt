@@ -1,0 +1,262 @@
+<Page
+    x:Class="Winspeqt.Views.Monitoring.TaskManagerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:Winspeqt.Helpers"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="60">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button 
+                Grid.Column="0"
+                Content="← Back"
+                Click="BackButton_Click"
+                Background="Transparent"
+                BorderThickness="0"
+                FontSize="16"
+                Margin="0,0,20,0"/>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock 
+                    Text="Friendly Task Manager" 
+                    FontSize="36" 
+                    FontWeight="Bold"/>
+                <TextBlock 
+                    Text="See what's using your computer's resources" 
+                    FontSize="18" 
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Button 
+                Grid.Column="2"
+                Content="🔄 Refresh"
+                Command="{Binding RefreshCommand}"
+                FontSize="16"
+                Padding="16,8"/>
+        </Grid>
+
+        <!-- System Overview Cards -->
+        <Grid Grid.Row="1" Margin="0,0,0,32">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- CPU Card -->
+            <Border 
+                Grid.Column="0"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="2"
+                CornerRadius="12"
+                Padding="28"
+                Margin="0,0,12,0">
+                <StackPanel>
+                    <TextBlock 
+                        Text="💻 Processor (CPU)" 
+                        FontSize="20" 
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,16"/>
+
+                    <TextBlock 
+                        Text="{Binding TotalCpuUsage, Mode=OneWay}" 
+                        FontSize="48" 
+                        FontWeight="Bold"
+                        Foreground="#2196F3"/>
+                    <TextBlock 
+                        Text="%" 
+                        FontSize="24"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,-8,0,16"/>
+
+                    <TextBlock 
+                        Text="{Binding CpuStatusMessage, Mode=OneWay}" 
+                        FontSize="15"
+                        TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        LineHeight="22"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Memory Card -->
+            <Border 
+                Grid.Column="1"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="2"
+                CornerRadius="12"
+                Padding="28"
+                Margin="12,0,0,0">
+                <StackPanel>
+                    <TextBlock 
+                        Text="🧠 Memory (RAM)" 
+                        FontSize="20" 
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,16"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock 
+                            Text="{Binding UsedMemoryMB, Mode=OneWay}" 
+                            FontSize="48" 
+                            FontWeight="Bold"
+                            Foreground="#FF9800"/>
+                        <TextBlock 
+                            Text=" / " 
+                            FontSize="32" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="8,0"/>
+                        <TextBlock 
+                            Text="{Binding TotalMemoryMB, Mode=OneWay}" 
+                            FontSize="32" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <TextBlock 
+                        Text="MB" 
+                        FontSize="20"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,-4,0,16"/>
+
+                    <TextBlock 
+                        Text="{Binding MemoryStatusMessage, Mode=OneWay}" 
+                        FontSize="15"
+                        TextWrapping="Wrap"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        LineHeight="22"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Section Header -->
+        <TextBlock 
+            Grid.Row="2"
+            Text="Apps Using the Most Resources" 
+            FontSize="24" 
+            FontWeight="SemiBold"
+            Margin="0,0,0,16"/>
+
+        <!-- Process List -->
+        <ScrollViewer Grid.Row="3">
+            <ItemsRepeater ItemsSource="{Binding Processes, Mode=OneWay}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Border 
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="20"
+                            Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Icon -->
+                                <FontIcon 
+                                    Grid.Column="0"
+                                    Glyph="{Binding Icon}"
+                                    FontSize="32"
+                                    Margin="0,0,20,0"
+                                    VerticalAlignment="Center"/>
+
+                                <!-- App Info -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock 
+                                        Text="{Binding Description}" 
+                                        FontSize="18" 
+                                        FontWeight="SemiBold"/>
+                                    <TextBlock 
+                                        Text="{Binding FriendlyExplanation}" 
+                                        FontSize="14"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap"
+                                        Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- CPU Usage -->
+                                <StackPanel Grid.Column="2" Margin="20,0" VerticalAlignment="Center">
+                                    <TextBlock 
+                                        Text="CPU" 
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        HorizontalAlignment="Center"/>
+                                    <TextBlock 
+                                        Text="{Binding CpuUsageDisplay}" 
+                                        FontSize="20" 
+                                        FontWeight="SemiBold"
+                                        Foreground="{Binding CpuUsageColor}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- Memory Usage -->
+                                <StackPanel Grid.Column="3" Margin="20,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock 
+                                        Text="Memory" 
+                                        FontSize="12"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        HorizontalAlignment="Center"/>
+                                    <TextBlock 
+                                        Text="{Binding MemoryUsageDisplay}" 
+                                        FontSize="20" 
+                                        FontWeight="SemiBold"
+                                        Foreground="{Binding MemoryUsageColor}"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <!-- Loading Overlay -->
+        <Border
+            Grid.Row="0" 
+            Grid.RowSpan="4"
+            Background="#CC000000"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Center"
+                Spacing="16">
+                <ProgressRing 
+                    IsActive="True"
+                    Width="80"
+                    Height="80"/>
+                <TextBlock 
+                    Text="Loading system information..."
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Center"
+                    Foreground="White"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

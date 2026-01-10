@@ -21,8 +21,7 @@ namespace Winspeqt.Views.Monitoring
 
         private async void TaskManagerCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Task Manager page
-            await ShowComingSoonDialog("Friendly Task Manager");
+            Frame.Navigate(typeof(TaskManagerPage));
         }
 
         private async void ResourceTrendsCard_Click(object sender, RoutedEventArgs e)
