@@ -10,25 +10,35 @@ namespace Winspeqt.Services
     {
         public IEnumerable<ProcessInfo> GetRunningProcesses()
         {
-            // Map to a safe DTO for binding (Process properties can throw).
+            var activePrivateWsDict = ActivePrivateWorkingSet.GetActivePrivateWorkingSetDictionary();
             foreach (var p in Process.GetProcesses())
             {
-                ProcessInfo info;
+                ProcessInfo? info = null;
+
                 try
                 {
-                    info = new ProcessInfo { Id = p.Id, Name = p.ProcessName, Memory = p.PrivateMemorySize64 / 1024 / 1024 };
+                    var pid = p.Id;
+
+                    info = new ProcessInfo
+                    {
+                        Id = pid,
+                        Name = p.ProcessName,
+                        WorkingSet64Bytes = 
+                            p.WorkingSet64,
+                        ActivePrivateWorkingSetBytes = activePrivateWsDict[pid]
+                    };
                 }
                 catch
                 {
-                    // Skip processes that can't be inspected
-                    continue;
+                    // ignore inaccessible/exited processes
                 }
                 finally
                 {
                     p.Dispose();
                 }
 
-                yield return info;
+                if (info != null)
+                    yield return info;
             }
         }
     }

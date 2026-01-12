@@ -21,7 +21,8 @@
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBlock Text="{x:Bind Name}" />
                         <TextBlock Text="{x:Bind Id}" Opacity="0.7"/>
-                        <TextBlock Text="{x:Bind Memory}"/>
+                        <TextBlock Text="{x:Bind WorkingSetMiB, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ActivePrivateWorkingSetMiB, Mode=OneWay}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
