@@ -195,7 +195,7 @@
                                         <!-- App Info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock 
-                                                Text="{Binding ProcessName}" 
+                                                Text="{Binding Description}" 
                                                 FontSize="18" 
                                                 FontWeight="SemiBold"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">

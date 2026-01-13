@@ -127,6 +127,11 @@ namespace Winspeqt.Services
 
         private string GetFriendlyName(string processName)
         {
+            // Clean the process name first - remove .exe and convert to lowercase
+            var cleanName = processName.ToLower();
+            if (cleanName.EndsWith(".exe"))
+                cleanName = cleanName.Substring(0, cleanName.Length - 4);
+
             // Manual overrides for common apps
             var friendlyNames = new Dictionary<string, string>
             {
@@ -150,11 +155,9 @@ namespace Winspeqt.Services
                 { "dwm", "Desktop Window Manager" }
             };
 
-            var lower = processName.ToLower();
-
-            // Check manual dictionary first
-            if (friendlyNames.ContainsKey(lower))
-                return friendlyNames[lower];
+            // Check manual dictionary with cleaned name
+            if (friendlyNames.ContainsKey(cleanName))
+                return friendlyNames[cleanName];
 
             // Try to get the file description from the process
             try
@@ -171,14 +174,10 @@ namespace Winspeqt.Services
             }
 
             // Fallback: Clean up the process name
-            // Remove .exe if present
-            if (lower.EndsWith(".exe"))
-                processName = processName.Substring(0, processName.Length - 4);
-
             // Capitalize first letter
-            if (processName.Length > 0)
+            if (cleanName.Length > 0)
             {
-                return char.ToUpper(processName[0]) + processName.Substring(1);
+                return char.ToUpper(cleanName[0]) + cleanName.Substring(1);
             }
 
             return processName;
