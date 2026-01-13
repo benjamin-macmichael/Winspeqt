@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
+using System.Linq;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
@@ -58,7 +59,7 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryStatusMessage, value);
         }
 
-        public ObservableCollection<ProcessInfo> Processes { get; set; }
+        public ObservableCollection<ProcessInfo> TopProcesses { get; set; }
 
         public ICommand RefreshCommand { get; }
         public ICommand EndProcessCommand { get; }
@@ -67,7 +68,7 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             _monitorService = new SystemMonitorService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            Processes = new ObservableCollection<ProcessInfo>();
+            TopProcesses = new ObservableCollection<ProcessInfo>();
 
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
@@ -156,11 +157,12 @@ namespace Winspeqt.ViewModels.Monitoring
                         // Update status messages
                         UpdateStatusMessages();
 
-                        // Update process list (only top 20 to avoid clutter)
-                        Processes.Clear();
-                        for (int i = 0; i < Math.Min(20, processes.Count); i++)
+                        // Get top 5 by memory
+                        var topProcesses = processes.OrderByDescending(p => p.MemoryUsageMB).Take(5).ToList();
+                        TopProcesses.Clear();
+                        foreach (var proc in topProcesses)
                         {
-                            Processes.Add(processes[i]);
+                            TopProcesses.Add(proc);
                         }
 
                         IsLoading = false;
