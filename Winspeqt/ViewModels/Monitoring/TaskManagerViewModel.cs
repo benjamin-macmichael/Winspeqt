@@ -16,6 +16,7 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer _refreshTimer;
+        private readonly SystemStatistics _systemStatistics;
 
         private bool _isLoading;
         public bool IsLoading
@@ -69,6 +70,7 @@ namespace Winspeqt.ViewModels.Monitoring
             _monitorService = new SystemMonitorService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             TopProcesses = new ObservableCollection<ProcessInfo>();
+            _systemStatistics = new SystemStatistics();
 
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
@@ -110,8 +112,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
-                    cpu = await _monitorService.GetTotalCpuUsageAsync();
+                    cpu = await _systemStatistics.CpuUsage(_monitorService);
                 }
                 catch (Exception ex)
                 {
