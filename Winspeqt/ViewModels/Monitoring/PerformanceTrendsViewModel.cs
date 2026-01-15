@@ -66,7 +66,7 @@ namespace Winspeqt.ViewModels.Monitoring
             // Set loading to true initially
             IsLoading = true;
 
-            // Start auto-refresh every 2 seconds
+            // Start auto-refresh every second
             StartAutoRefresh();
 
             // Initial load
@@ -79,7 +79,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 async _ => await RefreshDataAsync(),
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(2)
+                TimeSpan.FromSeconds(1)
             );
         }
 
