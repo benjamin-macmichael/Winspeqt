@@ -87,10 +87,7 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Starting refresh...");
-
                 double cpu = 0;
-                
                 try
                 {
                     cpu = await _systemStatistics.CpuUsage(_monitorService);
@@ -100,37 +97,32 @@ namespace Winspeqt.ViewModels.Monitoring
                     System.Diagnostics.Debug.WriteLine($"CPU error: {ex.Message}");
                 }
 
-                CpuUsage.Dequeue();
-                CpuUsage.Enqueue(cpu);
-                
-                CpuUsageValues.Clear();
-                foreach (var v in CpuUsage)
-                    CpuUsageValues.Add(v);
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    // update your rolling buffer
+                    _cpuUsage.Dequeue();
+                    _cpuUsage.Enqueue(cpu);
+
+                    // update bindable collection
+                    CpuUsageValues.Clear();
+                    foreach (var v in _cpuUsage)
+                        CpuUsageValues.Add(v);
+
+                    IsLoading = false;
+                });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ERROR in RefreshDataAsync: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-
-                // Try to update error message on UI thread
-                try
+                _dispatcherQueue.TryEnqueue(() =>
                 {
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        IsLoading = false;
-                        // Don't overwrite good data with error message if we already have it
-                        if (string.IsNullOrEmpty(CpuStatusMessage))
-                        {
-                            CpuStatusMessage = $"Error loading data: {ex.Message}";
-                        }
-                    });
-                }
-                catch
-                {
-                    // Failed to even show error - just silently fail this update cycle
-                }
+                    IsLoading = false;
+                    if (string.IsNullOrEmpty(CpuStatusMessage))
+                        CpuStatusMessage = $"Error loading data: {ex.Message}";
+                });
             }
         }
+
         
         private async Task EndProcessAsync(ProcessInfo processInfo)
         {
