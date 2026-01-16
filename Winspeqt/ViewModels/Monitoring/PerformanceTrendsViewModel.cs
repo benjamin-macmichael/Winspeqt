@@ -29,6 +29,11 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _cpuUsage, value);
         }
 
+        public int[] Test
+        {
+            get => [1, 2, 3, 1, 6];
+        }
+
         private ObservableCollection<double> _cpuUsageValues = new();
 
         public ObservableCollection<double> CpuUsageValues
