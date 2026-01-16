@@ -41,6 +41,21 @@ namespace Winspeqt.ViewModels.Monitoring
             get => _cpuUsageValues;
             set => SetProperty(ref _cpuUsageValues, value);
         }
+
+        private Queue<double> _memoryUsage = new Queue<double>(new double[60]);
+        public Queue<double> MemoryUsage
+        {
+            get => _memoryUsage;
+            set => SetProperty(ref _memoryUsage, value);
+        }
+
+        private ObservableCollection<double> _memoryUsageValues = new();
+
+        public ObservableCollection<double> MemoryUsageValues
+        {
+            get => _memoryUsageValues;
+            set => SetProperty(ref _memoryUsageValues, value);
+        }
         
         private bool _isLoading;
         public bool IsLoading
@@ -93,6 +108,7 @@ namespace Winspeqt.ViewModels.Monitoring
             try
             {
                 double cpu = 0;
+                double memoryUsedPercent = 0;
                 try
                 {
                     cpu = await _systemStatistics.CpuUsage(_monitorService);
@@ -100,6 +116,20 @@ namespace Winspeqt.ViewModels.Monitoring
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"CPU error: {ex.Message}");
+                }
+
+                try
+                {
+                    var availableMb = await _systemStatistics.AvailableMemory(_monitorService);
+                    var totalMb = await _systemStatistics.TotalMemory(_monitorService);
+                    if (totalMb > 0)
+                    {
+                        memoryUsedPercent = (totalMb - availableMb) * 100.0 / totalMb;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Memory error: {ex.Message}");
                 }
 
                 _dispatcherQueue.TryEnqueue(() =>
@@ -112,6 +142,13 @@ namespace Winspeqt.ViewModels.Monitoring
                     CpuUsageValues.Clear();
                     foreach (var v in _cpuUsage)
                         CpuUsageValues.Add(v);
+
+                    _memoryUsage.Dequeue();
+                    _memoryUsage.Enqueue(memoryUsedPercent);
+
+                    MemoryUsageValues.Clear();
+                    foreach (var v in _memoryUsage)
+                        MemoryUsageValues.Add(v);
 
                     IsLoading = false;
                 });

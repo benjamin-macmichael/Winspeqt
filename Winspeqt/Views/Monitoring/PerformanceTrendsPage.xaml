@@ -9,7 +9,7 @@
     xmlns:helpers="using:Winspeqt.Helpers"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    
+
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
@@ -21,7 +21,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
+
             <!-- Header -->
             <Grid Grid.Row="0" Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
@@ -89,8 +89,33 @@
                         </lvc:CartesianChart.Series>
                     </lvc:CartesianChart>
                 </Border>
+                <Border 
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,0"
+                    MinHeight="300"
+                    MaxHeight="600">
+                    <lvc:CartesianChart>
+                        <lvc:CartesianChart.Series>
+                            <lvc:SeriesCollection>
+                                <lvc:XamlLineSeries
+                    Values="{x:Bind ViewModel.MemoryUsageValues}"
+                    Fill="{lvc:SolidColorPaint Color='#6495ED'}"
+                    Stroke="{x:Null}"
+                    GeometryFill="{x:Null}"
+                    GeometryStroke="{x:Null}"
+                    DataLabelsPadding="{lvc:Padding Value=0}"
+                    />
+                            </lvc:SeriesCollection>
+                        </lvc:CartesianChart.Series>
+                    </lvc:CartesianChart>
+                </Border>
             </Grid>
-            
+
             <!-- Loading Overlay -->
             <Border
                 Grid.Row="0" 
