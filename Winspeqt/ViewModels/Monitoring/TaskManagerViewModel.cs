@@ -59,7 +59,35 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryStatusMessage, value);
         }
 
+        private string _selectedSortOption = "Memory";
+        public string SelectedSortOption
+        {
+            get => _selectedSortOption;
+            set
+            {
+                if (SetProperty(ref _selectedSortOption, value))
+                {
+                    _ = RefreshDataAsync();
+                }
+            }
+        }
+
+        private string _selectedFilterOption = "All";
+        public string SelectedFilterOption
+        {
+            get => _selectedFilterOption;
+            set
+            {
+                if (SetProperty(ref _selectedFilterOption, value))
+                {
+                    _ = RefreshDataAsync();
+                }
+            }
+        }
+
         public ObservableCollection<ProcessInfo> TopProcesses { get; set; }
+        public ObservableCollection<string> SortOptions { get; set; }
+        public ObservableCollection<string> FilterOptions { get; set; }
 
         public ICommand RefreshCommand { get; }
         public ICommand EndProcessCommand { get; }
@@ -70,13 +98,16 @@ namespace Winspeqt.ViewModels.Monitoring
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             TopProcesses = new ObservableCollection<ProcessInfo>();
 
+            SortOptions = new ObservableCollection<string> { "Memory", "CPU", "Name" };
+            FilterOptions = new ObservableCollection<string> { "All", "Apps Only", "System Only" };
+
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
 
             // Set loading to true initially
             IsLoading = true;
 
-            // Start auto-refresh every 2 seconds
+            // Start auto-refresh every 3 seconds (more reasonable for non-tech users)
             StartAutoRefresh();
 
             // Initial load
@@ -89,7 +120,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 async _ => await RefreshDataAsync(),
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(2)
+                TimeSpan.FromSeconds(3)
             );
         }
 
@@ -99,8 +130,8 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 System.Diagnostics.Debug.WriteLine("Starting refresh...");
 
-                // Ensure loading shows for at least 500ms so users see it
-                var loadingTask = Task.Delay(500);
+                // Ensure loading shows for at least 300ms so users see it
+                var loadingTask = Task.Delay(300);
 
                 // Get system metrics with individual error handling
                 double cpu = 0;
@@ -157,8 +188,12 @@ namespace Winspeqt.ViewModels.Monitoring
                         // Update status messages
                         UpdateStatusMessages();
 
-                        // Get top 5 by memory
-                        var topProcesses = processes.OrderByDescending(p => p.MemoryUsageMB).Take(5).ToList();
+                        // Apply filtering
+                        var filteredProcesses = ApplyFilter(processes);
+
+                        // Apply sorting and get top processes
+                        var topProcesses = ApplySorting(filteredProcesses).Take(10).ToList();
+
                         TopProcesses.Clear();
                         foreach (var proc in topProcesses)
                         {
@@ -206,28 +241,86 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        private List<ProcessInfo> ApplyFilter(List<ProcessInfo> processes)
+        {
+            if (SelectedFilterOption == "Apps Only")
+            {
+                // Filter to show only user applications (exclude system processes)
+                var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
+                    "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
+                    "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
+
+                return processes.Where(p =>
+                    !systemProcesses.Any(sp => p.ProcessName.ToLower().Contains(sp))
+                ).ToList();
+            }
+            else if (SelectedFilterOption == "System Only")
+            {
+                // Show only system processes
+                var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
+                    "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
+                    "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
+
+                return processes.Where(p =>
+                    systemProcesses.Any(sp => p.ProcessName.ToLower().Contains(sp))
+                ).ToList();
+            }
+
+            return processes;
+        }
+
+        private IEnumerable<ProcessInfo> ApplySorting(List<ProcessInfo> processes)
+        {
+            return SelectedSortOption switch
+            {
+                "CPU" => processes.OrderByDescending(p => p.CpuUsagePercent),
+                "Name" => processes.OrderBy(p => p.Description),
+                _ => processes.OrderByDescending(p => p.MemoryUsageMB) // Default to Memory
+            };
+        }
+
         private void UpdateStatusMessages()
         {
             try
             {
-                // CPU status message
+                // CPU status message with actionable advice
                 if (TotalCpuUsage > 80)
-                    CpuStatusMessage = "⚠️ Your CPU is working very hard right now. Close some apps to speed things up.";
+                {
+                    CpuStatusMessage = "⚠️ Your CPU is working very hard. Try closing apps you're not using to speed things up.";
+                }
                 else if (TotalCpuUsage > 50)
+                {
                     CpuStatusMessage = "Your CPU is moderately busy. Everything should still run smoothly.";
-                else
+                }
+                else if (TotalCpuUsage > 20)
+                {
                     CpuStatusMessage = "✓ Your CPU usage is normal. Your PC is running well.";
+                }
+                else
+                {
+                    CpuStatusMessage = "✓ Your CPU is barely being used. Your PC has plenty of power available.";
+                }
 
-                // Memory status message
+                // Memory status message with helpful context
                 if (TotalMemoryMB > 0)
                 {
                     var memoryPercent = (double)UsedMemoryMB / TotalMemoryMB * 100;
                     if (memoryPercent > 90)
-                        MemoryStatusMessage = $"⚠️ You're using {memoryPercent:F0}% of your memory. Close some apps to free up space.";
-                    else if (memoryPercent > 70)
-                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Still some room left.";
+                    {
+                        MemoryStatusMessage = $"⚠️ You're using {memoryPercent:F0}% of your memory. Your PC might slow down. Try closing some apps.";
+                    }
+                    else if (memoryPercent > 80)
+                    {
+                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Consider closing apps you're not using.";
+                    }
+                    else if (memoryPercent > 60)
+                    {
+                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Still plenty of room.";
+                    }
                     else
+                    {
                         MemoryStatusMessage = $"✓ You're using {memoryPercent:F0}% of your memory. Plenty of space available.";
+                    }
                 }
                 else
                 {
@@ -261,6 +354,7 @@ namespace Winspeqt.ViewModels.Monitoring
         public void StopAutoRefresh()
         {
             _refreshTimer?.Dispose();
+            _monitorService?.Dispose();
         }
     }
 }
