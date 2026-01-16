@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:helpers="using:Winspeqt.Helpers"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -63,7 +64,18 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                
+                                        <lvc:CartesianChart>
+                            <lvc:CartesianChart.Series>
+                                <lvc:SeriesCollection>
+                                    <lvc:XamlLineSeries
+                                        Values="{x:Bind ViewModel.CpuUsageValues}"
+                                        Fill="{lvc:SolidColorPaint Color='#6495ED'}"
+                                        Stroke="{x:Null}"
+                                        GeometryFill="{x:Null}"
+                                        GeometryStroke="{x:Null}"/>
+                                </lvc:SeriesCollection>
+                            </lvc:CartesianChart.Series>
+                        </lvc:CartesianChart>
                 <!-- CPU Card -->
                 <Border 
                     Grid.Column="0"
