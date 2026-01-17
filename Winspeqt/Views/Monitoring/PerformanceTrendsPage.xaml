@@ -51,12 +51,12 @@
                         Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <Button 
+                <!--<Button 
                     Grid.Column="2"
                     Content="🔄 Refresh"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
-                    Padding="16,8"/>
+                    Padding="16,8"/>-->
             </Grid>
             <Grid Grid.Row="1" Margin="0,0,0,32">
                 <Grid.ColumnDefinitions>
@@ -74,20 +74,30 @@
                     Margin="0,0,12,0"
                     MinHeight="300"
                     MaxHeight="600">
-                    <lvc:CartesianChart>
-                        <lvc:CartesianChart.Series>
-                            <lvc:SeriesCollection>
-                                <lvc:XamlLineSeries
-                                    Values="{x:Bind ViewModel.CpuUsageValues}"
-                                    Fill="{lvc:SolidColorPaint Color='#6495ED'}"
-                                    Stroke="{x:Null}"
-                                    GeometryFill="{x:Null}"
-                                    GeometryStroke="{x:Null}"
-                                    DataLabelsPadding="{lvc:Padding Value=0}"
-                                    />
-                            </lvc:SeriesCollection>
-                        </lvc:CartesianChart.Series>
-                    </lvc:CartesianChart>
+                    <StackPanel>
+                    <TextBlock 
+                        Text="💻 Processor (CPU)" 
+                        FontSize="20" 
+                        FontWeight="SemiBold"
+                        Margin="0,0,0,16"/>
+                        <Border
+                            MinHeight="250">
+                            <lvc:CartesianChart>
+                                <lvc:CartesianChart.Series>
+                                    <lvc:SeriesCollection>
+                                        <lvc:XamlLineSeries
+                                            Values="{x:Bind ViewModel.CpuUsageValues}"
+                                            Fill="{lvc:SolidColorPaint Color='#2196F3'}"
+                                            Stroke="{x:Null}"
+                                            GeometryFill="{x:Null}"
+                                            GeometryStroke="{x:Null}"
+                                            DataLabelsPadding="{lvc:Padding Value=0}"
+                                            />
+                                    </lvc:SeriesCollection>
+                                </lvc:CartesianChart.Series>
+                            </lvc:CartesianChart>
+                        </Border>
+                    </StackPanel>
                 </Border>
                 <Border 
                     Grid.Column="1"
@@ -99,20 +109,30 @@
                     Margin="0,0,12,0"
                     MinHeight="300"
                     MaxHeight="600">
-                    <lvc:CartesianChart>
-                        <lvc:CartesianChart.Series>
-                            <lvc:SeriesCollection>
-                                <lvc:XamlLineSeries
-                    Values="{x:Bind ViewModel.MemoryUsageValues}"
-                    Fill="{lvc:SolidColorPaint Color='#6495ED'}"
-                    Stroke="{x:Null}"
-                    GeometryFill="{x:Null}"
-                    GeometryStroke="{x:Null}"
-                    DataLabelsPadding="{lvc:Padding Value=0}"
-                    />
-                            </lvc:SeriesCollection>
-                        </lvc:CartesianChart.Series>
-                    </lvc:CartesianChart>
+                    <StackPanel>
+                        <TextBlock 
+                            Text="🧠 Memory (RAM)" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+                        <Border
+                            MinHeight="250">
+                            <lvc:CartesianChart>
+                                <lvc:CartesianChart.Series>
+                                    <lvc:SeriesCollection>
+                                        <lvc:XamlLineSeries
+                                            Values="{x:Bind ViewModel.MemoryUsageValues}"
+                                            Fill="{lvc:SolidColorPaint Color='#FF9800'}"
+                                            Stroke="{x:Null}"
+                                            GeometryFill="{x:Null}"
+                                            GeometryStroke="{x:Null}"
+                                            DataLabelsPadding="{lvc:Padding Value=0}"
+                                            />
+                                    </lvc:SeriesCollection>
+                                </lvc:CartesianChart.Series>
+                            </lvc:CartesianChart>
+                        </Border>
+                    </StackPanel>
                 </Border>
             </Grid>
 
