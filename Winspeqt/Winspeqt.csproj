@@ -18,6 +18,7 @@
     <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
+    <None Remove="Views\Security\SecurityStatusPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,10 +55,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Models\" />
     <Folder Include="Controls\" />
     <Folder Include="ViewModels\Optimization\" />
-    <Folder Include="ViewModels\Security\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Security\SecurityStatusPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Monitoring\TaskManagerPage.xaml">
