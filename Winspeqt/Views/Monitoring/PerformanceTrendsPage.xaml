@@ -82,20 +82,10 @@
                         Margin="0,0,0,16"/>
                         <Border
                             MinHeight="250">
-                            <lvc:CartesianChart>
-                                <lvc:CartesianChart.Series>
-                                    <lvc:SeriesCollection>
-                                        <lvc:XamlLineSeries
-                                            Values="{x:Bind ViewModel.CpuUsageValues}"
-                                            Fill="{lvc:SolidColorPaint Color='#2196F3'}"
-                                            Stroke="{x:Null}"
-                                            GeometryFill="{x:Null}"
-                                            GeometryStroke="{x:Null}"
-                                            DataLabelsPadding="{lvc:Padding Value=0}"
-                                            />
-                                    </lvc:SeriesCollection>
-                                </lvc:CartesianChart.Series>
-                            </lvc:CartesianChart>
+                            <lvc:CartesianChart
+                                Series="{x:Bind ViewModel.CpuSeries}"
+                                YAxes="{x:Bind ViewModel.CpuYAxes}"
+                                XAxes="{x:Bind ViewModel.XAxes}"/>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -117,20 +107,10 @@
                             Margin="0,0,0,16"/>
                         <Border
                             MinHeight="250">
-                            <lvc:CartesianChart>
-                                <lvc:CartesianChart.Series>
-                                    <lvc:SeriesCollection>
-                                        <lvc:XamlLineSeries
-                                            Values="{x:Bind ViewModel.MemoryUsageValues}"
-                                            Fill="{lvc:SolidColorPaint Color='#FF9800'}"
-                                            Stroke="{x:Null}"
-                                            GeometryFill="{x:Null}"
-                                            GeometryStroke="{x:Null}"
-                                            DataLabelsPadding="{lvc:Padding Value=0}"
-                                            />
-                                    </lvc:SeriesCollection>
-                                </lvc:CartesianChart.Series>
-                            </lvc:CartesianChart>
+                            <lvc:CartesianChart
+                                Series="{x:Bind ViewModel.MemorySeries}"
+                                YAxes="{x:Bind ViewModel.MemoryYAxes}"
+                                XAxes="{x:Bind ViewModel.XAxes}"/>
                         </Border>
                     </StackPanel>
                 </Border>

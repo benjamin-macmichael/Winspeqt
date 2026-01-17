@@ -12,6 +12,11 @@ using Winspeqt.Models;
 using Winspeqt.Services;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
+using LiveChartsCore.Kernel.Sketches;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
@@ -21,17 +26,14 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly SystemStatistics _systemStatistics;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer _refreshTimer;
-        
-        private Queue<double> _cpuUsage = new Queue<double>(new double[60]);
+
+        const int _secondsTracked = 60;
+
+        private Queue<double> _cpuUsage = new Queue<double>(new double[_secondsTracked]);
         public Queue<double> CpuUsage
         {
             get => _cpuUsage;
             set => SetProperty(ref _cpuUsage, value);
-        }
-
-        public int[] Test
-        {
-            get => [1, 2, 3, 1, 6];
         }
 
         private ObservableCollection<double> _cpuUsageValues = new();
@@ -42,7 +44,11 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _cpuUsageValues, value);
         }
 
-        private Queue<double> _memoryUsage = new Queue<double>(new double[60]);
+        public ISeries[] CpuSeries { get; }
+        public IEnumerable<ICartesianAxis> CpuYAxes { get; }
+        public IEnumerable<ICartesianAxis> XAxes { get; }
+
+        private Queue<double> _memoryUsage = new Queue<double>(new double[_secondsTracked]);
         public Queue<double> MemoryUsage
         {
             get => _memoryUsage;
@@ -56,6 +62,9 @@ namespace Winspeqt.ViewModels.Monitoring
             get => _memoryUsageValues;
             set => SetProperty(ref _memoryUsageValues, value);
         }
+
+        public ISeries[] MemorySeries { get; }
+        public IEnumerable<ICartesianAxis> MemoryYAxes { get; }
         
         private bool _isLoading;
         public bool IsLoading
@@ -79,6 +88,80 @@ namespace Winspeqt.ViewModels.Monitoring
             _monitorService = new SystemMonitorService();
             _systemStatistics = new SystemStatistics();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            var axisTextColor = new SolidColorPaint(SKColor.Parse("#8A8A8A"));
+            const int labelSize = 12;
+            const int nameSize = 18;
+
+            CpuSeries =
+            [
+                new LineSeries<double>
+                {
+                    Values = CpuUsageValues,
+                    Fill = new SolidColorPaint(SKColor.Parse("#2196F3")),
+                    Stroke = null,
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    //DataLabelsFormatter = (point) => point.Label != null ? $"{point.Label}%" : "0%",
+                }
+            ];
+
+            CpuYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    MaxLimit = 100,
+                    Name = "CPU Usage (%)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                }
+            ];
+
+            XAxes = [
+                new Axis {
+                    MinLimit = 0,
+                    MaxLimit = _secondsTracked,
+                    MinStep = 10,
+                    Labeler = values => (_secondsTracked - values).ToString(),
+                    Name = "Seconds Elapsed",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0,-10,0,0),
+                }
+            ];
+
+            MemorySeries =
+            [
+                new LineSeries<double>
+                {
+                    Values = MemoryUsageValues,
+                    Fill = new SolidColorPaint(SKColor.Parse("#FF9800")),
+                    Stroke = null,
+                    GeometryFill = null,
+                    GeometryStroke = null
+                }
+            ];
+
+            MemoryYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    MaxLimit = 100,
+                    Name = "Memory Usage (%)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                }
+            ];
             
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
