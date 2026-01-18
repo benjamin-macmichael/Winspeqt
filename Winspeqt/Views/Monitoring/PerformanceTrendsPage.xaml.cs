@@ -9,6 +9,7 @@ namespace Winspeqt.Views.Monitoring
 {
     public sealed partial class PerformanceTrendsPage : Page
     {
+        private const double ChartsBreakpointWidth = 750;
         public PerformanceTrendsViewModel ViewModel { get; }
 
         public PerformanceTrendsPage()
@@ -17,8 +18,45 @@ namespace Winspeqt.Views.Monitoring
             ViewModel = new PerformanceTrendsViewModel();
             this.DataContext = ViewModel;
         }
-        
-        
+
+        private void ChartsGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateChartsLayout(ChartsGrid.ActualWidth);
+        }
+
+        private void ChartsGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateChartsLayout(e.NewSize.Width);
+        }
+
+        private void UpdateChartsLayout(double availableWidth)
+        {
+            bool isNarrow = availableWidth < ChartsBreakpointWidth;
+
+            if (isNarrow)
+            {
+                ChartsColumn1.Width = new GridLength(0);
+                Grid.SetRow(CpuCard, 0);
+                Grid.SetColumn(CpuCard, 0);
+                CpuCard.Margin = new Thickness(0, 0, 0, 12);
+
+                Grid.SetRow(MemoryCard, 1);
+                Grid.SetColumn(MemoryCard, 0);
+                MemoryCard.Margin = new Thickness(0);
+            }
+            else
+            {
+                ChartsColumn1.Width = new GridLength(1, GridUnitType.Star);
+                Grid.SetRow(CpuCard, 0);
+                Grid.SetColumn(CpuCard, 0);
+                CpuCard.Margin = new Thickness(0, 0, 12, 0);
+
+                Grid.SetRow(MemoryCard, 0);
+                Grid.SetColumn(MemoryCard, 1);
+                MemoryCard.Margin = new Thickness(12, 0, 0, 0);
+            }
+        }
+
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             // Stop auto-refresh when leaving page
