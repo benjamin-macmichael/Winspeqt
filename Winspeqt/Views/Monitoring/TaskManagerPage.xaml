@@ -11,7 +11,7 @@
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
-
+    
     <ScrollViewer>
         <Grid Padding="60">
             <Grid.RowDefinitions>

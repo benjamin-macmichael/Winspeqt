@@ -16,6 +16,7 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer _refreshTimer;
+        private readonly SystemStatistics _systemStatistics;
 
         private bool _isLoading;
         public bool IsLoading
@@ -97,6 +98,7 @@ namespace Winspeqt.ViewModels.Monitoring
             _monitorService = new SystemMonitorService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             TopProcesses = new ObservableCollection<ProcessInfo>();
+            _systemStatistics = new SystemStatistics();
 
             SortOptions = new ObservableCollection<string> { "Memory", "CPU", "Name" };
             FilterOptions = new ObservableCollection<string> { "All", "Apps Only", "System Only" };
@@ -141,8 +143,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
-                    cpu = await _monitorService.GetTotalCpuUsageAsync();
+                    cpu = await _systemStatistics.CpuUsage(_monitorService);
                 }
                 catch (Exception ex)
                 {
@@ -152,8 +153,8 @@ namespace Winspeqt.ViewModels.Monitoring
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("Getting memory...");
-                    availableMem = await _monitorService.GetAvailableMemoryMBAsync();
-                    totalMem = await _monitorService.GetTotalMemoryMBAsync();
+                    availableMem = await _systemStatistics.AvailableMemory(_monitorService);
+                    totalMem = await _systemStatistics.TotalMemory(_monitorService);
                 }
                 catch (Exception ex)
                 {
@@ -209,7 +210,7 @@ namespace Winspeqt.ViewModels.Monitoring
                         IsLoading = false;
                     }
                 });
-
+                ;
                 if (!updateSuccessful)
                 {
                     System.Diagnostics.Debug.WriteLine("Failed to enqueue UI update");
