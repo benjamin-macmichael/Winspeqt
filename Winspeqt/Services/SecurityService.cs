@@ -249,8 +249,41 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher(@"root\CIMV2\Security\MicrosoftVolumeEncryption",
-                    "SELECT * FROM Win32_EncryptableVolume");
+                // First try the full BitLocker WMI namespace (Pro/Enterprise/Education)
+                ManagementScope scope = new ManagementScope(@"root\CIMV2\Security\MicrosoftVolumeEncryption");
+
+                try
+                {
+                    scope.Connect();
+                    return CheckBitLockerFull(scope);
+                }
+                catch (ManagementException)
+                {
+                    // Full BitLocker not available, try Device Encryption (Windows Home)
+                    return CheckDeviceEncryption();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error checking BitLocker: {ex.GetType().Name} - {ex.Message}");
+
+                return new SecurityComponentStatus
+                {
+                    IsEnabled = false,
+                    Status = "Not Available",
+                    Message = "Encryption status could not be determined",
+                    Icon = "–",
+                    Color = "#9E9E9E"
+                };
+            }
+        }
+
+        private SecurityComponentStatus CheckBitLockerFull(ManagementScope scope)
+        {
+            try
+            {
+                var searcher = new ManagementObjectSearcher(scope,
+                    new ObjectQuery("SELECT * FROM Win32_EncryptableVolume"));
 
                 bool hasEncryptedVolume = false;
                 int totalVolumes = 0;
@@ -259,13 +292,21 @@ namespace Winspeqt.Services
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     totalVolumes++;
-                    var protectionStatus = Convert.ToInt32(obj["ProtectionStatus"]);
 
-                    // 1 = Protected, 0 = Unprotected
-                    if (protectionStatus == 1)
+                    try
                     {
-                        hasEncryptedVolume = true;
-                        encryptedVolumes++;
+                        var protectionStatus = Convert.ToInt32(obj["ProtectionStatus"]);
+
+                        // 1 = Protected, 0 = Unprotected
+                        if (protectionStatus == 1)
+                        {
+                            hasEncryptedVolume = true;
+                            encryptedVolumes++;
+                        }
+                    }
+                    catch
+                    {
+                        continue;
                     }
                 }
 
@@ -275,7 +316,7 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = false,
                         Status = "Not Available",
-                        Message = "BitLocker is not available on this system",
+                        Message = "No encryptable drives found",
                         Icon = "–",
                         Color = "#9E9E9E"
                     };
@@ -286,7 +327,7 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = true,
                         Status = "Encrypted",
-                        Message = $"All {totalVolumes} drive(s) are encrypted and protected",
+                        Message = $"All {totalVolumes} drive(s) are encrypted with BitLocker. Make sure you've backed up your recovery key!",
                         Icon = "✓",
                         Color = "#4CAF50"
                     };
@@ -297,7 +338,7 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = true,
                         Status = "Partial",
-                        Message = $"{encryptedVolumes} of {totalVolumes} drives are encrypted",
+                        Message = $"{encryptedVolumes} of {totalVolumes} drives encrypted with BitLocker",
                         Icon = "⚠",
                         Color = "#FF9800"
                     };
@@ -308,7 +349,7 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = false,
                         Status = "Not Encrypted",
-                        Message = "Your drives are not encrypted - data could be at risk if device is stolen",
+                        Message = "BitLocker is available but not enabled on your drives",
                         Icon = "✗",
                         Color = "#FF9800"
                     };
@@ -320,21 +361,127 @@ namespace Winspeqt.Services
                 {
                     IsEnabled = false,
                     Status = "Access Denied",
-                    Message = "Run Winspeqt as Administrator to check BitLocker status",
+                    Message = "Administrator privileges required to check encryption status",
                     Icon = "🔒",
                     Color = "#FF9800"
                 };
             }
-            catch (Exception ex)
+        }
+
+        private SecurityComponentStatus CheckDeviceEncryption()
+        {
+            try
             {
-                System.Diagnostics.Debug.WriteLine($"Error checking BitLocker: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("Checking Device Encryption...");
+
+                // Check Windows Device Encryption (available on some Windows Home devices)
+                var searcher = new ManagementObjectSearcher(@"root\CIMV2\Security\MicrosoftTpm",
+                    "SELECT * FROM Win32_Tpm");
+
+                bool tpmPresent = false;
+                bool tpmEnabled = false;
+                bool tpmActivated = false;
+
+                try
+                {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        tpmPresent = true;
+                        tpmEnabled = Convert.ToBoolean(obj["IsEnabled_InitialValue"]);
+                        tpmActivated = Convert.ToBoolean(obj["IsActivated_InitialValue"]);
+                        System.Diagnostics.Debug.WriteLine($"TPM Found - Enabled: {tpmEnabled}, Activated: {tpmActivated}");
+                    }
+                }
+                catch (Exception tpmEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"TPM query error: {tpmEx.Message}");
+                }
+
+                // Try to check if device encryption is actually on by checking registry
+                bool hasEncryptionKeys = false;
+                try
+                {
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\BitLocker"))
+                    {
+                        if (key != null)
+                        {
+                            hasEncryptionKeys = true;
+                            System.Diagnostics.Debug.WriteLine("BitLocker registry keys found!");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("No BitLocker registry keys found");
+                        }
+                    }
+                }
+                catch (Exception regEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Registry check error: {regEx.Message}");
+                }
+
+                // If we found encryption keys in registry, it's encrypted
+                if (hasEncryptionKeys)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = true,
+                        Status = "Encrypted",
+                        Message = "Device encryption is enabled and protecting your drives. Remember to back up your recovery key to a safe place!",
+                        Icon = "✓",
+                        Color = "#4CAF50"
+                    };
+                }
+
+                // No encryption keys but TPM present
+                if (tpmPresent)
+                {
+                    if (tpmEnabled && tpmActivated)
+                    {
+                        return new SecurityComponentStatus
+                        {
+                            IsEnabled = false,
+                            Status = "Available",
+                            Message = "Your device supports encryption but it may not be enabled. Check Settings > Privacy & Security > Device Encryption",
+                            Icon = "⚠",
+                            Color = "#FF9800"
+                        };
+                    }
+                    else
+                    {
+                        return new SecurityComponentStatus
+                        {
+                            IsEnabled = false,
+                            Status = "TPM Not Ready",
+                            Message = "Your device has TPM hardware but it needs to be enabled in BIOS/UEFI",
+                            Icon = "⚠",
+                            Color = "#FF9800"
+                        };
+                    }
+                }
+
+                // No TPM found
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
-                    Status = "Error",
-                    Message = "Could not check BitLocker status",
-                    Icon = "!",
-                    Color = "#FF9800"
+                    Status = "Not Supported",
+                    Message = "This device doesn't have TPM hardware required for encryption",
+                    Icon = "–",
+                    Color = "#9E9E9E"
+                };
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Device Encryption check failed: {ex.GetType().Name} - {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                // Provide a helpful fallback message
+                return new SecurityComponentStatus
+                {
+                    IsEnabled = false,
+                    Status = "Unknown",
+                    Message = "Could not determine encryption status. BitLocker/Device Encryption may not be available on Windows Home edition.",
+                    Icon = "?",
+                    Color = "#9E9E9E"
                 };
             }
         }
