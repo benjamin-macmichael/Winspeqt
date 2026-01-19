@@ -11,6 +11,8 @@ namespace Winspeqt.Services
     public class SystemMonitorService
     {
         private PerformanceCounter _availableMemoryCounter;
+        private PerformanceCounter _cpuCounter;
+        private Dictionary<int, (DateTime timestamp, TimeSpan processorTime)> _cpuUsageCache;
         private PerformanceCounter _diskTimeCounter;
         private List<PerformanceCounter> _networkSentCounters;
         private List<PerformanceCounter> _networkReceivedCounters;
@@ -28,7 +30,13 @@ namespace Winspeqt.Services
                 System.Diagnostics.Debug.WriteLine($"Error initializing disk counter: {ex.Message}");
                 _diskTimeCounter = null;
             }
+            _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            _cpuUsageCache = new Dictionary<int, (DateTime, TimeSpan)>();
+            InitializeNetworkCounters();
+        }
 
+        private void InitializeNetworkCounters()
+        {
             try
             {
                 _networkSentCounters = new List<PerformanceCounter>();
@@ -66,6 +74,7 @@ namespace Winspeqt.Services
             {
                 var processes = Process.GetProcesses();
                 var processInfoList = new List<ProcessInfo>();
+                var now = DateTime.Now;
 
                 foreach (var process in processes)
                 {
@@ -74,13 +83,16 @@ namespace Winspeqt.Services
                         // Skip system idle process
                         if (process.Id == 0) continue;
 
+                        // Calculate CPU usage per process
+                        double cpuUsage = CalculateProcessCpuUsage(process, now);
+
                         var processInfo = new ProcessInfo
                         {
                             ProcessId = process.Id,
                             ProcessName = process.ProcessName,
                             Description = GetFriendlyName(process.ProcessName),
                             MemoryUsageMB = process.WorkingSet64 / 1024 / 1024,
-                            CpuUsagePercent = 0,
+                            CpuUsagePercent = cpuUsage,
                             Status = process.Responding ? "Running" : "Not Responding",
                             FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, process.WorkingSet64 / 1024 / 1024),
                             Icon = GetProcessIcon(process.ProcessName)
@@ -100,36 +112,55 @@ namespace Winspeqt.Services
             });
         }
 
+        private double CalculateProcessCpuUsage(Process process, DateTime now)
+        {
+            try
+            {
+                var currentProcessorTime = process.TotalProcessorTime;
+
+                if (_cpuUsageCache.TryGetValue(process.Id, out var lastSample))
+                {
+                    var timeDiff = (now - lastSample.timestamp).TotalMilliseconds;
+
+                    if (timeDiff > 0)
+                    {
+                        var processorTimeDiff = (currentProcessorTime - lastSample.processorTime).TotalMilliseconds;
+                        var cpuUsage = (processorTimeDiff / (timeDiff * Environment.ProcessorCount)) * 100;
+                        _cpuUsageCache[process.Id] = (now, currentProcessorTime);
+                        return Math.Round(Math.Min(cpuUsage, 100), 1);
+                    }
+                }
+
+                _cpuUsageCache[process.Id] = (now, currentProcessorTime);
+                return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         public async Task<double> GetTotalCpuUsageAsync()
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
-                    // Use WMI to get accurate CPU usage
-                    var searcher = new ManagementObjectSearcher("SELECT LoadPercentage FROM Win32_Processor");
-                    var cpuObjects = searcher.Get();
+                    // Get current CPU reading
+                    var cpuUsage = _cpuCounter.NextValue();
 
-                    double totalLoad = 0;
-                    int count = 0;
-
-                    foreach (ManagementObject obj in cpuObjects)
+                    // If first reading is 0, wait a bit and try again
+                    if (cpuUsage == 0)
                     {
-                        totalLoad += Convert.ToDouble(obj["LoadPercentage"]);
-                        count++;
+                        System.Threading.Thread.Sleep(100);
+                        cpuUsage = _cpuCounter.NextValue();
                     }
 
-                    if (count > 0)
-                    {
-                        return Math.Round(totalLoad / count, 1);
-                    }
-
-                    return 0;
+                    return Math.Round(cpuUsage, 1);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error reading CPU via WMI: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error reading CPU: {ex.Message}");
                     return 0;
                 }
             });
@@ -158,7 +189,15 @@ namespace Winspeqt.Services
             {
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting total memory...");
+                    // Use WMI to get accurate total physical memory
+                    var searcher = new ManagementObjectSearcher("SELECT TotalPhysicalMemory FROM Win32_ComputerSystem");
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var totalBytes = Convert.ToUInt64(obj["TotalPhysicalMemory"]);
+                        return (long)(totalBytes / 1024 / 1024);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("WMI returned no results; falling back to GC memory info.");
                     // Use GC.GetGCMemoryInfo which gives us total physical memory
                     var gcMemoryInfo = GC.GetGCMemoryInfo();
                     return gcMemoryInfo.TotalAvailableMemoryBytes / 1024 / 1024; // Convert bytes to MB
@@ -169,6 +208,17 @@ namespace Winspeqt.Services
                     return 8192; // Default to 8GB if we can't detect
                 }
             });
+        }
+
+        public async Task<double> GetNetworkUsageAsync()
+        {
+            var (sent, received) = await GetNetworkThroughputMbpsAsync();
+            return Math.Round(sent + received, 2);
+        }
+
+        public async Task<double> GetDiskUsageAsync()
+        {
+            return await GetDiskActiveTimePercentAsync();
         }
 
         public async Task<string> GetUsedDiscSpace()
@@ -217,7 +267,8 @@ namespace Winspeqt.Services
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("Getting network throughput...");
-                    if (_networkSentCounters.Count == 0 && _networkReceivedCounters.Count == 0)
+                    if ((_networkSentCounters == null || _networkSentCounters.Count == 0) &&
+                        (_networkReceivedCounters == null || _networkReceivedCounters.Count == 0))
                         return (0, 0);
 
                     double sentBytesPerSec = 0;
@@ -267,7 +318,19 @@ namespace Winspeqt.Services
                 { "svchost", "Windows Service Host" },
                 { "system", "Windows System" },
                 { "audiodg", "Windows Audio" },
-                { "dwm", "Desktop Window Manager" }
+                { "dwm", "Desktop Window Manager" },
+                { "searchindexer", "Windows Search" },
+                { "runtimebroker", "Runtime Broker" },
+                { "backgroundtaskhost", "Background Tasks" },
+                { "csrss", "Windows Client Server" },
+                { "winlogon", "Windows Logon" },
+                { "taskhostw", "Task Host Window" },
+                { "conhost", "Console Window Host" },
+                { "fontdrvhost", "Font Driver Host" },
+                { "sihost", "Shell Infrastructure Host" },
+                { "startmenuexperiencehost", "Start Menu" },
+                { "searchapp", "Windows Search App" },
+                { "textinputhost", "Text Input Host" }
             };
 
             // Check manual dictionary with cleaned name
@@ -305,7 +368,7 @@ namespace Winspeqt.Services
             if (lower.Contains("chrome") || lower.Contains("firefox") || lower.Contains("msedge"))
             {
                 if (memoryMB > 500)
-                    return "Your web browser is using a lot of memory, probably because you have many tabs open";
+                    return "Your web browser is using a lot of memory, probably because you have many tabs open. Consider closing tabs you're not using.";
                 return "Your web browser is running normally";
             }
 
@@ -313,13 +376,19 @@ namespace Winspeqt.Services
                 return "File Explorer helps you browse files and folders on your PC";
 
             if (lower.Contains("svchost"))
-                return "A Windows background service that helps your PC run smoothly";
+                return "A Windows background service that helps your PC run smoothly. It's normal to see several of these.";
 
             if (lower.Contains("system"))
                 return "Core Windows system process - this is normal and necessary";
 
             if (lower.Contains("dwm"))
                 return "Manages visual effects and window animations in Windows";
+
+            if (lower.Contains("runtimebroker"))
+                return "Manages permissions for apps from the Microsoft Store";
+
+            if (lower.Contains("searchindexer") || lower.Contains("searchapp"))
+                return "Helps Windows search find files quickly on your computer";
 
             if (lower.Contains("spotify") || lower.Contains("music"))
                 return "Music streaming application";
@@ -330,8 +399,17 @@ namespace Winspeqt.Services
             if (lower.Contains("code") || lower.Contains("devenv"))
                 return "Code editor or development environment";
 
+            if (lower.Contains("csrss") || lower.Contains("winlogon") || lower.Contains("taskhostw"))
+                return "Essential Windows system process - should not be closed";
+
+            if (lower.Contains("backgroundtaskhost") || lower.Contains("sihost"))
+                return "Windows background service for system tasks";
+
+            if (lower.Contains("startmenu"))
+                return "Powers the Windows Start Menu";
+
             if (memoryMB > 1000)
-                return "This app is using a lot of memory - you might want to close it if you're not using it";
+                return "This app is using a lot of memory. If you're not using it, you might want to close it to free up resources.";
 
             return "Application running in the background";
         }
@@ -355,7 +433,27 @@ namespace Winspeqt.Services
             if (lower.Contains("discord") || lower.Contains("teams") || lower.Contains("slack"))
                 return "&#xE8F2;"; // Chat icon
 
+            if (lower.Contains("search"))
+                return "&#xE721;"; // Search icon
+
             return "&#xE7C4;"; // Default app icon
+        }
+
+        public void Dispose()
+        {
+            _availableMemoryCounter?.Dispose();
+            _cpuCounter?.Dispose();
+            _diskTimeCounter?.Dispose();
+            if (_networkSentCounters != null)
+            {
+                foreach (var counter in _networkSentCounters)
+                    counter.Dispose();
+            }
+            if (_networkReceivedCounters != null)
+            {
+                foreach (var counter in _networkReceivedCounters)
+                    counter.Dispose();
+            }
         }
     }
 }

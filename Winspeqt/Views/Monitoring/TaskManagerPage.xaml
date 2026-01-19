@@ -17,6 +17,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -59,6 +60,10 @@
 
             <!-- System Overview Cards -->
             <Grid Grid.Row="1" Margin="0,0,0,32">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -66,13 +71,13 @@
 
                 <!-- CPU Card -->
                 <Border 
-                    Grid.Column="0"
+                    Grid.Row="0" Grid.Column="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="0,0,12,0">
+                    Margin="0,0,12,12">
                     <StackPanel>
                         <TextBlock 
                             Text="💻 Processor (CPU)" 
@@ -102,13 +107,13 @@
 
                 <!-- Memory Card -->
                 <Border 
-                    Grid.Column="1"
+                    Grid.Row="0" Grid.Column="1"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="12,0,0,0">
+                    Margin="12,0,0,12">
                     <StackPanel>
                         <TextBlock 
                             Text="🧠 Memory (RAM)" 
@@ -146,15 +151,124 @@
                             LineHeight="22"/>
                     </StackPanel>
                 </Border>
+
+                <!-- Network Card -->
+                <Border 
+                    Grid.Row="1" Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,12,12,0">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="🌐 Network" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding NetworkUsage, Mode=OneWay}" 
+                            FontSize="48" 
+                            FontWeight="Bold"
+                            Foreground="#4CAF50"/>
+                        <TextBlock 
+                            Text="Mbps" 
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,-8,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding NetworkStatusMessage, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Disk Card -->
+                <Border 
+                    Grid.Row="1" Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="12,12,0,0">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="💾 Disk" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding DiskUsage, Mode=OneWay}" 
+                            FontSize="48" 
+                            FontWeight="Bold"
+                            Foreground="#9C27B0"/>
+                        <TextBlock 
+                            Text="%" 
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,-8,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding DiskStatusMessage, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Filter and Sort Controls -->
+            <Grid Grid.Row="2" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,24,0">
+                    <TextBlock 
+                        Text="Show:" 
+                        FontSize="16" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <ComboBox 
+                        ItemsSource="{Binding FilterOptions}"
+                        SelectedItem="{Binding SelectedFilterOption, Mode=TwoWay}"
+                        MinWidth="150"
+                        FontSize="15"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock 
+                        Text="Sort by:" 
+                        FontSize="16" 
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <ComboBox 
+                        ItemsSource="{Binding SortOptions}"
+                        SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                        MinWidth="150"
+                        FontSize="15"/>
+                </StackPanel>
             </Grid>
 
             <!-- Process Lists -->
-            <StackPanel Grid.Row="2" Spacing="32">
+            <StackPanel Grid.Row="3" Spacing="16">
 
-                <!-- Top Memory Users Section -->
+                <!-- Top Processes Section -->
                 <StackPanel>
                     <TextBlock 
-                        Text="🧠 Apps Using the Most Memory" 
+                        Text="📊 Top Apps Using Resources" 
                         FontSize="24" 
                         FontWeight="SemiBold"
                         Margin="0,0,0,16"/>
@@ -174,20 +288,21 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Icon Placeholder -->
                                         <Border 
                                             Grid.Column="0"
-                                            Width="32"
-                                            Height="32"
+                                            Width="40"
+                                            Height="40"
                                             Background="#2196F3"
-                                            CornerRadius="6"
+                                            CornerRadius="8"
                                             Margin="0,0,20,0"
                                             VerticalAlignment="Center">
                                             <TextBlock 
                                                 Text="📦"
-                                                FontSize="20"
+                                                FontSize="24"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"/>
                                         </Border>
@@ -198,20 +313,39 @@
                                                 Text="{Binding Description}" 
                                                 FontSize="18" 
                                                 FontWeight="SemiBold"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock 
+                                                Text="{Binding FriendlyExplanation}" 
+                                                FontSize="14"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"
+                                                MaxWidth="500"
+                                                Margin="0,4,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- CPU Usage -->
+                                        <StackPanel Grid.Column="2" Margin="20,0" VerticalAlignment="Center" MinWidth="80">
+                                            <TextBlock 
+                                                Text="CPU" 
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                HorizontalAlignment="Center"/>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
                                                 <TextBlock 
-                                                    Text="Process ID: " 
-                                                    FontSize="14"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    Text="{Binding CpuUsagePercent}" 
+                                                    FontSize="18" 
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#2196F3"/>
                                                 <TextBlock 
-                                                    Text="{Binding ProcessId}" 
-                                                    FontSize="14"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    Text="%" 
+                                                    FontSize="18" 
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#2196F3"
+                                                    Margin="2,0,0,0"/>
                                             </StackPanel>
                                         </StackPanel>
 
                                         <!-- Memory Usage -->
-                                        <StackPanel Grid.Column="2" Margin="20,0,0,0" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="3" Margin="20,0,0,0" VerticalAlignment="Center" MinWidth="100">
                                             <TextBlock 
                                                 Text="Memory" 
                                                 FontSize="12"
@@ -220,12 +354,12 @@
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
                                                 <TextBlock 
                                                     Text="{Binding MemoryUsageMB}" 
-                                                    FontSize="20" 
+                                                    FontSize="18" 
                                                     FontWeight="SemiBold"
                                                     Foreground="#FF9800"/>
                                                 <TextBlock 
                                                     Text=" MB" 
-                                                    FontSize="20" 
+                                                    FontSize="18" 
                                                     FontWeight="SemiBold"
                                                     Foreground="#FF9800"
                                                     Margin="4,0,0,0"/>
@@ -243,7 +377,7 @@
             <!-- Loading Overlay -->
             <Border
                 Grid.Row="0" 
-                Grid.RowSpan="3"
+                Grid.RowSpan="4"
                 Background="#CC000000"
                 Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel 

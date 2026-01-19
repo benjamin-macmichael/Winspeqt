@@ -59,7 +59,63 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryStatusMessage, value);
         }
 
+        private double _networkUsage;
+        public double NetworkUsage
+        {
+            get => _networkUsage;
+            set => SetProperty(ref _networkUsage, value);
+        }
+
+        private string _networkStatusMessage;
+        public string NetworkStatusMessage
+        {
+            get => _networkStatusMessage;
+            set => SetProperty(ref _networkStatusMessage, value);
+        }
+
+        private double _diskUsage;
+        public double DiskUsage
+        {
+            get => _diskUsage;
+            set => SetProperty(ref _diskUsage, value);
+        }
+
+        private string _diskStatusMessage;
+        public string DiskStatusMessage
+        {
+            get => _diskStatusMessage;
+            set => SetProperty(ref _diskStatusMessage, value);
+        }
+
+        private string _selectedSortOption = "Memory";
+        public string SelectedSortOption
+        {
+            get => _selectedSortOption;
+            set
+            {
+                if (SetProperty(ref _selectedSortOption, value))
+                {
+                    _ = RefreshDataAsync();
+                }
+            }
+        }
+
+        private string _selectedFilterOption = "All";
+        public string SelectedFilterOption
+        {
+            get => _selectedFilterOption;
+            set
+            {
+                if (SetProperty(ref _selectedFilterOption, value))
+                {
+                    _ = RefreshDataAsync();
+                }
+            }
+        }
+
         public ObservableCollection<ProcessInfo> TopProcesses { get; set; }
+        public ObservableCollection<string> SortOptions { get; set; }
+        public ObservableCollection<string> FilterOptions { get; set; }
 
         public ICommand RefreshCommand { get; }
         public ICommand EndProcessCommand { get; }
@@ -70,13 +126,16 @@ namespace Winspeqt.ViewModels.Monitoring
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             TopProcesses = new ObservableCollection<ProcessInfo>();
 
+            SortOptions = new ObservableCollection<string> { "Memory", "CPU", "Name" };
+            FilterOptions = new ObservableCollection<string> { "All", "Apps Only", "System Only" };
+
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
 
             // Set loading to true initially
             IsLoading = true;
 
-            // Start auto-refresh every 2 seconds
+            // Start auto-refresh every 3 seconds (more reasonable for non-tech users)
             StartAutoRefresh();
 
             // Initial load
@@ -89,7 +148,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 async _ => await RefreshDataAsync(),
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromSeconds(2)
+                TimeSpan.FromSeconds(3)
             );
         }
 
@@ -99,13 +158,15 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 System.Diagnostics.Debug.WriteLine("Starting refresh...");
 
-                // Ensure loading shows for at least 500ms so users see it
-                var loadingTask = Task.Delay(500);
+                // Ensure loading shows for at least 300ms so users see it
+                var loadingTask = Task.Delay(300);
 
                 // Get system metrics with individual error handling
                 double cpu = 0;
                 long availableMem = 0;
                 long totalMem = 8192; // Default fallback
+                double network = 0;
+                double disk = 0;
                 List<ProcessInfo> processes = new List<ProcessInfo>();
 
                 try
@@ -127,6 +188,26 @@ namespace Winspeqt.ViewModels.Monitoring
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Memory error: {ex.Message}");
+                }
+
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting network...");
+                    network = await _monitorService.GetNetworkUsageAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Network error: {ex.Message}");
+                }
+
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting disk...");
+                    disk = await _monitorService.GetDiskUsageAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Disk error: {ex.Message}");
                 }
 
                 try
@@ -153,12 +234,18 @@ namespace Winspeqt.ViewModels.Monitoring
                         TotalCpuUsage = cpu;
                         TotalMemoryMB = totalMem;
                         UsedMemoryMB = usedMem;
+                        NetworkUsage = network;
+                        DiskUsage = disk;
 
                         // Update status messages
                         UpdateStatusMessages();
 
-                        // Get top 5 by memory
-                        var topProcesses = processes.OrderByDescending(p => p.MemoryUsageMB).Take(5).ToList();
+                        // Apply filtering
+                        var filteredProcesses = ApplyFilter(processes);
+
+                        // Apply sorting and get top processes
+                        var topProcesses = ApplySorting(filteredProcesses).Take(10).ToList();
+
                         TopProcesses.Clear();
                         foreach (var proc in topProcesses)
                         {
@@ -206,32 +293,126 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        private List<ProcessInfo> ApplyFilter(List<ProcessInfo> processes)
+        {
+            if (SelectedFilterOption == "Apps Only")
+            {
+                // Filter to show only user applications (exclude system processes)
+                var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
+                    "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
+                    "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
+
+                return processes.Where(p =>
+                    !systemProcesses.Any(sp => p.ProcessName.ToLower().Contains(sp))
+                ).ToList();
+            }
+            else if (SelectedFilterOption == "System Only")
+            {
+                // Show only system processes
+                var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
+                    "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
+                    "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
+
+                return processes.Where(p =>
+                    systemProcesses.Any(sp => p.ProcessName.ToLower().Contains(sp))
+                ).ToList();
+            }
+
+            return processes;
+        }
+
+        private IEnumerable<ProcessInfo> ApplySorting(List<ProcessInfo> processes)
+        {
+            return SelectedSortOption switch
+            {
+                "CPU" => processes.OrderByDescending(p => p.CpuUsagePercent),
+                "Name" => processes.OrderBy(p => p.Description),
+                _ => processes.OrderByDescending(p => p.MemoryUsageMB) // Default to Memory
+            };
+        }
+
         private void UpdateStatusMessages()
         {
             try
             {
-                // CPU status message
+                // CPU status message with actionable advice
                 if (TotalCpuUsage > 80)
-                    CpuStatusMessage = "⚠️ Your CPU is working very hard right now. Close some apps to speed things up.";
+                {
+                    CpuStatusMessage = "⚠️ Your CPU is working very hard. Try closing apps you're not using to speed things up.";
+                }
                 else if (TotalCpuUsage > 50)
+                {
                     CpuStatusMessage = "Your CPU is moderately busy. Everything should still run smoothly.";
-                else
+                }
+                else if (TotalCpuUsage > 20)
+                {
                     CpuStatusMessage = "✓ Your CPU usage is normal. Your PC is running well.";
+                }
+                else
+                {
+                    CpuStatusMessage = "✓ Your CPU is barely being used. Your PC has plenty of power available.";
+                }
 
-                // Memory status message
+                // Memory status message with helpful context
                 if (TotalMemoryMB > 0)
                 {
                     var memoryPercent = (double)UsedMemoryMB / TotalMemoryMB * 100;
                     if (memoryPercent > 90)
-                        MemoryStatusMessage = $"⚠️ You're using {memoryPercent:F0}% of your memory. Close some apps to free up space.";
-                    else if (memoryPercent > 70)
-                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Still some room left.";
+                    {
+                        MemoryStatusMessage = $"⚠️ You're using {memoryPercent:F0}% of your memory. Your PC might slow down. Try closing some apps.";
+                    }
+                    else if (memoryPercent > 80)
+                    {
+                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Consider closing apps you're not using.";
+                    }
+                    else if (memoryPercent > 60)
+                    {
+                        MemoryStatusMessage = $"You're using {memoryPercent:F0}% of your memory. Still plenty of room.";
+                    }
                     else
+                    {
                         MemoryStatusMessage = $"✓ You're using {memoryPercent:F0}% of your memory. Plenty of space available.";
+                    }
                 }
                 else
                 {
                     MemoryStatusMessage = "Memory information loading...";
+                }
+
+                // Network status message
+                if (NetworkUsage > 100)
+                {
+                    NetworkStatusMessage = "⚠️ High network activity detected. Multiple apps are using your internet connection.";
+                }
+                else if (NetworkUsage > 50)
+                {
+                    NetworkStatusMessage = "Moderate network activity. You're actively using your internet connection.";
+                }
+                else if (NetworkUsage > 10)
+                {
+                    NetworkStatusMessage = "✓ Light network activity. Normal internet usage.";
+                }
+                else
+                {
+                    NetworkStatusMessage = "✓ Minimal network activity. Your connection is mostly idle.";
+                }
+
+                // Disk status message
+                if (DiskUsage > 80)
+                {
+                    DiskStatusMessage = "⚠️ Your disk is very busy. This might slow down your computer.";
+                }
+                else if (DiskUsage > 50)
+                {
+                    DiskStatusMessage = "Your disk is moderately active. Some programs are reading or writing files.";
+                }
+                else if (DiskUsage > 20)
+                {
+                    DiskStatusMessage = "✓ Normal disk activity. Your storage is working as expected.";
+                }
+                else
+                {
+                    DiskStatusMessage = "✓ Your disk is mostly idle. Very light read/write activity.";
                 }
             }
             catch (Exception ex)
@@ -261,6 +442,7 @@ namespace Winspeqt.ViewModels.Monitoring
         public void StopAutoRefresh()
         {
             _refreshTimer?.Dispose();
+            _monitorService?.Dispose();
         }
     }
 }

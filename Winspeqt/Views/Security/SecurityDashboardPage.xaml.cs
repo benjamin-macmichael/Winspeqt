@@ -19,9 +19,9 @@ namespace Winspeqt.Views.Security
             }
         }
 
-        private async void SecurityStatusCard_Click(object sender, RoutedEventArgs e)
+        private void SecurityStatusCard_Click(object sender, RoutedEventArgs e)
         {
-            await ShowComingSoonDialog("Security Status Dashboard");
+            Frame.Navigate(typeof(SecurityStatusPage));
         }
 
         private async void AppSecurityScannerCard_Click(object sender, RoutedEventArgs e)
@@ -48,7 +48,6 @@ namespace Winspeqt.Views.Security
                 CloseButtonText = "OK",
                 XamlRoot = this.XamlRoot
             };
-
             return await dialog.ShowAsync();
         }
     }
