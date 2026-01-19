@@ -60,6 +60,10 @@
 
             <!-- System Overview Cards -->
             <Grid Grid.Row="1" Margin="0,0,0,32">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -67,13 +71,13 @@
 
                 <!-- CPU Card -->
                 <Border 
-                    Grid.Column="0"
+                    Grid.Row="0" Grid.Column="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="0,0,12,0">
+                    Margin="0,0,12,12">
                     <StackPanel>
                         <TextBlock 
                             Text="💻 Processor (CPU)" 
@@ -103,13 +107,13 @@
 
                 <!-- Memory Card -->
                 <Border 
-                    Grid.Column="1"
+                    Grid.Row="0" Grid.Column="1"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="12,0,0,0">
+                    Margin="12,0,0,12">
                     <StackPanel>
                         <TextBlock 
                             Text="🧠 Memory (RAM)" 
@@ -141,6 +145,78 @@
 
                         <TextBlock 
                             Text="{Binding MemoryStatusMessage, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Network Card -->
+                <Border 
+                    Grid.Row="1" Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,12,12,0">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="🌐 Network" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding NetworkUsage, Mode=OneWay}" 
+                            FontSize="48" 
+                            FontWeight="Bold"
+                            Foreground="#4CAF50"/>
+                        <TextBlock 
+                            Text="Mbps" 
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,-8,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding NetworkStatusMessage, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Disk Card -->
+                <Border 
+                    Grid.Row="1" Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="12,12,0,0">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="💾 Disk" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding DiskUsage, Mode=OneWay}" 
+                            FontSize="48" 
+                            FontWeight="Bold"
+                            Foreground="#9C27B0"/>
+                        <TextBlock 
+                            Text="%" 
+                            FontSize="24"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,-8,0,16"/>
+
+                        <TextBlock 
+                            Text="{Binding DiskStatusMessage, Mode=OneWay}" 
                             FontSize="15"
                             TextWrapping="Wrap"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

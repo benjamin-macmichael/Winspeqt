@@ -160,6 +160,65 @@ namespace Winspeqt.Services
             });
         }
 
+        public async Task<double> GetNetworkUsageAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var searcher = new ManagementObjectSearcher("SELECT BytesTotalPerSec FROM Win32_PerfFormattedData_Tcpip_NetworkInterface");
+                    double totalBytes = 0;
+                    int adapterCount = 0;
+
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var bytesPerSec = Convert.ToDouble(obj["BytesTotalPerSec"]);
+                        totalBytes += bytesPerSec;
+                        adapterCount++;
+                    }
+
+                    // Convert bytes per second to Mbps
+                    if (adapterCount > 0)
+                    {
+                        double mbps = (totalBytes * 8) / 1_000_000; // bits per second to Mbps
+                        return Math.Round(mbps, 2);
+                    }
+
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading network usage: {ex.Message}");
+                    return 0;
+                }
+            });
+        }
+
+        public async Task<double> GetDiskUsageAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var searcher = new ManagementObjectSearcher("SELECT PercentIdleTime FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk WHERE Name='_Total'");
+
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var idleTime = Convert.ToDouble(obj["PercentIdleTime"]);
+                        var activeTime = 100 - idleTime;
+                        return Math.Round(Math.Max(0, activeTime), 1);
+                    }
+
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading disk usage: {ex.Message}");
+                    return 0;
+                }
+            });
+        }
+
         private string GetFriendlyName(string processName)
         {
             // Clean the process name first - remove .exe and convert to lowercase
