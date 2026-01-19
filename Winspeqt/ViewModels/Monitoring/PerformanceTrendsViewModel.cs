@@ -138,7 +138,9 @@ namespace Winspeqt.ViewModels.Monitoring
             var axisTextColor = new SolidColorPaint(SKColor.Parse("#8A8A8A"));
             const int labelSize = 12;
             const int nameSize = 18;
+            var yAxisNamePadding = new LiveChartsCore.Drawing.Padding(0, 0, 0, -6);
 
+            // Sets the formatting for the graphs
             CpuSeries =
             [
                 new LineSeries<double>
@@ -148,7 +150,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     Stroke = null,
                     GeometryFill = null,
                     GeometryStroke = null,
-                    //DataLabelsFormatter = (point) => point.Label != null ? $"{point.Label}%" : "0%",
                 }
             ];
 
@@ -163,7 +164,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     LabelsPaint = axisTextColor,
                     TextSize = labelSize,
                     NameTextSize = nameSize,
-                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -205,7 +206,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     LabelsPaint = axisTextColor,
                     TextSize = labelSize,
                     NameTextSize = nameSize,
-                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -232,7 +233,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     LabelsPaint = axisTextColor,
                     TextSize = labelSize,
                     NameTextSize = nameSize,
-                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -268,7 +269,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     LabelsPaint = axisTextColor,
                     TextSize = labelSize,
                     NameTextSize = nameSize,
-                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -306,6 +307,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 double networkReceivedMbps = 0;
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
@@ -315,6 +317,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
                     var totalMb = await _monitorService.GetTotalMemoryMBAsync();
                     if (totalMb > 0)
@@ -329,6 +332,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting disk usage...");
                     diskActivePercent = await _monitorService.GetDiskActiveTimePercentAsync();
                 }
                 catch (Exception ex)
@@ -342,6 +346,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting network throughput...");
                     var network = await _monitorService.GetNetworkThroughputMbpsAsync();
                     networkSentMbps = Math.Max(0, network.SentMbps);
                     networkReceivedMbps = Math.Max(0, network.ReceivedMbps);

@@ -110,6 +110,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
@@ -119,6 +120,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting memory...");
                     availableMem = await _monitorService.GetAvailableMemoryMBAsync();
                     totalMem = await _monitorService.GetTotalMemoryMBAsync();
                 }
@@ -172,7 +174,7 @@ namespace Winspeqt.ViewModels.Monitoring
                         IsLoading = false;
                     }
                 });
-                ;
+
                 if (!updateSuccessful)
                 {
                     System.Diagnostics.Debug.WriteLine("Failed to enqueue UI update");
