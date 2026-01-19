@@ -67,6 +67,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <!-- CPU Card -->
                 <Border 
@@ -144,6 +145,33 @@
                                 Series="{x:Bind ViewModel.DiskSeries}"
                                 YAxes="{x:Bind ViewModel.DiskYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <Border 
+                    x:Name="NetworkCard"
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="12,12,0,0"
+                    MinHeight="300"
+                    MaxHeight="600">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="📶 Network Activity" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+                        <Border
+                            MinHeight="250">
+                            <lvc:CartesianChart
+                                Series="{x:Bind ViewModel.NetworkSeries}"
+                                YAxes="{x:Bind ViewModel.NetworkYAxes}"
+                                XAxes="{x:Bind ViewModel.XAxes}"
+                                LegendPosition="Top"/>
                         </Border>
                     </StackPanel>
                 </Border>

@@ -12,6 +12,8 @@ namespace Winspeqt.Services
     {
         private PerformanceCounter _availableMemoryCounter;
         private PerformanceCounter _diskTimeCounter;
+        private List<PerformanceCounter> _networkSentCounters;
+        private List<PerformanceCounter> _networkReceivedCounters;
 
         public SystemMonitorService()
         {
@@ -25,6 +27,36 @@ namespace Winspeqt.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Error initializing disk counter: {ex.Message}");
                 _diskTimeCounter = null;
+            }
+
+            try
+            {
+                _networkSentCounters = new List<PerformanceCounter>();
+                _networkReceivedCounters = new List<PerformanceCounter>();
+                var category = new PerformanceCounterCategory("Network Interface");
+                foreach (var name in category.GetInstanceNames())
+                {
+                    if (name.Contains("Loopback", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("Teredo", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("isatap", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    _networkSentCounters.Add(new PerformanceCounter("Network Interface", "Bytes Sent/sec", name));
+                    _networkReceivedCounters.Add(new PerformanceCounter("Network Interface", "Bytes Received/sec", name));
+                }
+
+                foreach (var counter in _networkSentCounters)
+                    counter.NextValue();
+                foreach (var counter in _networkReceivedCounters)
+                    counter.NextValue();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing network counters: {ex.Message}");
+                _networkSentCounters = new List<PerformanceCounter>();
+                _networkReceivedCounters = new List<PerformanceCounter>();
             }
         }
 
@@ -170,6 +202,35 @@ namespace Winspeqt.Services
                 {
                     System.Diagnostics.Debug.WriteLine($"Error reading disk active time: {ex.Message}");
                     return 0;
+                }
+            });
+        }
+
+        public async Task<(double SentMbps, double ReceivedMbps)> GetNetworkThroughputMbpsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (_networkSentCounters.Count == 0 && _networkReceivedCounters.Count == 0)
+                        return (0, 0);
+
+                    double sentBytesPerSec = 0;
+                    double receivedBytesPerSec = 0;
+
+                    foreach (var counter in _networkSentCounters)
+                        sentBytesPerSec += counter.NextValue();
+                    foreach (var counter in _networkReceivedCounters)
+                        receivedBytesPerSec += counter.NextValue();
+
+                    const double bytesPerMegabit = 125000; // 1 Mbps = 125,000 bytes/sec
+                    return (Math.Round(sentBytesPerSec / bytesPerMegabit, 2),
+                        Math.Round(receivedBytesPerSec / bytesPerMegabit, 2));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading network throughput: {ex.Message}");
+                    return (0, 0);
                 }
             });
         }

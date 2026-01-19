@@ -25,5 +25,11 @@
             System.Diagnostics.Debug.WriteLine("Getting disk active time...");
             return monitorService.GetDiskActiveTimePercentAsync();
         }
+
+        public System.Threading.Tasks.Task<(double SentMbps, double ReceivedMbps)> NetworkThroughput(SystemMonitorService monitorService)
+        {
+            System.Diagnostics.Debug.WriteLine("Getting network throughput...");
+            return monitorService.GetNetworkThroughputMbpsAsync();
+        }
     }
 }

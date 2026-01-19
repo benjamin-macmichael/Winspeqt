@@ -81,6 +81,39 @@ namespace Winspeqt.ViewModels.Monitoring
         public ISeries[] DiskSeries { get; }
         public IEnumerable<ICartesianAxis> DiskYAxes { get; }
 
+        private Queue<double> _networkSent = new Queue<double>(new double[_secondsTracked]);
+        public Queue<double> NetworkSent
+        {
+            get => _networkSent;
+            set => SetProperty(ref _networkSent, value);
+        }
+
+        private ObservableCollection<double> _networkSentValues = new();
+
+        public ObservableCollection<double> NetworkSentValues
+        {
+            get => _networkSentValues;
+            set => SetProperty(ref _networkSentValues, value);
+        }
+
+        private Queue<double> _networkReceived = new Queue<double>(new double[_secondsTracked]);
+        public Queue<double> NetworkReceived
+        {
+            get => _networkReceived;
+            set => SetProperty(ref _networkReceived, value);
+        }
+
+        private ObservableCollection<double> _networkReceivedValues = new();
+
+        public ObservableCollection<double> NetworkReceivedValues
+        {
+            get => _networkReceivedValues;
+            set => SetProperty(ref _networkReceivedValues, value);
+        }
+
+        public ISeries[] NetworkSeries { get; }
+        public IEnumerable<ICartesianAxis> NetworkYAxes { get; }
+
         private bool _isLoading;
         public bool IsLoading
         {
@@ -205,6 +238,42 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
             ];
 
+            NetworkSeries =
+            [
+                new LineSeries<double>
+                {
+                    Values = NetworkSentValues,
+                    Fill = null,
+                    Stroke = new SolidColorPaint(SKColor.Parse("#FF9800"), 3),
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    Name = "Upload"
+                },
+                new LineSeries<double>
+                {
+                    Values = NetworkReceivedValues,
+                    Fill = null,
+                    Stroke = new SolidColorPaint(SKColor.Parse("#3F51B5"), 3),
+                    GeometryFill = null,
+                    GeometryStroke = null,
+                    Name = "Download"
+                }
+            ];
+
+            NetworkYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    Name = "Throughput (Mbps)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0,0,0,-6),
+                }
+            ];
+
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
 
@@ -235,6 +304,8 @@ namespace Winspeqt.ViewModels.Monitoring
                 double cpu = 0;
                 double memoryUsedPercent = 0;
                 double diskActivePercent = 0;
+                double networkSentMbps = 0;
+                double networkReceivedMbps = 0;
                 try
                 {
                     cpu = await _systemStatistics.CpuUsage(_monitorService);
@@ -271,6 +342,17 @@ namespace Winspeqt.ViewModels.Monitoring
                 else if (diskActivePercent > 100)
                     diskActivePercent = 100;
 
+                try
+                {
+                    var network = await _systemStatistics.NetworkThroughput(_monitorService);
+                    networkSentMbps = Math.Max(0, network.SentMbps);
+                    networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Network error: {ex.Message}");
+                }
+
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     // update your rolling buffer
@@ -295,6 +377,18 @@ namespace Winspeqt.ViewModels.Monitoring
                     DiskUsageValues.Clear();
                     foreach (var v in _diskUsage)
                         DiskUsageValues.Add(v);
+
+                    _networkSent.Dequeue();
+                    _networkSent.Enqueue(networkSentMbps);
+                    NetworkSentValues.Clear();
+                    foreach (var v in _networkSent)
+                        NetworkSentValues.Add(v);
+
+                    _networkReceived.Dequeue();
+                    _networkReceived.Enqueue(networkReceivedMbps);
+                    NetworkReceivedValues.Clear();
+                    foreach (var v in _networkReceived)
+                        NetworkReceivedValues.Add(v);
 
                     IsLoading = false;
                 });
