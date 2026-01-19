@@ -66,6 +66,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <!-- CPU Card -->
                 <Border 
@@ -116,6 +117,32 @@
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.MemorySeries}"
                                 YAxes="{x:Bind ViewModel.MemoryYAxes}"
+                                XAxes="{x:Bind ViewModel.XAxes}"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+                <Border 
+                    x:Name="DiskCard"
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,12,12,0"
+                    MinHeight="300"
+                    MaxHeight="600">
+                    <StackPanel>
+                        <TextBlock 
+                            Text="💾 Disk Activity" 
+                            FontSize="20" 
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+                        <Border
+                            MinHeight="250">
+                            <lvc:CartesianChart
+                                Series="{x:Bind ViewModel.DiskSeries}"
+                                YAxes="{x:Bind ViewModel.DiskYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"/>
                         </Border>
                     </StackPanel>

@@ -11,10 +11,21 @@ namespace Winspeqt.Services
     public class SystemMonitorService
     {
         private PerformanceCounter _availableMemoryCounter;
+        private PerformanceCounter _diskTimeCounter;
 
         public SystemMonitorService()
         {
             _availableMemoryCounter = new PerformanceCounter("Memory", "Available MBytes");
+            try
+            {
+                _diskTimeCounter = new PerformanceCounter("PhysicalDisk", "% Disk Time", "_Total");
+                _diskTimeCounter.NextValue();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing disk counter: {ex.Message}");
+                _diskTimeCounter = null;
+            }
         }
 
         public async Task<List<ProcessInfo>> GetRunningProcessesAsync()
@@ -121,6 +132,44 @@ namespace Winspeqt.Services
                 {
                     System.Diagnostics.Debug.WriteLine($"Error getting total memory: {ex.Message}");
                     return 8192; // Default to 8GB if we can't detect
+                }
+            });
+        }
+
+        public async Task<string> GetUsedDiscSpace()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    ManagementObject disk = new ManagementObject("win32_logicaldisk.deviceid=\"c:\"");
+                    disk.Get();
+                    string freespace = (string)disk["FreeSpace"];
+                    return freespace;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error getting disk usage: {ex.Message}");
+                    return "0"; // Default to 0GB if we can't detect
+                }
+            });
+        }
+
+        public async Task<double> GetDiskActiveTimePercentAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (_diskTimeCounter == null)
+                        return 0;
+
+                    return Math.Round(_diskTimeCounter.NextValue(), 1);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading disk active time: {ex.Message}");
+                    return 0;
                 }
             });
         }
