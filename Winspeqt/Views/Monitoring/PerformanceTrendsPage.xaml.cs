@@ -9,7 +9,7 @@ namespace Winspeqt.Views.Monitoring
 {
     public sealed partial class PerformanceTrendsPage : Page
     {
-        private const double ChartsBreakpointWidth = 750;
+        private const double ChartsBreakpointWidth = 900;
         public PerformanceTrendsViewModel ViewModel { get; }
 
         public PerformanceTrendsPage()

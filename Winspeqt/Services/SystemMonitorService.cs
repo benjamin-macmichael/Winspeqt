@@ -106,6 +106,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     // Use WMI to get accurate CPU usage
                     var searcher = new ManagementObjectSearcher("SELECT LoadPercentage FROM Win32_Processor");
                     var cpuObjects = searcher.Get();
@@ -140,6 +141,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting available memory...");
                     return (long)_availableMemoryCounter.NextValue();
                 }
                 catch (Exception ex)
@@ -156,6 +158,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting total memory...");
                     // Use GC.GetGCMemoryInfo which gives us total physical memory
                     var gcMemoryInfo = GC.GetGCMemoryInfo();
                     return gcMemoryInfo.TotalAvailableMemoryBytes / 1024 / 1024; // Convert bytes to MB
@@ -193,6 +196,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting disk active time...");
                     if (_diskTimeCounter == null)
                         return 0;
 
@@ -212,6 +216,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting network throughput...");
                     if (_networkSentCounters.Count == 0 && _networkReceivedCounters.Count == 0)
                         return (0, 0);
 

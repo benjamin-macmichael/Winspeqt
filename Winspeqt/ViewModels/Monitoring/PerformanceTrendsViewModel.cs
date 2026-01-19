@@ -20,7 +20,6 @@ namespace Winspeqt.ViewModels.Monitoring
     public class PerformanceTrendsViewModel : ObservableObject
     {
         private readonly SystemMonitorService _monitorService;
-        private readonly SystemStatistics _systemStatistics;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer _refreshTimer;
 
@@ -134,7 +133,6 @@ namespace Winspeqt.ViewModels.Monitoring
         public PerformanceTrendsViewModel()
         {
             _monitorService = new SystemMonitorService();
-            _systemStatistics = new SystemStatistics();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             var axisTextColor = new SolidColorPaint(SKColor.Parse("#8A8A8A"));
@@ -308,7 +306,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 double networkReceivedMbps = 0;
                 try
                 {
-                    cpu = await _systemStatistics.CpuUsage(_monitorService);
+                    cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
                 {
@@ -317,8 +315,8 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    var availableMb = await _systemStatistics.AvailableMemory(_monitorService);
-                    var totalMb = await _systemStatistics.TotalMemory(_monitorService);
+                    var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
+                    var totalMb = await _monitorService.GetTotalMemoryMBAsync();
                     if (totalMb > 0)
                     {
                         memoryUsedPercent = (totalMb - availableMb) * 100.0 / totalMb;
@@ -331,7 +329,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    diskActivePercent = await _systemStatistics.DiskActiveTime(_monitorService);
+                    diskActivePercent = await _monitorService.GetDiskActiveTimePercentAsync();
                 }
                 catch (Exception ex)
                 {
@@ -344,7 +342,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    var network = await _systemStatistics.NetworkThroughput(_monitorService);
+                    var network = await _monitorService.GetNetworkThroughputMbpsAsync();
                     networkSentMbps = Math.Max(0, network.SentMbps);
                     networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
                 }
