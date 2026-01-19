@@ -59,6 +59,34 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryStatusMessage, value);
         }
 
+        private double _networkUsage;
+        public double NetworkUsage
+        {
+            get => _networkUsage;
+            set => SetProperty(ref _networkUsage, value);
+        }
+
+        private string _networkStatusMessage;
+        public string NetworkStatusMessage
+        {
+            get => _networkStatusMessage;
+            set => SetProperty(ref _networkStatusMessage, value);
+        }
+
+        private double _diskUsage;
+        public double DiskUsage
+        {
+            get => _diskUsage;
+            set => SetProperty(ref _diskUsage, value);
+        }
+
+        private string _diskStatusMessage;
+        public string DiskStatusMessage
+        {
+            get => _diskStatusMessage;
+            set => SetProperty(ref _diskStatusMessage, value);
+        }
+
         private string _selectedSortOption = "Memory";
         public string SelectedSortOption
         {
@@ -137,6 +165,8 @@ namespace Winspeqt.ViewModels.Monitoring
                 double cpu = 0;
                 long availableMem = 0;
                 long totalMem = 8192; // Default fallback
+                double network = 0;
+                double disk = 0;
                 List<ProcessInfo> processes = new List<ProcessInfo>();
 
                 try
@@ -158,6 +188,26 @@ namespace Winspeqt.ViewModels.Monitoring
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Memory error: {ex.Message}");
+                }
+
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting network...");
+                    network = await _monitorService.GetNetworkUsageAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Network error: {ex.Message}");
+                }
+
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting disk...");
+                    disk = await _monitorService.GetDiskUsageAsync();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Disk error: {ex.Message}");
                 }
 
                 try
@@ -184,6 +234,8 @@ namespace Winspeqt.ViewModels.Monitoring
                         TotalCpuUsage = cpu;
                         TotalMemoryMB = totalMem;
                         UsedMemoryMB = usedMem;
+                        NetworkUsage = network;
+                        DiskUsage = disk;
 
                         // Update status messages
                         UpdateStatusMessages();
@@ -325,6 +377,42 @@ namespace Winspeqt.ViewModels.Monitoring
                 else
                 {
                     MemoryStatusMessage = "Memory information loading...";
+                }
+
+                // Network status message
+                if (NetworkUsage > 100)
+                {
+                    NetworkStatusMessage = "⚠️ High network activity detected. Multiple apps are using your internet connection.";
+                }
+                else if (NetworkUsage > 50)
+                {
+                    NetworkStatusMessage = "Moderate network activity. You're actively using your internet connection.";
+                }
+                else if (NetworkUsage > 10)
+                {
+                    NetworkStatusMessage = "✓ Light network activity. Normal internet usage.";
+                }
+                else
+                {
+                    NetworkStatusMessage = "✓ Minimal network activity. Your connection is mostly idle.";
+                }
+
+                // Disk status message
+                if (DiskUsage > 80)
+                {
+                    DiskStatusMessage = "⚠️ Your disk is very busy. This might slow down your computer.";
+                }
+                else if (DiskUsage > 50)
+                {
+                    DiskStatusMessage = "Your disk is moderately active. Some programs are reading or writing files.";
+                }
+                else if (DiskUsage > 20)
+                {
+                    DiskStatusMessage = "✓ Normal disk activity. Your storage is working as expected.";
+                }
+                else
+                {
+                    DiskStatusMessage = "✓ Your disk is mostly idle. Very light read/write activity.";
                 }
             }
             catch (Exception ex)
