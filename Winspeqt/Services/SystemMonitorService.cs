@@ -13,12 +13,59 @@ namespace Winspeqt.Services
         private PerformanceCounter _availableMemoryCounter;
         private PerformanceCounter _cpuCounter;
         private Dictionary<int, (DateTime timestamp, TimeSpan processorTime)> _cpuUsageCache;
+        private PerformanceCounter _diskTimeCounter;
+        private List<PerformanceCounter> _networkSentCounters;
+        private List<PerformanceCounter> _networkReceivedCounters;
 
         public SystemMonitorService()
         {
             _availableMemoryCounter = new PerformanceCounter("Memory", "Available MBytes");
+            try
+            {
+                _diskTimeCounter = new PerformanceCounter("PhysicalDisk", "% Disk Time", "_Total");
+                _diskTimeCounter.NextValue();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing disk counter: {ex.Message}");
+                _diskTimeCounter = null;
+            }
             _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             _cpuUsageCache = new Dictionary<int, (DateTime, TimeSpan)>();
+            InitializeNetworkCounters();
+        }
+
+        private void InitializeNetworkCounters()
+        {
+            try
+            {
+                _networkSentCounters = new List<PerformanceCounter>();
+                _networkReceivedCounters = new List<PerformanceCounter>();
+                var category = new PerformanceCounterCategory("Network Interface");
+                foreach (var name in category.GetInstanceNames())
+                {
+                    if (name.Contains("Loopback", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("Teredo", StringComparison.OrdinalIgnoreCase) ||
+                        name.Contains("isatap", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    _networkSentCounters.Add(new PerformanceCounter("Network Interface", "Bytes Sent/sec", name));
+                    _networkReceivedCounters.Add(new PerformanceCounter("Network Interface", "Bytes Received/sec", name));
+                }
+
+                foreach (var counter in _networkSentCounters)
+                    counter.NextValue();
+                foreach (var counter in _networkReceivedCounters)
+                    counter.NextValue();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error initializing network counters: {ex.Message}");
+                _networkSentCounters = new List<PerformanceCounter>();
+                _networkReceivedCounters = new List<PerformanceCounter>();
+            }
         }
 
         public async Task<List<ProcessInfo>> GetRunningProcessesAsync()
@@ -71,14 +118,13 @@ namespace Winspeqt.Services
             {
                 var currentProcessorTime = process.TotalProcessorTime;
 
-                if (_cpuUsageCache.ContainsKey(process.Id))
+                if (_cpuUsageCache.TryGetValue(process.Id, out var lastSample))
                 {
-                    var (lastTime, lastProcessorTime) = _cpuUsageCache[process.Id];
-                    var timeDiff = (now - lastTime).TotalMilliseconds;
+                    var timeDiff = (now - lastSample.timestamp).TotalMilliseconds;
 
                     if (timeDiff > 0)
                     {
-                        var processorTimeDiff = (currentProcessorTime - lastProcessorTime).TotalMilliseconds;
+                        var processorTimeDiff = (currentProcessorTime - lastSample.processorTime).TotalMilliseconds;
                         var cpuUsage = (processorTimeDiff / (timeDiff * Environment.ProcessorCount)) * 100;
                         _cpuUsageCache[process.Id] = (now, currentProcessorTime);
                         return Math.Round(Math.Min(cpuUsage, 100), 1);
@@ -126,6 +172,7 @@ namespace Winspeqt.Services
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("Getting available memory...");
                     return (long)_availableMemoryCounter.NextValue();
                 }
                 catch (Exception ex)
@@ -150,7 +197,10 @@ namespace Winspeqt.Services
                         return (long)(totalBytes / 1024 / 1024);
                     }
 
-                    return 8192; // Fallback
+                    System.Diagnostics.Debug.WriteLine("WMI returned no results; falling back to GC memory info.");
+                    // Use GC.GetGCMemoryInfo which gives us total physical memory
+                    var gcMemoryInfo = GC.GetGCMemoryInfo();
+                    return gcMemoryInfo.TotalAvailableMemoryBytes / 1024 / 1024; // Convert bytes to MB
                 }
                 catch (Exception ex)
                 {
@@ -162,59 +212,81 @@ namespace Winspeqt.Services
 
         public async Task<double> GetNetworkUsageAsync()
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    var searcher = new ManagementObjectSearcher("SELECT BytesTotalPerSec FROM Win32_PerfFormattedData_Tcpip_NetworkInterface");
-                    double totalBytes = 0;
-                    int adapterCount = 0;
-
-                    foreach (ManagementObject obj in searcher.Get())
-                    {
-                        var bytesPerSec = Convert.ToDouble(obj["BytesTotalPerSec"]);
-                        totalBytes += bytesPerSec;
-                        adapterCount++;
-                    }
-
-                    // Convert bytes per second to Mbps
-                    if (adapterCount > 0)
-                    {
-                        double mbps = (totalBytes * 8) / 1_000_000; // bits per second to Mbps
-                        return Math.Round(mbps, 2);
-                    }
-
-                    return 0;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error reading network usage: {ex.Message}");
-                    return 0;
-                }
-            });
+            var (sent, received) = await GetNetworkThroughputMbpsAsync();
+            return Math.Round(sent + received, 2);
         }
 
         public async Task<double> GetDiskUsageAsync()
+        {
+            return await GetDiskActiveTimePercentAsync();
+        }
+
+        public async Task<string> GetUsedDiscSpace()
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    var searcher = new ManagementObjectSearcher("SELECT PercentIdleTime FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk WHERE Name='_Total'");
-
-                    foreach (ManagementObject obj in searcher.Get())
-                    {
-                        var idleTime = Convert.ToDouble(obj["PercentIdleTime"]);
-                        var activeTime = 100 - idleTime;
-                        return Math.Round(Math.Max(0, activeTime), 1);
-                    }
-
-                    return 0;
+                    ManagementObject disk = new ManagementObject("win32_logicaldisk.deviceid=\"c:\"");
+                    disk.Get();
+                    string freespace = (string)disk["FreeSpace"];
+                    return freespace;
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error reading disk usage: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Error getting disk usage: {ex.Message}");
+                    return "0"; // Default to 0GB if we can't detect
+                }
+            });
+        }
+
+        public async Task<double> GetDiskActiveTimePercentAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting disk active time...");
+                    if (_diskTimeCounter == null)
+                        return 0;
+
+                    return Math.Round(_diskTimeCounter.NextValue(), 1);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading disk active time: {ex.Message}");
                     return 0;
+                }
+            });
+        }
+
+        public async Task<(double SentMbps, double ReceivedMbps)> GetNetworkThroughputMbpsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine("Getting network throughput...");
+                    if ((_networkSentCounters == null || _networkSentCounters.Count == 0) &&
+                        (_networkReceivedCounters == null || _networkReceivedCounters.Count == 0))
+                        return (0, 0);
+
+                    double sentBytesPerSec = 0;
+                    double receivedBytesPerSec = 0;
+
+                    foreach (var counter in _networkSentCounters)
+                        sentBytesPerSec += counter.NextValue();
+                    foreach (var counter in _networkReceivedCounters)
+                        receivedBytesPerSec += counter.NextValue();
+
+                    const double bytesPerMegabit = 125000; // 1 Mbps = 125,000 bytes/sec
+                    return (Math.Round(sentBytesPerSec / bytesPerMegabit, 2),
+                        Math.Round(receivedBytesPerSec / bytesPerMegabit, 2));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error reading network throughput: {ex.Message}");
+                    return (0, 0);
                 }
             });
         }
@@ -371,6 +443,17 @@ namespace Winspeqt.Services
         {
             _availableMemoryCounter?.Dispose();
             _cpuCounter?.Dispose();
+            _diskTimeCounter?.Dispose();
+            if (_networkSentCounters != null)
+            {
+                foreach (var counter in _networkSentCounters)
+                    counter.Dispose();
+            }
+            if (_networkReceivedCounters != null)
+            {
+                foreach (var counter in _networkReceivedCounters)
+                    counter.Dispose();
+            }
         }
     }
 }
