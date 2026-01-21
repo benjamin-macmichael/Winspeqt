@@ -1,0 +1,63 @@
+<!-- Views/Monitoring/StartupImpactPage.xaml -->
+<Page
+    x:Class="Winspeqt.Views.Monitoring.StartupImpactPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
+    xmlns:helpers="using:Winspeqt.Helpers"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <Grid Padding="60">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button 
+                    Grid.Column="0"
+                    Content="← Back"
+                    Click="BackButton_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Margin="0,0,20,0"/>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock 
+                        Text="Startup Impact Analyzer" 
+                        FontSize="36" 
+                        FontWeight="Bold"/>
+                    <TextBlock 
+                        Text="See which apps slow down your PC's startup and disable them with one click" 
+                        FontSize="18" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!--<Button 
+                    Grid.Column="2"
+                    Content="🔄 Refresh"
+                    Command="{Binding RefreshCommand}"
+                    FontSize="16"
+                    Padding="16,8"/>-->
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>
