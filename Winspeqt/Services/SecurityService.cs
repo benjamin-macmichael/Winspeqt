@@ -9,25 +9,31 @@ namespace Winspeqt.Services
     {
         public async Task<SecurityStatusInfo> GetSecurityStatusAsync()
         {
-            return await Task.Run(() =>
+            // Run all security checks in parallel for speed
+            var defenderTask = Task.Run(() => CheckWindowsDefender());
+            var firewallTask = Task.Run(() => CheckFirewall());
+            var updateTask = Task.Run(() => CheckWindowsUpdate());
+            var bitlockerTask = Task.Run(() => CheckBitLocker());
+
+            // Wait for all to complete
+            await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask);
+
+            var status = new SecurityStatusInfo
             {
-                var status = new SecurityStatusInfo
-                {
-                    WindowsDefenderStatus = CheckWindowsDefender(),
-                    FirewallStatus = CheckFirewall(),
-                    WindowsUpdateStatus = CheckWindowsUpdate(),
-                    BitLockerStatus = CheckBitLocker()
-                };
+                WindowsDefenderStatus = defenderTask.Result,
+                FirewallStatus = firewallTask.Result,
+                WindowsUpdateStatus = updateTask.Result,
+                BitLockerStatus = bitlockerTask.Result
+            };
 
-                // Calculate overall security score
-                status.OverallSecurityScore = CalculateSecurityScore(status);
-                status.OverallStatus = GetOverallStatus(status.OverallSecurityScore);
+            // Calculate overall security score
+            status.OverallSecurityScore = CalculateSecurityScore(status);
+            status.OverallStatus = GetOverallStatus(status.OverallSecurityScore);
 
-                return status;
-            });
+            return status;
         }
 
-        private SecurityComponentStatus CheckWindowsDefender()
+        public SecurityComponentStatus CheckWindowsDefender()
         {
             try
             {
@@ -87,7 +93,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private SecurityComponentStatus CheckFirewall()
+        public SecurityComponentStatus CheckFirewall()
         {
             try
             {
@@ -156,7 +162,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private SecurityComponentStatus CheckWindowsUpdate()
+        public SecurityComponentStatus CheckWindowsUpdate()
         {
             try
             {
@@ -245,7 +251,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private SecurityComponentStatus CheckBitLocker()
+        public SecurityComponentStatus CheckBitLocker()
         {
             try
             {
@@ -486,7 +492,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private int CalculateSecurityScore(SecurityStatusInfo status)
+        public int CalculateSecurityScore(SecurityStatusInfo status)
         {
             int score = 0;
 
@@ -519,7 +525,7 @@ namespace Winspeqt.Services
             return score;
         }
 
-        private string GetOverallStatus(int score)
+        public string GetOverallStatus(int score)
         {
             if (score >= 85)
                 return "Excellent - Your PC is well protected";
