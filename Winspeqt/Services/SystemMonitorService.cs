@@ -74,8 +74,8 @@ namespace Winspeqt.Services
             {
                 var processes = Process.GetProcesses();
                 var processInfoList = new List<ProcessInfo>();
-                var now = DateTime.Now;
 
+                // First pass: just get memory usage for sorting
                 foreach (var process in processes)
                 {
                     try
@@ -83,18 +83,20 @@ namespace Winspeqt.Services
                         // Skip system idle process
                         if (process.Id == 0) continue;
 
-                        // Calculate CPU usage per process
-                        double cpuUsage = CalculateProcessCpuUsage(process, now);
+                        var memoryMB = process.WorkingSet64 / 1024 / 1024;
+
+                        // Only track processes using more than 10MB to reduce overhead
+                        if (memoryMB < 10) continue;
 
                         var processInfo = new ProcessInfo
                         {
                             ProcessId = process.Id,
                             ProcessName = process.ProcessName,
                             Description = GetFriendlyName(process.ProcessName),
-                            MemoryUsageMB = process.WorkingSet64 / 1024 / 1024,
-                            CpuUsagePercent = cpuUsage,
+                            MemoryUsageMB = memoryMB,
+                            CpuUsagePercent = 0, // Will calculate for top processes only
                             Status = process.Responding ? "Running" : "Not Responding",
-                            FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, process.WorkingSet64 / 1024 / 1024),
+                            FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
                             Icon = GetProcessIcon(process.ProcessName)
                         };
 
@@ -107,7 +109,7 @@ namespace Winspeqt.Services
                     }
                 }
 
-                // Sort by memory usage
+                // Sort by memory and return top processes
                 return processInfoList.OrderByDescending(p => p.MemoryUsageMB).ToList();
             });
         }
@@ -140,22 +142,69 @@ namespace Winspeqt.Services
             }
         }
 
+        public async Task<List<ProcessInfo>> GetTopProcessesWithCpuAsync(int count = 10)
+        {
+            return await Task.Run(() =>
+            {
+                var processes = Process.GetProcesses();
+                var processInfoList = new List<ProcessInfo>();
+                var now = DateTime.Now;
+
+                // Quick first pass - just memory
+                var quickList = new List<(Process proc, long memory)>();
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        if (process.Id == 0) continue;
+                        var memoryMB = process.WorkingSet64 / 1024 / 1024;
+                        if (memoryMB < 10) continue;
+                        quickList.Add((process, memoryMB));
+                    }
+                    catch { }
+                }
+
+                // Sort by memory and take top processes
+                var topProcesses = quickList.OrderByDescending(x => x.memory).Take(count * 2).ToList();
+
+                // Now calculate CPU only for top processes
+                foreach (var (process, memoryMB) in topProcesses)
+                {
+                    try
+                    {
+                        double cpuUsage = CalculateProcessCpuUsage(process, now);
+
+                        var processInfo = new ProcessInfo
+                        {
+                            ProcessId = process.Id,
+                            ProcessName = process.ProcessName,
+                            Description = GetFriendlyName(process.ProcessName),
+                            MemoryUsageMB = memoryMB,
+                            CpuUsagePercent = cpuUsage,
+                            Status = process.Responding ? "Running" : "Not Responding",
+                            FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
+                            Icon = GetProcessIcon(process.ProcessName)
+                        };
+
+                        processInfoList.Add(processInfo);
+                    }
+                    catch { }
+                }
+
+                return processInfoList.OrderByDescending(p => p.MemoryUsageMB).Take(count).ToList();
+            });
+        }
+
         public async Task<double> GetTotalCpuUsageAsync()
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    // Get current CPU reading
+                    // Use the cached counter for faster results
                     var cpuUsage = _cpuCounter.NextValue();
 
-                    // If first reading is 0, wait a bit and try again
-                    if (cpuUsage == 0)
-                    {
-                        System.Threading.Thread.Sleep(100);
-                        cpuUsage = _cpuCounter.NextValue();
-                    }
-
+                    // Return whatever we get immediately (don't wait for second reading on initial load)
                     return Math.Round(cpuUsage, 1);
                 }
                 catch (Exception ex)

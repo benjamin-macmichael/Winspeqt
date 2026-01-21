@@ -52,7 +52,7 @@
 
                 <Button 
                     Grid.Column="2"
-                    Content="🔄 Refresh"
+                    Content="{Binding RefreshButtonText, Mode=OneWay}"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
                     Padding="16,8"/>

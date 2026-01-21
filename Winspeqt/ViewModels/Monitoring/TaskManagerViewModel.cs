@@ -87,6 +87,20 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _diskStatusMessage, value);
         }
 
+        private bool _isAutoRefreshEnabled = true;
+        public bool IsAutoRefreshEnabled
+        {
+            get => _isAutoRefreshEnabled;
+            set => SetProperty(ref _isAutoRefreshEnabled, value);
+        }
+
+        private string _refreshButtonText = "⏸ Pause";
+        public string RefreshButtonText
+        {
+            get => _refreshButtonText;
+            set => SetProperty(ref _refreshButtonText, value);
+        }
+
         private string _selectedSortOption = "Memory";
         public string SelectedSortOption
         {
@@ -129,7 +143,7 @@ namespace Winspeqt.ViewModels.Monitoring
             SortOptions = new ObservableCollection<string> { "Memory", "CPU", "Name" };
             FilterOptions = new ObservableCollection<string> { "All", "Apps Only", "System Only" };
 
-            RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
+            RefreshCommand = new RelayCommand(ToggleAutoRefresh);
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
 
             // Set loading to true initially
@@ -152,78 +166,75 @@ namespace Winspeqt.ViewModels.Monitoring
             );
         }
 
+        private void ToggleAutoRefresh()
+        {
+            IsAutoRefreshEnabled = !IsAutoRefreshEnabled;
+
+            if (IsAutoRefreshEnabled)
+            {
+                RefreshButtonText = "⏸ Pause";
+                // Restart the timer
+                _refreshTimer?.Dispose();
+                _refreshTimer = new System.Threading.Timer(
+                    async _ => await RefreshDataAsync(),
+                    null,
+                    TimeSpan.Zero, // Immediately refresh when resuming
+                    TimeSpan.FromSeconds(3)
+                );
+            }
+            else
+            {
+                RefreshButtonText = "▶ Resume";
+                // Stop the timer
+                _refreshTimer?.Dispose();
+                _refreshTimer = null;
+            }
+        }
+
         private async Task RefreshDataAsync()
         {
+            // Check if paused at the start of refresh
+            if (!IsAutoRefreshEnabled && TopProcesses.Count > 0)
+            {
+                return; // Don't refresh if paused (unless it's initial load)
+            }
+
             try
             {
                 System.Diagnostics.Debug.WriteLine("Starting refresh...");
 
-                // Ensure loading shows for at least 300ms so users see it
-                var loadingTask = Task.Delay(300);
-
-                // Get system metrics with individual error handling
-                double cpu = 0;
-                long availableMem = 0;
-                long totalMem = 8192; // Default fallback
-                double network = 0;
-                double disk = 0;
-                List<ProcessInfo> processes = new List<ProcessInfo>();
-
-                try
+                // Don't show loading on subsequent refreshes, only initial load
+                var isInitialLoad = TopProcesses.Count == 0;
+                if (isInitialLoad)
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
-                    cpu = await _monitorService.GetTotalCpuUsageAsync();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"CPU error: {ex.Message}");
+                    IsLoading = true;
                 }
 
-                try
+                // Run all queries in parallel for speed
+                var cpuTask = _monitorService.GetTotalCpuUsageAsync();
+                var memTask = _monitorService.GetAvailableMemoryMBAsync();
+                var totalMemTask = _monitorService.GetTotalMemoryMBAsync();
+                var networkTask = _monitorService.GetNetworkUsageAsync();
+                var diskTask = _monitorService.GetDiskUsageAsync();
+                var processTask = _monitorService.GetTopProcessesWithCpuAsync(15);
+
+                // Wait for all to complete
+                await Task.WhenAll(cpuTask, memTask, totalMemTask, networkTask, diskTask, processTask);
+
+                // Check again if paused after async operations
+                if (!IsAutoRefreshEnabled && !isInitialLoad)
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting memory...");
-                    availableMem = await _monitorService.GetAvailableMemoryMBAsync();
-                    totalMem = await _monitorService.GetTotalMemoryMBAsync();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Memory error: {ex.Message}");
+                    return;
                 }
 
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine("Getting network...");
-                    network = await _monitorService.GetNetworkUsageAsync();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Network error: {ex.Message}");
-                }
-
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine("Getting disk...");
-                    disk = await _monitorService.GetDiskUsageAsync();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Disk error: {ex.Message}");
-                }
-
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine("Getting processes...");
-                    processes = await _monitorService.GetRunningProcessesAsync();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Process error: {ex.Message}");
-                }
+                double cpu = cpuTask.Result;
+                long availableMem = memTask.Result;
+                long totalMem = totalMemTask.Result;
+                double network = networkTask.Result;
+                double disk = diskTask.Result;
+                List<ProcessInfo> processes = processTask.Result;
 
                 var usedMem = totalMem - availableMem;
-
-                // Wait for minimum loading time
-                await loadingTask;
 
                 // Update on UI thread
                 bool updateSuccessful = _dispatcherQueue.TryEnqueue(() =>
@@ -252,7 +263,10 @@ namespace Winspeqt.ViewModels.Monitoring
                             TopProcesses.Add(proc);
                         }
 
-                        IsLoading = false;
+                        if (isInitialLoad)
+                        {
+                            IsLoading = false;
+                        }
                         System.Diagnostics.Debug.WriteLine("Refresh complete!");
                     }
                     catch (Exception uiEx)
