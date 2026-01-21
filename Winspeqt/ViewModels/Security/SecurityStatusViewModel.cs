@@ -13,6 +13,20 @@ namespace Winspeqt.ViewModels.Security
         private readonly SecurityService _securityService;
         private readonly DispatcherQueue _dispatcherQueue;
 
+        private int _loadingProgress;
+        public int LoadingProgress
+        {
+            get => _loadingProgress;
+            set => SetProperty(ref _loadingProgress, value);
+        }
+
+        private string _loadingMessage = "Checking security...";
+        public string LoadingMessage
+        {
+            get => _loadingMessage;
+            set => SetProperty(ref _loadingMessage, value);
+        }
+
         private bool _isLoading;
         public bool IsLoading
         {
@@ -88,19 +102,42 @@ namespace Winspeqt.ViewModels.Security
             try
             {
                 IsLoading = true;
+                LoadingProgress = 0;
 
-                var status = await _securityService.GetSecurityStatusAsync();
+                // Check Windows Defender
+                var defenderResult = await Task.Run(() => _securityService.CheckWindowsDefender());
+                _dispatcherQueue.TryEnqueue(() => { DefenderStatus = defenderResult; LoadingProgress = 25; });
+
+                // Check Firewall
+                var firewallResult = await Task.Run(() => _securityService.CheckFirewall());
+                _dispatcherQueue.TryEnqueue(() => { FirewallStatus = firewallResult; LoadingProgress = 50; });
+
+                // Check Windows Update
+                var updateResult = await Task.Run(() => _securityService.CheckWindowsUpdate());
+                _dispatcherQueue.TryEnqueue(() => { UpdateStatus = updateResult; LoadingProgress = 75; });
+
+                // Check BitLocker
+                var bitlockerResult = await Task.Run(() => _securityService.CheckBitLocker());
+                _dispatcherQueue.TryEnqueue(() => { BitLockerStatus = bitlockerResult; LoadingProgress = 90; });
+
+                // Calculate scores
+                var status = new SecurityStatusInfo
+                {
+                    WindowsDefenderStatus = defenderResult,
+                    FirewallStatus = firewallResult,
+                    WindowsUpdateStatus = updateResult,
+                    BitLockerStatus = bitlockerResult
+                };
+
+                var score = _securityService.CalculateSecurityScore(status);
+                var overallStatus = _securityService.GetOverallStatus(score);
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    DefenderStatus = status.WindowsDefenderStatus;
-                    FirewallStatus = status.FirewallStatus;
-                    UpdateStatus = status.WindowsUpdateStatus;
-                    BitLockerStatus = status.BitLockerStatus;
-                    OverallScore = status.OverallSecurityScore;
-                    OverallStatus = status.OverallStatus;
-                    OverallScoreColor = GetScoreColor(status.OverallSecurityScore);
-
+                    OverallScore = score;
+                    OverallStatus = overallStatus;
+                    OverallScoreColor = GetScoreColor(score);
+                    LoadingProgress = 100;
                     IsLoading = false;
                 });
             }
