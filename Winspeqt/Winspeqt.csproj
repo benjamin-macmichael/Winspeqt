@@ -57,7 +57,6 @@
     <Folder Include="Models\" />
     <Folder Include="Controls\" />
     <Folder Include="ViewModels\Optimization\" />
-    <Folder Include="ViewModels\Security\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Monitoring\TaskManagerPage.xaml">
