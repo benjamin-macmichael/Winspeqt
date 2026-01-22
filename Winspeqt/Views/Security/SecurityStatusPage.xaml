@@ -130,17 +130,28 @@
                     Padding="28"
                     Margin="0,0,12,12">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock 
-                                Text="🛡️" 
-                                FontSize="28"
-                                Margin="0,0,12,0"/>
-                            <TextBlock 
-                                Text="Windows Defender" 
-                                FontSize="22" 
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="🛡️" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="Windows Defender" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowDefenderInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
@@ -182,17 +193,28 @@
                     Padding="28"
                     Margin="12,0,0,12">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock 
-                                Text="🔥" 
-                                FontSize="28"
-                                Margin="0,0,12,0"/>
-                            <TextBlock 
-                                Text="Windows Firewall" 
-                                FontSize="22" 
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="🔥" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="Windows Firewall" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowFirewallInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
@@ -234,17 +256,28 @@
                     Padding="28"
                     Margin="0,12,12,0">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock 
-                                Text="🔄" 
-                                FontSize="28"
-                                Margin="0,0,12,0"/>
-                            <TextBlock 
-                                Text="Windows Update" 
-                                FontSize="22" 
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="🔄" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="Windows Update" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowUpdateInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
@@ -286,17 +319,28 @@
                     Padding="28"
                     Margin="12,12,0,0">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock 
-                                Text="🔐" 
-                                FontSize="28"
-                                Margin="0,0,12,0"/>
-                            <TextBlock 
-                                Text="BitLocker Encryption" 
-                                FontSize="22" 
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="🔐" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="BitLocker Encryption" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowBitLockerInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
