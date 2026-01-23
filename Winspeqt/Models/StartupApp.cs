@@ -6,28 +6,18 @@ using System.Threading.Tasks;
 
 namespace Winspeqt.Models
 {
-    public enum Impact
-    {
-        Unknown,
-        Low,
-        Medium,
-        High,
-        None,
-
-    }
     public class StartupApp
     {
-        public int Pid {  get;  }
-        public string Name { get;  }
-        public string Description { get;  }
-        public Impact StartupImpact { get;  }
-
-        public StartupApp(int pid, string name, string description = "", Impact startupImpact = Impact.Unknown)
-        {
-            Pid = pid;
-            Name = name;
-            Description = description;
-            StartupImpact = startupImpact;
-        }
+        public int StartupProgramId { get; set; }
+        public int ComputerId { get; set; }
+        public int StartupClassificationId { get; set; }
+        public string StartupClassificationName { get; set; }
+        public string ProgramName { get; set; }
+        public string ProgramPath { get; set; }
+        public bool? IsEnabled { get; set; }
+        public bool? IsDeleted { get; set; }
+        public string StartupType { get; set; }
+        public string Publisher { get; set; }
+        public string startupUserName { get; set; }
     }
 }
