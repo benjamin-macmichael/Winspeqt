@@ -378,12 +378,7 @@
                 Grid.Row="0" 
                 Grid.RowSpan="3"
                 Background="#CC000000"
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                <ProgressBar 
-                    Value="{x:Bind ViewModel.LoadingProgress, Mode=OneWay}"
-                    Maximum="100"
-                    Width="300"
-                    Height="6"/>
+                Visibility="Collapsed">
             </Border>
         </Grid>
     </ScrollViewer>

@@ -34,6 +34,34 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _isLoading, value);
         }
 
+        private bool _isDefenderLoading = true;
+        public bool IsDefenderLoading
+        {
+            get => _isDefenderLoading;
+            set => SetProperty(ref _isDefenderLoading, value);
+        }
+
+        private bool _isFirewallLoading = true;
+        public bool IsFirewallLoading
+        {
+            get => _isFirewallLoading;
+            set => SetProperty(ref _isFirewallLoading, value);
+        }
+
+        private bool _isUpdateLoading = true;
+        public bool IsUpdateLoading
+        {
+            get => _isUpdateLoading;
+            set => SetProperty(ref _isUpdateLoading, value);
+        }
+
+        private bool _isBitLockerLoading = true;
+        public bool IsBitLockerLoading
+        {
+            get => _isBitLockerLoading;
+            set => SetProperty(ref _isBitLockerLoading, value);
+        }
+
         private SecurityComponentStatus _defenderStatus;
         public SecurityComponentStatus DefenderStatus
         {
@@ -92,8 +120,17 @@ namespace Winspeqt.ViewModels.Security
 
             RefreshCommand = new RelayCommand(async () => await LoadSecurityStatusAsync());
 
-            // Initial load
-            IsLoading = true;
+            // Set initial "Checking..." status for all cards
+            DefenderStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            FirewallStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            UpdateStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            BitLockerStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+
+            OverallStatus = "Checking security status...";
+            OverallScore = 0;
+            OverallScoreColor = "#9E9E9E";
+
+            // Initial load - no blocking
             _ = LoadSecurityStatusAsync();
         }
 
@@ -101,32 +138,66 @@ namespace Winspeqt.ViewModels.Security
         {
             try
             {
-                IsLoading = true;
-                LoadingProgress = 0;
+                // Set all cards to loading
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    IsDefenderLoading = true;
+                    IsFirewallLoading = true;
+                    IsUpdateLoading = true;
+                    IsBitLockerLoading = true;
+                });
 
-                // Check Windows Defender
-                var defenderResult = await Task.Run(() => _securityService.CheckWindowsDefender());
-                _dispatcherQueue.TryEnqueue(() => { DefenderStatus = defenderResult; LoadingProgress = 25; });
+                // Check all in parallel - each updates independently as it completes
+                var defenderTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckWindowsDefender();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        DefenderStatus = result;
+                        IsDefenderLoading = false;
+                    });
+                });
 
-                // Check Firewall
-                var firewallResult = await Task.Run(() => _securityService.CheckFirewall());
-                _dispatcherQueue.TryEnqueue(() => { FirewallStatus = firewallResult; LoadingProgress = 50; });
+                var firewallTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckFirewall();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        FirewallStatus = result;
+                        IsFirewallLoading = false;
+                    });
+                });
 
-                // Check Windows Update
-                var updateResult = await Task.Run(() => _securityService.CheckWindowsUpdate());
-                _dispatcherQueue.TryEnqueue(() => { UpdateStatus = updateResult; LoadingProgress = 75; });
+                var updateTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckWindowsUpdate();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        UpdateStatus = result;
+                        IsUpdateLoading = false;
+                    });
+                });
 
-                // Check BitLocker
-                var bitlockerResult = await Task.Run(() => _securityService.CheckBitLocker());
-                _dispatcherQueue.TryEnqueue(() => { BitLockerStatus = bitlockerResult; LoadingProgress = 90; });
+                var bitlockerTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckBitLocker();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        BitLockerStatus = result;
+                        IsBitLockerLoading = false;
+                    });
+                });
 
-                // Calculate scores
+                // Wait for all to complete
+                await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask);
+
+                // Calculate overall score once everything is done
                 var status = new SecurityStatusInfo
                 {
-                    WindowsDefenderStatus = defenderResult,
-                    FirewallStatus = firewallResult,
-                    WindowsUpdateStatus = updateResult,
-                    BitLockerStatus = bitlockerResult
+                    WindowsDefenderStatus = DefenderStatus,
+                    FirewallStatus = FirewallStatus,
+                    WindowsUpdateStatus = UpdateStatus,
+                    BitLockerStatus = BitLockerStatus
                 };
 
                 var score = _securityService.CalculateSecurityScore(status);
@@ -137,8 +208,6 @@ namespace Winspeqt.ViewModels.Security
                     OverallScore = score;
                     OverallStatus = overallStatus;
                     OverallScoreColor = GetScoreColor(score);
-                    LoadingProgress = 100;
-                    IsLoading = false;
                 });
             }
             catch (Exception ex)
@@ -148,7 +217,6 @@ namespace Winspeqt.ViewModels.Security
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     OverallStatus = "Error loading security status";
-                    IsLoading = false;
                 });
             }
         }
