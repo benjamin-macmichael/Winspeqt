@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
+using Microsoft.UI.Xaml;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
@@ -46,10 +47,20 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             var groups = new List<StartupAppGroup>();
 
-            AddGroup(groups, "Registry Run", apps.RegistryRun);
-            AddGroup(groups, "Registry Run Once", apps.RegistryRunOnce);
-            AddGroup(groups, "Startup Folder", apps.StartupFolder);
-            AddGroup(groups, "Scheduled Tasks", apps.ScheduledTask);
+            var registryDescription = "Registry description";
+            var registryLink = "regedit";
+            var registryButtonText = "Delete my registry (not a joke)"; //"View Regedit";
+            var startupDescription = "Startup description";
+            var startupLink = "startup";
+            var startupButtonText = "View Startup Folder";
+            var scheduleDescription = "Schedule description";
+            var scheduleLink = "schd";
+            var scheduleButtonText = "View Task Scheduler";
+
+            AddGroup(groups, "Registry Run", apps.RegistryRun, registryDescription, registryLink, registryButtonText);
+            AddGroup(groups, "Registry Run Once", apps.RegistryRunOnce, registryDescription, registryLink, registryButtonText);
+            AddGroup(groups, "Startup Folder", apps.StartupFolder, startupDescription, startupLink, startupButtonText);
+            AddGroup(groups, "Scheduled Tasks", apps.ScheduledTask, scheduleDescription, scheduleLink, scheduleButtonText);
 
             return groups;
         }
@@ -57,23 +68,35 @@ namespace Winspeqt.ViewModels.Monitoring
         private static void AddGroup(
             List<StartupAppGroup> groups,
             string title,
-            IReadOnlyList<StartupItem> items)
+            IReadOnlyList<StartupItem> items,
+            string description,
+            string link,
+            string buttonText)
         {
             if (items.Count == 0)
                 return;
 
-            groups.Add(new StartupAppGroup(title, items));
+            groups.Add(new StartupAppGroup(title, description, link, buttonText, items));
         }
 
         public sealed class StartupAppGroup
         {
-            public StartupAppGroup(string title, IReadOnlyList<StartupItem> items)
+            public StartupAppGroup(string title, string description, string link, string buttonText, IReadOnlyList<StartupItem> items)
             {
                 Title = title;
+                Description = description;
+                Link = link;
+                ButtonText = buttonText;
                 Items = items;
             }
 
             public string Title { get; }
+
+            public string Description { get; }
+
+            public string Link { get; }
+
+            public string ButtonText { get; }
             public IReadOnlyList<StartupItem> Items { get; }
         }
 

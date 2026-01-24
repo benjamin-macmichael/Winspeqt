@@ -25,6 +25,27 @@ namespace Winspeqt.Views.Monitoring
             }
         }
 
+        private void LinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string link)
+            {
+                switch (link)
+                {
+                    case "regedit":
+                        OpenRegedit_Click(sender, e);
+                        break;
+                    case "startup":
+                        OpenStartupFolder_Click(sender, e);
+                        break;
+                    case "schd":
+                        OpenTaskScheduler_Click(sender, e);
+                        break;
+                    default:
+                        OpenStartupSettings_Click(sender, e);
+                        break;
+                }
+            }
+        }
 
         private void OpenStartupSettings_Click(object sender, RoutedEventArgs e)
         {

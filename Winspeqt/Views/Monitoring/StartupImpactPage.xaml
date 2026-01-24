@@ -56,14 +56,6 @@
                     FontSize="16"
                     Padding="16,8"/>
             </Grid>
-            <Button 
-                    Grid.Column="0"
-                    Content="← Back"
-                    Click="OpenStartupFolder_Click"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    FontSize="16"
-                    Margin="0,0,20,0"/>
             <StackPanel Grid.Row="2">
                 <TextBlock 
                     Text="Get a better title" 
@@ -75,11 +67,24 @@
                         <DataTemplate>
                             <Expander Margin="0,0,0,12" HorizontalAlignment="Stretch" MaxHeight="500">
                                 <Expander.Header>
-                                    <TextBlock
-                                        Text="{Binding Title}"
-                                        FontSize="20"
-                                        FontWeight="SemiBold"
-                                        Margin="0,0,0,0"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock
+                                            Text="{Binding Title}"
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Margin="0,0,0,0"/>
+                                        <Button Content="i" CornerRadius="100" BorderBrush="Blue">
+                                            <Button.Flyout>
+                                                <Flyout>
+                                                    <StackPanel>
+                                                        <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="{Binding Description}" Margin="0,0,0,12" />
+                                                        <Button Click="LinkButton_Click" Content="{Binding ButtonText}" CommandParameter="{Binding Link}" />
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </StackPanel>
+                                    
                                 </Expander.Header>
                                 <Expander.Content>
                                     <ScrollView>
@@ -95,19 +100,43 @@
                                                         Margin="0,0,0,12"
                                                         HorizontalAlignment="Stretch">
                                                         <StackPanel>
-                                                            <TextBlock
-                                                                Text="{Binding Name}"
-                                                                FontSize="18"
-                                                                FontWeight="SemiBold"
-                                                                TextWrapping="Wrap"/>
-                                                            <TextBlock
-                                                                Text="{Binding Command}"
-                                                                FontSize="16"
-                                                                TextWrapping="Wrap"/>
-                                                            <TextBlock
-                                                                Text="{Binding Location}"
-                                                                FontSize="16"
-                                                                FontWeight="SemiBold"/>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Text="Program:"
+                                                                    FontSize="18"
+                                                                    FontWeight="SemiBold"
+                                                                    TextWrapping="Wrap"
+                                                                    Padding="0, 0, 6, 0"/>
+                                                                <TextBlock
+                                                                    Text="{Binding Name}"
+                                                                    FontSize="18"
+                                                                    TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Text="Running command:"
+                                                                    FontSize="16"
+                                                                    FontWeight="SemiBold"
+                                                                    TextWrapping="Wrap"
+                                                                    Padding="0, 0, 6, 0"/>
+                                                                <TextBlock
+                                                                    Text="{Binding Command}"
+                                                                    FontSize="16"
+                                                                    TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    Text="Source:"
+                                                                    FontSize="16"
+                                                                    FontWeight="SemiBold"
+                                                                    TextWrapping="Wrap"
+                                                                    Padding="0, 0, 6, 0"/>
+                                                                <TextBlock
+                                                                    Text="{Binding Location}"
+                                                                    FontSize="16"/>
+                                                            </StackPanel>
+                                                            
+
                                                         </StackPanel>
                                                     </Border>
                                                 </DataTemplate>
