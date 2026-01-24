@@ -56,47 +56,59 @@
                     FontSize="16"
                     Padding="16,8"/>
             </Grid>
+            <Button 
+                    Grid.Column="0"
+                    Content="← Back"
+                    Click="OpenStartupFolder_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Margin="0,0,20,0"/>
             <StackPanel Grid.Row="2">
                 <TextBlock 
                     Text="Get a better title" 
                     FontSize="24" 
                     FontWeight="SemiBold"
                     Margin="0,0,0,16"/>
-                <ItemsRepeater ItemsSource="{Binding StartupApps, Mode=OneWay}">
+                <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                            <Border
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="20"
-                                Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center">
-                                        <TextBlock 
-                                            Text="{Binding Name}" 
-                                            FontSize="18" 
-                                            FontWeight="SemiBold"/>
-                                    </Border>
-                                    <Border
-    Grid.Column="2"
-    VerticalAlignment="Center">
-                                        <TextBlock 
-        Text="{Binding Source}" 
-        FontSize="18" 
-        FontWeight="SemiBold"/>
-                                    </Border>
-                                </Grid>
-                            </Border>
+                            <StackPanel Margin="0,0,0,20">
+                                <TextBlock
+                                    Text="{Binding Title}"
+                                    FontSize="20"
+                                    FontWeight="SemiBold"
+                                    Margin="0,0,0,12"/>
+                                <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="20"
+                                                Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <TextBlock
+                                                        Text="{Binding Name}"
+                                                        FontSize="18"
+                                                        FontWeight="SemiBold"
+                                                        TextWrapping="Wrap"/>
+                                                    <TextBlock
+                                                        Text="{Binding Command}"
+                                                        FontSize="16"
+                                                        TextWrapping="Wrap"/>
+                                                    <TextBlock
+                                                        Text="{Binding Location}"
+                                                        FontSize="16"
+                                                        FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>

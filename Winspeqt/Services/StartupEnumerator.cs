@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
+using Winspeqt.Models;
 
 namespace StartupInventory
 {
@@ -28,28 +29,62 @@ namespace StartupInventory
 
     public sealed class StartupEnumerator
     {
-        public IReadOnlyList<StartupItem> GetStartupItems(bool includeScheduledTasks = true)
+        public StartupApp GetStartupItems(bool includeScheduledTasks = true)
         {
-            List<StartupItem> items = new List<StartupItem>();
+            var apps = new StartupApp();
+            var seen = new HashSet<(StartupSource Source, string Location, string Name)>();
 
             // Registry: HKLM/HKCU Run + RunOnce (32/64 where applicable)
-            items.AddRange(ReadRunKeys(RegistryHive.LocalMachine));
-            items.AddRange(ReadRunKeys(RegistryHive.CurrentUser));
+            AddItems(apps, ReadRunKeys(RegistryHive.LocalMachine), seen);
+            AddItems(apps, ReadRunKeys(RegistryHive.CurrentUser), seen);
 
             // Startup folders: current user + all users
-            items.AddRange(ReadStartupFolders());
+            AddItems(apps, ReadStartupFolders(), seen);
 
             // Scheduled tasks with logon triggers
             if (includeScheduledTasks)
-                items.AddRange(ReadScheduledTasks_LogonTriggers());
+                AddItems(apps, ReadScheduledTasks_LogonTriggers(), seen);
 
-            // De-dupe by (Source, Location, Name) while keeping first
-            return items
-                .GroupBy(i => (i.Source, i.Location, i.Name))
-                .Select(g => g.First())
-                .OrderBy(i => i.Source)
-                .ThenBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            SortByName(apps.RegistryRun);
+            SortByName(apps.RegistryRunOnce);
+            SortByName(apps.StartupFolder);
+            SortByName(apps.ScheduledTask);
+
+            return apps;
+        }
+
+        private static void AddItems(
+            StartupApp apps,
+            IEnumerable<StartupItem> items,
+            HashSet<(StartupSource Source, string Location, string Name)> seen)
+        {
+            foreach (var item in items)
+            {
+                if (!seen.Add((item.Source, item.Location, item.Name)))
+                    continue;
+
+                switch (item.Source)
+                {
+                    case StartupSource.RegistryRun:
+                        apps.RegistryRun.Add(item);
+                        break;
+                    case StartupSource.RegistryRunOnce:
+                        apps.RegistryRunOnce.Add(item);
+                        break;
+                    case StartupSource.StartupFolder:
+                        apps.StartupFolder.Add(item);
+                        break;
+                    case StartupSource.ScheduledTask:
+                        apps.ScheduledTask.Add(item);
+                        break;
+                }
+            }
+        }
+
+        private static void SortByName(List<StartupItem> items)
+        {
+            items.Sort((left, right) =>
+                StringComparer.OrdinalIgnoreCase.Compare(left.Name, right.Name));
         }
 
         private static IEnumerable<StartupItem> ReadRunKeys(RegistryHive hive)
