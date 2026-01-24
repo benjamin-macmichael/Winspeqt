@@ -73,7 +73,51 @@
                 <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="0,0,0,20">
+                            <Expander Margin="0,0,0,12" HorizontalAlignment="Stretch" MaxHeight="500">
+                                <Expander.Header>
+                                    <TextBlock
+                                        Text="{Binding Title}"
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Margin="0,0,0,0"/>
+                                </Expander.Header>
+                                <Expander.Content>
+                                    <ScrollView>
+                                        <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}">
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="20"
+                                                        Margin="0,0,0,12"
+                                                        HorizontalAlignment="Stretch">
+                                                        <StackPanel>
+                                                            <TextBlock
+                                                                Text="{Binding Name}"
+                                                                FontSize="18"
+                                                                FontWeight="SemiBold"
+                                                                TextWrapping="Wrap"/>
+                                                            <TextBlock
+                                                                Text="{Binding Command}"
+                                                                FontSize="16"
+                                                                TextWrapping="Wrap"/>
+                                                            <TextBlock
+                                                                Text="{Binding Location}"
+                                                                FontSize="16"
+                                                                FontWeight="SemiBold"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
+                                    </ScrollView>
+                                    
+                                </Expander.Content>
+                            </Expander>
+                            <!--<StackPanel Margin="0,0,0,20">
                                 <TextBlock
                                     Text="{Binding Title}"
                                     FontSize="20"
@@ -108,7 +152,7 @@
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
-                            </StackPanel>
+                            </StackPanel>-->
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>

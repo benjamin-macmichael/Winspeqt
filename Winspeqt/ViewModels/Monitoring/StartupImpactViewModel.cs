@@ -1,4 +1,5 @@
 ﻿using StartupInventory;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,26 +15,31 @@ namespace Winspeqt.ViewModels.Monitoring
     {
         private  readonly getStartupPrograms _getStartupPrograms;
         private readonly StartupEnumerator _startupEnumerator;
-        public StartupApp StartupApp { get; }
-        public IReadOnlyList<StartupAppGroup> StartupAppGroups { get; }
-        public IReadOnlyList<StartupItem> StartupApps { get; set; }
+        private readonly DispatcherQueue _dispatcherQueue;
+
+        private StartupApp _startupApp;
+        public StartupApp StartupApp
+        {
+            get => _startupApp;
+            private set => SetProperty(ref _startupApp, value);
+        }
+
+        private IReadOnlyList<StartupAppGroup> _startupAppGroups;
+        public IReadOnlyList<StartupAppGroup> StartupAppGroups
+        {
+            get => _startupAppGroups;
+            private set => SetProperty(ref _startupAppGroups, value);
+        }
+
         public StartupImpactViewModel() {
             _getStartupPrograms = new getStartupPrograms();
             _startupEnumerator = new StartupEnumerator();
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-            StartupApp = _startupEnumerator.GetStartupItems();
-            StartupApps = FlattenStartupApps(StartupApp);
+            StartupApp = _startupEnumerator.GetStartupItems(false);
             StartupAppGroups = BuildGroups(StartupApp);
-        }
 
-        private static IReadOnlyList<StartupItem> FlattenStartupApps(StartupApp apps)
-        {
-            var items = new List<StartupItem>();
-            items.AddRange(apps.RegistryRun);
-            items.AddRange(apps.RegistryRunOnce);
-            items.AddRange(apps.StartupFolder);
-            items.AddRange(apps.ScheduledTask);
-            return items;
+            _ = LoadScheduledTasksAsync();
         }
 
         private static IReadOnlyList<StartupAppGroup> BuildGroups(StartupApp apps)
@@ -69,6 +75,17 @@ namespace Winspeqt.ViewModels.Monitoring
 
             public string Title { get; }
             public IReadOnlyList<StartupItem> Items { get; }
+        }
+
+        private async Task LoadScheduledTasksAsync()
+        {
+            var fullStartupApp = await Task.Run(() => _startupEnumerator.GetStartupItems());
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                StartupApp = fullStartupApp;
+                StartupAppGroups = BuildGroups(StartupApp);
+            });
         }
     }
 }
