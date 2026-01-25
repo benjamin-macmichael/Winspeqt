@@ -47,18 +47,22 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             var groups = new List<StartupAppGroup>();
 
-            var registryDescription = "Registry description";
+            // https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys
+            // https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
+            var registryRunDescription = "The Registry contains information that Windows continually references during operation. The Run key makes the program run every time the user logs on. Registry keys can be viewed and edited in Registry Editor.";
+            var registryRunOnceDescription = "The Registry contains information that Windows continually references during operation. The RunOnce key makes the program run one time, and then the key is deleted. Registry keys can be viewed and edited in Registry Editor.";
             var registryLink = "regedit";
-            var registryButtonText = "Delete my registry (not a joke)"; //"View Regedit";
-            var startupDescription = "Startup description";
+            var registryButtonText = "Delete my registry (not a joke)"; //"View Registry Editor";
+            // https://www.lenovo.com/us/en/glossary/startup-folder/?orgRef=https%253A%252F%252Fwww.google.com%252F
+            var startupDescription = "The startup folder contains shortcuts to programs that run when your computer starts up. It can contain executable files (.exe), shortcuts (.lnk), or script files (ex. .bat or .cmd).";
             var startupLink = "startup";
             var startupButtonText = "View Startup Folder";
-            var scheduleDescription = "Schedule description";
+            var scheduleDescription = "Scheduled tasks are programs that run when certain criteria are met. Criteria can be specific times, system events, when your computer starts up, and more.";
             var scheduleLink = "schd";
             var scheduleButtonText = "View Task Scheduler";
 
-            AddGroup(groups, "Registry Run", apps.RegistryRun, registryDescription, registryLink, registryButtonText);
-            AddGroup(groups, "Registry Run Once", apps.RegistryRunOnce, registryDescription, registryLink, registryButtonText);
+            AddGroup(groups, "Registry Run", apps.RegistryRun, registryRunDescription, registryLink, registryButtonText);
+            AddGroup(groups, "Registry Run Once", apps.RegistryRunOnce, registryRunOnceDescription, registryLink, registryButtonText);
             AddGroup(groups, "Startup Folder", apps.StartupFolder, startupDescription, startupLink, startupButtonText);
             AddGroup(groups, "Scheduled Tasks", apps.ScheduledTask, scheduleDescription, scheduleLink, scheduleButtonText);
 

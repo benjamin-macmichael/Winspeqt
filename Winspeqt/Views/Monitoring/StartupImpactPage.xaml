@@ -17,6 +17,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -56,16 +57,29 @@
                     FontSize="16"
                     Padding="16,8"/>
             </Grid>
-            <StackPanel Grid.Row="2">
-                <TextBlock 
-                    Text="Get a better title" 
-                    FontSize="24" 
-                    FontWeight="SemiBold"
-                    Margin="0,0,0,16"/>
+            <Border Grid.Row="2"
+                    BorderBrush="Red"
+                    Background="#ffb3b3"
+                    CornerRadius="5"
+                    MaxWidth="500"
+                    Margin="0,0,0,25">
+                <StackPanel Margin="5,5,5,5">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon
+                            Glyph="&#xE7BA;"
+                            FontSize="20"/>
+                        <TextBlock Text="WARNING:" FontSize="20"/>
+                    </StackPanel>
+                    <TextBlock 
+                        TextWrapping="WrapWholeWords"
+                        Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in Windows Settings unless you are sure that it will not otherwise affect how your system runs." />
+                </StackPanel>
+            </Border>
+            <StackPanel Grid.Row="3">
                 <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                            <Expander Margin="0,0,0,12" HorizontalAlignment="Stretch" MaxHeight="500">
+                            <Expander Margin="0,0,0,12" HorizontalAlignment="Stretch" MaxHeight="500" HorizontalContentAlignment="Stretch">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock
@@ -73,11 +87,20 @@
                                             FontSize="20"
                                             FontWeight="SemiBold"
                                             Margin="0,0,0,0"/>
-                                        <Button Content="i" CornerRadius="100" BorderBrush="Blue">
+                                        <Button Style="{StaticResource SubtleButtonStyle}" Margin="5,0,0,0">
+                                            <FontIcon
+                                                FontSize="18"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                Glyph="&#xE946;" />
+                                            <!--Content="i" CornerRadius="100" BorderBrush="Blue">-->
                                             <Button.Flyout>
                                                 <Flyout>
-                                                    <StackPanel>
-                                                        <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="{Binding Description}" Margin="0,0,0,12" />
+                                                    <StackPanel MaxHeight="500">
+                                                        <TextBlock
+                                                            Text="{Binding Description}" 
+                                                            Margin="0,0,0,12"
+                                                            TextWrapping="Wrap"
+                                                            MaxWidth="400"/>
                                                         <Button Click="LinkButton_Click" Content="{Binding ButtonText}" CommandParameter="{Binding Link}" />
                                                     </StackPanel>
                                                 </Flyout>
@@ -87,8 +110,8 @@
                                     
                                 </Expander.Header>
                                 <Expander.Content>
-                                    <ScrollView>
-                                        <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}">
+                                    <ScrollView HorizontalAlignment="Stretch">
+                                        <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}" HorizontalAlignment="Stretch">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border
