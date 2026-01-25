@@ -133,6 +133,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
         public ICommand RefreshCommand { get; }
         public ICommand EndProcessCommand { get; }
+        public ICommand RestartProcessCommand { get; }
 
         public TaskManagerViewModel()
         {
@@ -145,6 +146,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
             RefreshCommand = new RelayCommand(ToggleAutoRefresh);
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
+            RestartProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await RestartProcessAsync(process));
 
             // Set loading to true initially
             IsLoading = true;
@@ -465,6 +467,57 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 System.Diagnostics.Debug.WriteLine($"Error ending process: {ex.Message}");
                 // Process might already be closed or we don't have permission
+            }
+        }
+
+        private async Task RestartProcessAsync(ProcessInfo processInfo)
+        {
+            if (processInfo == null) return;
+
+            try
+            {
+                // Get the executable path before killing
+                var process = System.Diagnostics.Process.GetProcessById(processInfo.ProcessId);
+                string executablePath = null;
+
+                try
+                {
+                    executablePath = process.MainModule?.FileName;
+                }
+                catch
+                {
+                    // Can't access executable path (likely a system process or permission denied)
+                    System.Diagnostics.Debug.WriteLine($"Cannot restart {processInfo.Description} - unable to access executable path");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(executablePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Cannot restart {processInfo.Description} - no executable path found");
+                    return;
+                }
+
+                // Kill the process
+                process.Kill();
+
+                // Wait a moment for it to fully close
+                await Task.Delay(500);
+
+                // Start it again
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = executablePath,
+                    UseShellExecute = true
+                });
+
+                // Refresh the list
+                await Task.Delay(1000); // Give the new process time to start
+                await RefreshDataAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error restarting process: {ex.Message}");
+                // Process might already be closed, we don't have permission, or it's a system process
             }
         }
 
