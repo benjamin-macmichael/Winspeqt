@@ -18,6 +18,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -40,11 +41,11 @@
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
-                        Text="Startup Impact Analyzer" 
+                        Text="Startup Applications" 
                         FontSize="36" 
                         FontWeight="Bold"/>
                     <TextBlock 
-                        Text="See which apps slow down your PC's startup and disable them with one click" 
+                        Text="See which apps run on your PC's startup" 
                         FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Margin="0,4,0,0"/>
@@ -57,25 +58,49 @@
                     FontSize="16"
                     Padding="16,8"/>
             </Grid>
-            <Border Grid.Row="2"
-                    BorderBrush="Red"
-                    Background="#ffb3b3"
-                    CornerRadius="5"
-                    MaxWidth="500"
-                    Margin="0,0,0,25">
+            <!-- https://support.microsoft.com/en-us/windows/configure-startup-applications-in-windows-115a420a-0bff-4a6f-90e0-1934c844e473 -->
+            <Border 
+                Grid.Row="2"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="2"
+                CornerRadius="16"
+                Padding="10"
+                Margin="0,0,0,32">
+                <StackPanel Grid.Row="2">
+                    <TextBlock
+                    TextWrapping="WrapWholeWords"
+                    Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
+                    <Button 
+                        Content="View Startup Settings"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Center"
+                        Click="OpenStartupSettings_Click"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Row="3"
+                    BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                    Background="{ThemeResource SystemControlErrorBackgroundColor}"
+                    BorderThickness="2"
+                    CornerRadius="16"
+                    Padding="10"
+                    Margin="0,0,0,32"
+                    MaxWidth="600">
                 <StackPanel Margin="5,5,5,5">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon
                             Glyph="&#xE7BA;"
-                            FontSize="20"/>
-                        <TextBlock Text="WARNING:" FontSize="20"/>
+                            FontSize="20"
+                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                        <TextBlock Text="WARNING:" FontSize="20" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
                     </StackPanel>
                     <TextBlock 
                         TextWrapping="WrapWholeWords"
-                        Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in Windows Settings unless you are sure that it will not otherwise affect how your system runs." />
+                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                        Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in the Windows Settings App unless you are sure that it will not otherwise affect how your system runs." />
                 </StackPanel>
             </Border>
-            <StackPanel Grid.Row="3">
+            <StackPanel Grid.Row="4">
                 <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>

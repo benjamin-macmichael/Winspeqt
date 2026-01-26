@@ -188,12 +188,12 @@
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
-                                Text="Startup Impact Analyzer" 
+                                Text="Startup Applications" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
-                                Text="See which apps slow down your PC's startup and disable them with one click"
+                                Text="See which apps run on your PC's startup"
                                 FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
