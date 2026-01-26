@@ -18,6 +18,13 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly StartupEnumerator _startupEnumerator;
         private readonly DispatcherQueue _dispatcherQueue;
 
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+
         private StartupApp _startupApp;
         public StartupApp StartupApp
         {
@@ -36,6 +43,7 @@ namespace Winspeqt.ViewModels.Monitoring
             _getStartupPrograms = new getStartupPrograms();
             _startupEnumerator = new StartupEnumerator();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            IsLoading = true;
 
             StartupApp = _startupEnumerator.GetStartupItems(false);
             StartupAppGroups = BuildGroups(StartupApp);
@@ -113,6 +121,8 @@ namespace Winspeqt.ViewModels.Monitoring
                 StartupApp = fullStartupApp;
                 StartupAppGroups = BuildGroups(StartupApp);
             });
+
+            IsLoading = false;
         }
     }
 }

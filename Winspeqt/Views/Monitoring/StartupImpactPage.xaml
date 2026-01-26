@@ -132,7 +132,7 @@
                                             </Button.Flyout>
                                         </Button>
                                     </StackPanel>
-                                    
+
                                 </Expander.Header>
                                 <Expander.Content>
                                     <ScrollView HorizontalAlignment="Stretch">
@@ -183,7 +183,7 @@
                                                                     Text="{Binding Location}"
                                                                     FontSize="16"/>
                                                             </StackPanel>
-                                                            
+
 
                                                         </StackPanel>
                                                     </Border>
@@ -191,72 +191,21 @@
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
                                     </ScrollView>
-                                    
+
                                 </Expander.Content>
                             </Expander>
-                            <!--<StackPanel Margin="0,0,0,20">
-                                <TextBlock
-                                    Text="{Binding Title}"
-                                    FontSize="20"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"/>
-                                <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}">
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border
-                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="8"
-                                                Padding="20"
-                                                Margin="0,0,0,12">
-                                                <StackPanel>
-                                                    <TextBlock
-                                                        Text="{Binding Name}"
-                                                        FontSize="18"
-                                                        FontWeight="SemiBold"
-                                                        TextWrapping="Wrap"/>
-                                                    <TextBlock
-                                                        Text="{Binding Command}"
-                                                        FontSize="16"
-                                                        TextWrapping="Wrap"/>
-                                                    <TextBlock
-                                                        Text="{Binding Location}"
-                                                        FontSize="16"
-                                                        FontWeight="SemiBold"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </StackPanel>-->
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-            </StackPanel>
-            
-            <!-- Loading Overlay -->
-            <!--<Border
-                Grid.Row="0" 
-                Grid.RowSpan="4"
-                Background="#CC000000"
+                <!-- Loading Overlay -->
+                <Border
                 Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel 
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Center"
-                    Spacing="16">
-                                <ProgressRing 
+                    <ProgressRing 
                         IsActive="True"
-                        Width="80"
-                        Height="80"/>
-                                <TextBlock 
-                        Text="Loading system information..."
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Center"
-                        Foreground="White"/>
-                </StackPanel>
-            </Border>-->
+                        Width="20"
+                        Height="20"/>
+                </Border>
+            </StackPanel>
         </Grid>
     </ScrollViewer>
 </Page>
