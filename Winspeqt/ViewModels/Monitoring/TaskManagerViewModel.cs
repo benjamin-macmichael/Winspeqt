@@ -8,6 +8,7 @@ using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
 using System.Linq;
+using System.Threading;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
@@ -16,6 +17,14 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer _refreshTimer;
+        private Microsoft.UI.Xaml.XamlRoot _xamlRoot;
+        private bool _isRefreshing;
+        private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1, 1);
+
+        public void SetXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
+        {
+            _xamlRoot = xamlRoot;
+        }
 
         private bool _isLoading;
         public bool IsLoading
@@ -148,20 +157,15 @@ namespace Winspeqt.ViewModels.Monitoring
             EndProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await EndProcessAsync(process));
             RestartProcessCommand = new RelayCommand<ProcessInfo>(async (process) => await RestartProcessAsync(process));
 
-            // Set loading to true initially
             IsLoading = true;
-
-            // Start auto-refresh every 3 seconds (more reasonable for non-tech users)
             StartAutoRefresh();
-
-            // Initial load
             _ = RefreshDataAsync();
         }
 
         private void StartAutoRefresh()
         {
             _refreshTimer = new System.Threading.Timer(
-                async _ => await RefreshDataAsync(),
+                _ => _ = RefreshDataAsync(),
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(3)
@@ -175,19 +179,11 @@ namespace Winspeqt.ViewModels.Monitoring
             if (IsAutoRefreshEnabled)
             {
                 RefreshButtonText = "⏸ Pause";
-                // Restart the timer
-                _refreshTimer?.Dispose();
-                _refreshTimer = new System.Threading.Timer(
-                    async _ => await RefreshDataAsync(),
-                    null,
-                    TimeSpan.Zero, // Immediately refresh when resuming
-                    TimeSpan.FromSeconds(3)
-                );
+                StartAutoRefresh();
             }
             else
             {
                 RefreshButtonText = "▶ Resume";
-                // Stop the timer
                 _refreshTimer?.Dispose();
                 _refreshTimer = null;
             }
@@ -195,24 +191,30 @@ namespace Winspeqt.ViewModels.Monitoring
 
         private async Task RefreshDataAsync()
         {
-            // Check if paused at the start of refresh
-            if (!IsAutoRefreshEnabled && TopProcesses.Count > 0)
+            // Use semaphore to prevent concurrent refreshes
+            if (!await _refreshLock.WaitAsync(0))
             {
-                return; // Don't refresh if paused (unless it's initial load)
+                System.Diagnostics.Debug.WriteLine("Refresh already in progress, skipping...");
+                return;
             }
 
             try
             {
+                // Check if paused (but allow initial load)
+                if (!IsAutoRefreshEnabled && TopProcesses.Count > 0)
+                {
+                    return;
+                }
+
                 System.Diagnostics.Debug.WriteLine("Starting refresh...");
 
-                // Don't show loading on subsequent refreshes, only initial load
                 var isInitialLoad = TopProcesses.Count == 0;
                 if (isInitialLoad)
                 {
-                    IsLoading = true;
+                    await DispatchAsync(() => IsLoading = true);
                 }
 
-                // Run all queries in parallel for speed
+                // Run all queries in parallel
                 var cpuTask = _monitorService.GetTotalCpuUsageAsync();
                 var memTask = _monitorService.GetAvailableMemoryMBAsync();
                 var totalMemTask = _monitorService.GetTotalMemoryMBAsync();
@@ -220,7 +222,6 @@ namespace Winspeqt.ViewModels.Monitoring
                 var diskTask = _monitorService.GetDiskUsageAsync();
                 var processTask = _monitorService.GetTopProcessesWithCpuAsync(15);
 
-                // Wait for all to complete
                 await Task.WhenAll(cpuTask, memTask, totalMemTask, networkTask, diskTask, processTask);
 
                 // Check again if paused after async operations
@@ -238,82 +239,87 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 var usedMem = totalMem - availableMem;
 
-                // Update on UI thread
-                bool updateSuccessful = _dispatcherQueue.TryEnqueue(() =>
+                // Apply filtering and sorting
+                var filteredProcesses = ApplyFilter(processes);
+                var topProcesses = ApplySorting(filteredProcesses).Take(10).ToList();
+
+                // Update UI on dispatcher queue
+                await DispatchAsync(() =>
                 {
-                    try
+                    System.Diagnostics.Debug.WriteLine("Updating UI...");
+
+                    TotalCpuUsage = cpu;
+                    TotalMemoryMB = totalMem;
+                    UsedMemoryMB = usedMem;
+                    NetworkUsage = network;
+                    DiskUsage = disk;
+
+                    UpdateStatusMessages();
+
+                    TopProcesses.Clear();
+                    foreach (var proc in topProcesses)
                     {
-                        System.Diagnostics.Debug.WriteLine("Updating UI...");
-                        TotalCpuUsage = cpu;
-                        TotalMemoryMB = totalMem;
-                        UsedMemoryMB = usedMem;
-                        NetworkUsage = network;
-                        DiskUsage = disk;
-
-                        // Update status messages
-                        UpdateStatusMessages();
-
-                        // Apply filtering
-                        var filteredProcesses = ApplyFilter(processes);
-
-                        // Apply sorting and get top processes
-                        var topProcesses = ApplySorting(filteredProcesses).Take(10).ToList();
-
-                        TopProcesses.Clear();
-                        foreach (var proc in topProcesses)
-                        {
-                            TopProcesses.Add(proc);
-                        }
-
-                        if (isInitialLoad)
-                        {
-                            IsLoading = false;
-                        }
-                        System.Diagnostics.Debug.WriteLine("Refresh complete!");
+                        TopProcesses.Add(proc);
                     }
-                    catch (Exception uiEx)
+
+                    if (isInitialLoad)
                     {
-                        System.Diagnostics.Debug.WriteLine($"UI update error: {uiEx.Message}");
                         IsLoading = false;
                     }
-                });
 
-                if (!updateSuccessful)
-                {
-                    System.Diagnostics.Debug.WriteLine("Failed to enqueue UI update");
-                    IsLoading = false;
-                }
+                    System.Diagnostics.Debug.WriteLine("Refresh complete!");
+                });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ERROR in RefreshDataAsync: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
 
-                // Try to update error message on UI thread
+                await DispatchAsync(() =>
+                {
+                    IsLoading = false;
+                    if (string.IsNullOrEmpty(CpuStatusMessage))
+                    {
+                        CpuStatusMessage = $"Error loading data: {ex.Message}";
+                    }
+                });
+            }
+            finally
+            {
+                _refreshLock.Release();
+            }
+        }
+
+        private async Task DispatchAsync(Action action)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            bool enqueued = _dispatcherQueue.TryEnqueue(() =>
+            {
                 try
                 {
-                    _dispatcherQueue.TryEnqueue(() =>
-                    {
-                        IsLoading = false;
-                        // Don't overwrite good data with error message if we already have it
-                        if (string.IsNullOrEmpty(CpuStatusMessage))
-                        {
-                            CpuStatusMessage = $"Error loading data: {ex.Message}";
-                        }
-                    });
+                    action();
+                    tcs.SetResult(true);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Failed to even show error - just silently fail this update cycle
+                    tcs.SetException(ex);
                 }
+            });
+
+            if (!enqueued)
+            {
+                System.Diagnostics.Debug.WriteLine("Failed to enqueue UI update");
+                tcs.SetResult(false);
             }
+
+            await tcs.Task;
         }
 
         private List<ProcessInfo> ApplyFilter(List<ProcessInfo> processes)
         {
             if (SelectedFilterOption == "Apps Only")
             {
-                // Filter to show only user applications (exclude system processes)
                 var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
                     "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
                     "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
@@ -324,7 +330,6 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             else if (SelectedFilterOption == "System Only")
             {
-                // Show only system processes
                 var systemProcesses = new[] { "svchost", "system", "dwm", "csrss", "winlogon",
                     "runtimebroker", "searchindexer", "backgroundtaskhost", "taskhostw",
                     "conhost", "fontdrvhost", "sihost", "textinputhost", "audiodg" };
@@ -343,7 +348,7 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 "CPU" => processes.OrderByDescending(p => p.CpuUsagePercent),
                 "Name" => processes.OrderBy(p => p.Description),
-                _ => processes.OrderByDescending(p => p.MemoryUsageMB) // Default to Memory
+                _ => processes.OrderByDescending(p => p.MemoryUsageMB)
             };
         }
 
@@ -351,7 +356,7 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             try
             {
-                // CPU status message with actionable advice
+                // CPU status message
                 if (TotalCpuUsage > 80)
                 {
                     CpuStatusMessage = "⚠️ Your CPU is working very hard. Try closing apps you're not using to speed things up.";
@@ -369,7 +374,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     CpuStatusMessage = "✓ Your CPU is barely being used. Your PC has plenty of power available.";
                 }
 
-                // Memory status message with helpful context
+                // Memory status message
                 if (TotalMemoryMB > 0)
                 {
                     var memoryPercent = (double)UsedMemoryMB / TotalMemoryMB * 100;
@@ -445,28 +450,37 @@ namespace Winspeqt.ViewModels.Monitoring
 
             try
             {
-                // Show confirmation dialog
-                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
-                {
-                    Title = "End Task",
-                    Content = $"Are you sure you want to end '{processInfo.Description}'?\n\nThis may cause data loss if the app has unsaved work.",
-                    PrimaryButtonText = "End Task",
-                    CloseButtonText = "Cancel",
-                    DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close
-                };
-
-                // This needs to be set from the Page, so we'll handle it differently
-                // For now, just kill the process directly
                 var process = System.Diagnostics.Process.GetProcessById(processInfo.ProcessId);
-                process.Kill();
 
-                // Refresh immediately
+                if (IsCriticalProcess(process, processInfo))
+                {
+                    await ShowCriticalProcessWarning(processInfo.Description);
+                    return;
+                }
+
+                if (processInfo.ProcessName.ToLower().Contains("svchost"))
+                {
+                    bool shouldContinue = await ShowSvchostWarning(processInfo.Description);
+                    if (!shouldContinue) return;
+                }
+                else
+                {
+                    bool shouldContinue = await ShowEndTaskConfirmation(processInfo.Description);
+                    if (!shouldContinue) return;
+                }
+
+                process.Kill();
+                await Task.Delay(500);
+                await RefreshDataAsync();
+            }
+            catch (ArgumentException)
+            {
+                System.Diagnostics.Debug.WriteLine($"Process {processInfo.ProcessId} no longer exists");
                 await RefreshDataAsync();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error ending process: {ex.Message}");
-                // Process might already be closed or we don't have permission
             }
         }
 
@@ -476,8 +490,25 @@ namespace Winspeqt.ViewModels.Monitoring
 
             try
             {
-                // Get the executable path before killing
                 var process = System.Diagnostics.Process.GetProcessById(processInfo.ProcessId);
+
+                if (IsCriticalProcess(process, processInfo))
+                {
+                    await ShowCriticalProcessWarning(processInfo.Description);
+                    return;
+                }
+
+                if (processInfo.ProcessName.ToLower().Contains("svchost"))
+                {
+                    bool shouldContinue = await ShowSvchostWarning(processInfo.Description);
+                    if (!shouldContinue) return;
+                }
+                else
+                {
+                    bool shouldContinue = await ShowRestartConfirmation(processInfo.Description);
+                    if (!shouldContinue) return;
+                }
+
                 string executablePath = null;
 
                 try
@@ -486,7 +517,6 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
                 catch
                 {
-                    // Can't access executable path (likely a system process or permission denied)
                     System.Diagnostics.Debug.WriteLine($"Cannot restart {processInfo.Description} - unable to access executable path");
                     return;
                 }
@@ -497,34 +527,214 @@ namespace Winspeqt.ViewModels.Monitoring
                     return;
                 }
 
-                // Kill the process
                 process.Kill();
-
-                // Wait a moment for it to fully close
                 await Task.Delay(500);
 
-                // Start it again
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = executablePath,
                     UseShellExecute = true
                 });
 
-                // Refresh the list
-                await Task.Delay(1000); // Give the new process time to start
+                await Task.Delay(1000);
+                await RefreshDataAsync();
+            }
+            catch (ArgumentException)
+            {
+                System.Diagnostics.Debug.WriteLine($"Process {processInfo.ProcessId} no longer exists");
                 await RefreshDataAsync();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error restarting process: {ex.Message}");
-                // Process might already be closed, we don't have permission, or it's a system process
             }
+        }
+
+        private bool IsCriticalProcess(System.Diagnostics.Process process, ProcessInfo processInfo)
+        {
+            try
+            {
+                var criticalProcessNames = new[]
+                {
+                    "system", "idle", "registry", "memory compression",
+                    "csrss", "winlogon", "wininit", "smss", "services",
+                    "lsass", "fontdrvhost", "dwm", "ntoskrnl"
+                };
+
+                string processNameLower = processInfo.ProcessName.ToLower();
+                if (criticalProcessNames.Any(p => processNameLower == p || processNameLower == p + ".exe"))
+                {
+                    return true;
+                }
+
+                if (process.Id == 0 || process.Id == 4)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    string executablePath = process.MainModule?.FileName?.ToLower();
+                    if (!string.IsNullOrEmpty(executablePath))
+                    {
+                        if ((executablePath.Contains(@"\system32\") || executablePath.Contains(@"\syswow64\")) &&
+                            (executablePath.Contains("csrss") || executablePath.Contains("winlogon") ||
+                             executablePath.Contains("smss") || executablePath.Contains("wininit") ||
+                             executablePath.Contains("lsass") || executablePath.Contains("services")))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    if (processNameLower.Contains("system") || processNameLower.Contains("csrss") ||
+                        processNameLower.Contains("winlogon") || processNameLower.Contains("lsass"))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+
+        private async Task ShowCriticalProcessWarning(string processName)
+        {
+            if (_xamlRoot == null) return;
+
+            await DispatchAsync(async () =>
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "⚠️ Cannot End This Process",
+                    Content = $"'{processName}' is a critical Windows system process.\n\n" +
+                              "Ending it would crash your computer and you would lose any unsaved work.\n\n" +
+                              "This process is essential for Windows to run properly.",
+                    CloseButtonText = "OK",
+                    XamlRoot = _xamlRoot
+                };
+
+                await dialog.ShowAsync();
+            });
+        }
+
+        private async Task<bool> ShowSvchostWarning(string processName)
+        {
+            if (_xamlRoot == null) return false;
+
+            bool result = false;
+            var tcs = new TaskCompletionSource<bool>();
+
+            await DispatchAsync(async () =>
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "⚠️ Warning: Service Host Process",
+                    Content = $"'{processName}' hosts important Windows services.\n\n" +
+                              "Ending this process might:\n" +
+                              "• Stop network connectivity\n" +
+                              "• Disable audio\n" +
+                              "• Break other Windows features\n\n" +
+                              "These services usually restart automatically, but you may need to restart your computer.\n\n" +
+                              "Are you sure you want to continue?",
+                    PrimaryButtonText = "End Process Anyway",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
+                    XamlRoot = _xamlRoot
+                };
+
+                var dialogResult = await dialog.ShowAsync();
+                result = (dialogResult == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary);
+                tcs.SetResult(result);
+            });
+
+            return await tcs.Task;
+        }
+
+        private async Task<bool> ShowEndTaskConfirmation(string processName)
+        {
+            System.Diagnostics.Debug.WriteLine($"ShowEndTaskConfirmation called for: {processName}");
+
+            if (_xamlRoot == null)
+            {
+                System.Diagnostics.Debug.WriteLine("ERROR: XamlRoot is null!");
+                return false;
+            }
+
+            bool result = false;
+            var tcs = new TaskCompletionSource<bool>();
+
+            try
+            {
+                await DispatchAsync(async () =>
+                {
+                    System.Diagnostics.Debug.WriteLine("Creating dialog...");
+                    var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                    {
+                        Title = "End Task",
+                        Content = $"Are you sure you want to end '{processName}'?\n\n" +
+                                  "Any unsaved work in this app will be lost.",
+                        PrimaryButtonText = "End Task",
+                        CloseButtonText = "Cancel",
+                        DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
+                        XamlRoot = _xamlRoot
+                    };
+
+                    System.Diagnostics.Debug.WriteLine("Showing dialog...");
+                    var dialogResult = await dialog.ShowAsync();
+                    System.Diagnostics.Debug.WriteLine($"Dialog result: {dialogResult}");
+                    result = (dialogResult == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary);
+                    tcs.SetResult(result);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR showing dialog: {ex.Message}");
+                tcs.SetResult(false);
+            }
+
+            return await tcs.Task;
+        }
+
+        private async Task<bool> ShowRestartConfirmation(string processName)
+        {
+            if (_xamlRoot == null) return false;
+
+            bool result = false;
+            var tcs = new TaskCompletionSource<bool>();
+
+            await DispatchAsync(async () =>
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Restart Process",
+                    Content = $"Are you sure you want to restart '{processName}'?\n\n" +
+                              "The app will close and reopen. Any unsaved work will be lost.",
+                    PrimaryButtonText = "Restart",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
+                    XamlRoot = _xamlRoot
+                };
+
+                var dialogResult = await dialog.ShowAsync();
+                result = (dialogResult == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary);
+                tcs.SetResult(result);
+            });
+
+            return await tcs.Task;
         }
 
         public void StopAutoRefresh()
         {
             _refreshTimer?.Dispose();
+            _refreshTimer = null;
             _monitorService?.Dispose();
+            _refreshLock?.Dispose();
         }
     }
 }
