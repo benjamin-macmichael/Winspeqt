@@ -13,17 +13,28 @@ namespace Winspeqt.Views.Monitoring
             this.InitializeComponent();
             ViewModel = new TaskManagerViewModel();
             this.DataContext = ViewModel;
+
+            // Set XamlRoot after page is loaded
+            this.Loaded += TaskManagerPage_Loaded;
+        }
+
+        private void TaskManagerPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SetXamlRoot(this.XamlRoot);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            // Stop auto-refresh when leaving page
-            ViewModel.StopAutoRefresh();
-
             if (Frame.CanGoBack)
             {
                 Frame.GoBack();
             }
+        }
+
+        protected override void OnNavigatedFrom(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            ViewModel.StopAutoRefresh();
         }
     }
 }
