@@ -1,0 +1,272 @@
+<Page
+    x:Class="Winspeqt.Views.Security.AppSecurityPage"
+    x:Name="PageRoot"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Winspeqt.Models"
+    xmlns:helpers="using:Winspeqt.Helpers"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,24">
+            <TextBlock 
+                Text="App Security Scanner" 
+                Style="{StaticResource TitleTextBlockStyle}"
+                FontSize="32"
+                FontWeight="SemiBold"/>
+            <TextBlock 
+                Text="Check if your installed apps are up to date and secure"
+                Style="{StaticResource BodyTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- Scan Button & Status -->
+        <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button 
+                x:Name="ScanButton"
+                Grid.Column="0"
+                Content="🔍 Scan My Apps"
+                Command="{x:Bind ViewModel.ScanCommand}"
+                Style="{StaticResource AccentButtonStyle}"
+                Padding="24,12"
+                FontSize="16"
+                Margin="0,0,16,0"/>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <ProgressRing 
+                    x:Name="ScanningProgress"
+                    Width="24" 
+                    Height="24"
+                    Visibility="Collapsed"/>
+                <TextBlock 
+                    x:Name="StatusText"
+                    Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Summary Card -->
+        <Border
+            x:Name="SummaryCard"
+            Grid.Row="2" 
+            Margin="0,0,0,24"
+            Visibility="Collapsed"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Summary Message -->
+                <TextBlock 
+                    Grid.Column="0"
+                    Text="{x:Bind ViewModel.SummaryMessage, Mode=OneWay}"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    FontSize="16"
+                    TextWrapping="Wrap"
+                    VerticalAlignment="Center"/>
+
+                <!-- Stats -->
+                <StackPanel 
+                    Grid.Column="1" 
+                    Orientation="Horizontal" 
+                    Spacing="24"
+                    Margin="20,0,0,0">
+
+                    <!-- Critical -->
+                    <StackPanel x:Name="CriticalStack" Spacing="4" Visibility="Collapsed">
+                        <TextBlock 
+                            Text="🔴"
+                            FontSize="24"
+                            HorizontalAlignment="Center"/>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.CriticalAppsCount, Mode=OneWay}"
+                            FontSize="20"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"/>
+                        <TextBlock 
+                            Text="Critical"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Outdated -->
+                    <StackPanel x:Name="OutdatedStack" Spacing="4" Visibility="Collapsed">
+                        <TextBlock 
+                            Text="⚠️"
+                            FontSize="24"
+                            HorizontalAlignment="Center"/>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.OutdatedAppsCount, Mode=OneWay}"
+                            FontSize="20"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"/>
+                        <TextBlock 
+                            Text="Outdated"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Up to Date -->
+                    <StackPanel Spacing="4">
+                        <TextBlock 
+                            Text="✓"
+                            FontSize="24"
+                            HorizontalAlignment="Center"
+                            Foreground="#4CAF50"/>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.UpToDateAppsCount, Mode=OneWay}"
+                            FontSize="20"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Center"/>
+                        <TextBlock 
+                            Text="Up to Date"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Apps List -->
+        <Grid x:Name="AppsList" Grid.Row="3" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Filter -->
+            <ComboBox 
+                Grid.Row="0"
+                Header="Filter"
+                ItemsSource="{x:Bind ViewModel.FilterOptions}"
+                SelectedItem="{x:Bind ViewModel.FilterOption, Mode=TwoWay}"
+                Width="200"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,16"/>
+
+            <!-- List -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{x:Bind ViewModel.FilteredApps, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:AppSecurityInfo">
+                            <Border 
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Status Icon -->
+                                    <TextBlock 
+                                        Grid.Column="0"
+                                        Text="{x:Bind StatusIcon}"
+                                        FontSize="32"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,16,0"/>
+
+                                    <!-- App Info -->
+                                    <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                        <TextBlock 
+                                            Text="{x:Bind AppName}"
+                                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                                            FontSize="16"/>
+                                        <TextBlock 
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                            <Run Text="Installed:"/>
+                                            <Run Text="{x:Bind InstalledVersion}"/>
+                                            <Run Text=" | Latest:"/>
+                                            <Run Text="{x:Bind LatestVersion}"/>
+                                        </TextBlock>
+                                        <TextBlock 
+                                            Text="{x:Bind StatusMessage}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            TextWrapping="Wrap"/>
+                                        <TextBlock 
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                            <Run Text="Publisher:"/>
+                                            <Run Text="{x:Bind Publisher}"/>
+                                            <Run Text=" | Installed:"/>
+                                            <Run Text="{x:Bind FormattedInstallDate}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- Update Button -->
+                                    <Button 
+                                        Grid.Column="2"
+                                        Content="How to Update"
+                                        Command="{Binding DataContext.OpenUpdateInstructionsCommand, ElementName=PageRoot}"
+                                        CommandParameter="{x:Bind}"
+                                        Visibility="{x:Bind IsOutdated}"
+                                        VerticalAlignment="Center"
+                                        Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Empty State -->
+        <StackPanel 
+            x:Name="EmptyState"
+            Grid.Row="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Spacing="16">
+            <TextBlock 
+                Text="🔍"
+                FontSize="72"
+                HorizontalAlignment="Center"
+                Opacity="0.5"/>
+            <TextBlock 
+                Text="No scan results yet"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                HorizontalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            <TextBlock 
+                Text="Click 'Scan My Apps' to check for outdated software"
+                Style="{StaticResource BodyTextBlockStyle}"
+                HorizontalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </Grid>
+</Page>

@@ -26,7 +26,7 @@ namespace Winspeqt.Views.Security
 
         private async void AppSecurityScannerCard_Click(object sender, RoutedEventArgs e)
         {
-            await ShowComingSoonDialog("App Security Scanner");
+            Frame.Navigate(typeof(AppSecurityPage));
         }
 
         private async void NetworkSecurityCard_Click(object sender, RoutedEventArgs e)
