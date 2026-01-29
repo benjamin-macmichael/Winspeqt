@@ -33,7 +33,7 @@ namespace Winspeqt.Views.Monitoring
         private async void StartupImpactCard_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Navigate to Startup Impact page
-            await ShowComingSoonDialog("Startup Impact Analyzer");
+            Frame.Navigate(typeof(Monitoring.StartupImpactPage));
         }
 
         private async void BackgroundProcessCard_Click(object sender, RoutedEventArgs e)
