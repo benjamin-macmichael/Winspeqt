@@ -13,8 +13,8 @@ namespace Winspeqt.Views.Monitoring
         public StartupImpactPage()
         {
             InitializeComponent();
-            this.ViewModel = new StartupImpactViewModel();
-            this.DataContext = ViewModel;
+            ViewModel = new StartupImpactViewModel();
+            DataContext = ViewModel;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -29,97 +29,71 @@ namespace Winspeqt.Views.Monitoring
         {
             if (sender is Button button && button.CommandParameter is string link)
             {
-                switch (link)
-                {
-                    case "regedit":
-                        OpenRegedit_Click(sender, e);
-                        break;
-                    case "startup":
-                        OpenStartupFolder_Click(sender, e);
-                        break;
-                    case "schd":
-                        OpenTaskScheduler_Click(sender, e);
-                        break;
-                    default:
-                        OpenStartupSettings_Click(sender, e);
-                        break;
-                }
+                OpenLink(link);
             }
         }
 
         private void OpenStartupSettings_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Update settings
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "ms-settings:startupapps",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening startup apps: {ex.Message}");
-            }
+            TryStartProcess("ms-settings:startupapps", null, "startup apps settings");
         }
 
         private void OpenRegedit_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Update settings
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "regedit",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening Regedit: {ex.Message}");
-            }
+            TryStartProcess("regedit", null, "Regedit");
         }
 
         private void OpenTaskScheduler_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Update settings
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "taskschd.msc",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening task scheduler: {ex.Message}");
-            }
+            TryStartProcess("taskschd.msc", null, "Task Scheduler");
         }
 
         private void OpenStartupFolder_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                string startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = startupPath,
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening Startup folder: {ex.Message}");
-            }
+            var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+            TryStartProcess("explorer.exe", startupPath, "Startup folder");
         }
 
         private void ShowAdvancedSettings_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ToggleAdvancedSettings();
+        }
+
+        private void OpenLink(string link)
+        {
+            switch (link)
+            {
+                case "regedit":
+                    TryStartProcess("regedit", null, "Regedit");
+                    break;
+                case "startup":
+                    var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+                    TryStartProcess("explorer.exe", startupPath, "Startup folder");
+                    break;
+                case "schd":
+                    TryStartProcess("taskschd.msc", null, "Task Scheduler");
+                    break;
+                default:
+                    TryStartProcess("ms-settings:startupapps", null, "startup apps settings");
+                    break;
+            }
+        }
+
+        private static void TryStartProcess(string fileName, string arguments, string errorContext)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments ?? string.Empty,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening {errorContext}: {ex.Message}");
+            }
         }
     }
 }
