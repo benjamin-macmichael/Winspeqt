@@ -9,6 +9,9 @@ using Winspeqt.Models;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
+    /// <summary>
+    /// View model for the Startup Impact page. Loads startup items and exposes grouped data for display.
+    /// </summary>
     public class StartupImpactViewModel : ObservableObject
     {
         private readonly StartupEnumerator _startupEnumerator;
@@ -16,6 +19,9 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly IReadOnlyList<StartupGroupDefinition> _groupDefinitions;
 
         private bool _isLoading;
+        /// <summary>
+        /// Indicates whether the view model is currently loading data.
+        /// </summary>
         public bool IsLoading
         {
             get => _isLoading;
@@ -23,6 +29,9 @@ namespace Winspeqt.ViewModels.Monitoring
         }
 
         private bool _showAdvancedSettings;
+        /// <summary>
+        /// Controls the visibility of advanced settings in the view.
+        /// </summary>
         public bool ShowAdvancedSettings
         {
             get => _showAdvancedSettings;
@@ -34,9 +43,15 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        /// <summary>
+        /// Button label that reflects the current advanced settings state.
+        /// </summary>
         public string AdvancedSettingsText => $"{(ShowAdvancedSettings ? "Hide" : "Show")} Advanced Settings";
 
         private StartupApp _startupApp;
+        /// <summary>
+        /// Raw startup app data from the enumerator.
+        /// </summary>
         public StartupApp StartupApp
         {
             get => _startupApp;
@@ -44,14 +59,23 @@ namespace Winspeqt.ViewModels.Monitoring
         }
 
         private IReadOnlyList<StartupAppGroup> _startupAppGroups;
+        /// <summary>
+        /// Startup apps grouped by source for display.
+        /// </summary>
         public IReadOnlyList<StartupAppGroup> StartupAppGroups
         {
             get => _startupAppGroups;
             private set => SetProperty(ref _startupAppGroups, value);
         }
 
+        /// <summary>
+        /// Refreshes startup app data on demand.
+        /// </summary>
         public ICommand RefreshCommand { get; }
 
+        /// <summary>
+        /// Initializes the view model, preloads data, and kicks off the full refresh.
+        /// </summary>
         public StartupImpactViewModel()
         {
             _startupEnumerator = new StartupEnumerator();
@@ -69,11 +93,17 @@ namespace Winspeqt.ViewModels.Monitoring
             _ = RefreshDataAsync(initialLoad: true);
         }
 
+        /// <summary>
+        /// Toggles the advanced settings section.
+        /// </summary>
         public void ToggleAdvancedSettings()
         {
             ShowAdvancedSettings = !ShowAdvancedSettings;
         }
 
+        /// <summary>
+        /// Creates the definitions used to build the grouped view.
+        /// </summary>
         private static IReadOnlyList<StartupGroupDefinition> BuildGroupDefinitions()
         {
             // https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys
@@ -99,6 +129,9 @@ namespace Winspeqt.ViewModels.Monitoring
             };
         }
 
+        /// <summary>
+        /// Builds grouped results from the raw app list and definition set.
+        /// </summary>
         private static IReadOnlyList<StartupAppGroup> BuildGroups(StartupApp apps, IReadOnlyList<StartupGroupDefinition> definitions)
         {
             var groups = new List<StartupAppGroup>();
@@ -120,8 +153,14 @@ namespace Winspeqt.ViewModels.Monitoring
             return groups;
         }
 
+        /// <summary>
+        /// Display model for a group of startup items.
+        /// </summary>
         public sealed class StartupAppGroup
         {
+            /// <summary>
+            /// Creates a display group with a title, description, and items.
+            /// </summary>
             public StartupAppGroup(string title, string description, string link, string buttonText, IReadOnlyList<StartupItem> items)
             {
                 Title = title;
@@ -141,6 +180,9 @@ namespace Winspeqt.ViewModels.Monitoring
             public IReadOnlyList<StartupItem> Items { get; }
         }
 
+        /// <summary>
+        /// Loads the latest startup data and updates the UI.
+        /// </summary>
         private async Task RefreshDataAsync(bool initialLoad = false)
         {
             if (IsLoading && !initialLoad)

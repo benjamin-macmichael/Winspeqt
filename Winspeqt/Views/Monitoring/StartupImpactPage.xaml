@@ -89,7 +89,7 @@
                     FontSize="16"
                     Padding="16,8"/>
             </Grid>
-            <!-- https://support.microsoft.com/en-us/windows/configure-startup-applications-in-windows-115a420a-0bff-4a6f-90e0-1934c844e473 -->
+            <!-- Intro and guidance -->
             <Border Style="{StaticResource StartupCardStyle}">
                 <StackPanel Spacing="12">
                     <StackPanel Orientation="Horizontal">
@@ -98,6 +98,7 @@
                             Text="Understand what runs at startup"
                             Style="{StaticResource StartupSectionTitleStyle}"/>
                     </StackPanel>
+                    <!-- https://support.microsoft.com/en-us/windows/configure-startup-applications-in-windows-115a420a-0bff-4a6f-90e0-1934c844e473 -->
                     <TextBlock
                         Style="{StaticResource StartupBodyTextStyle}"
                         Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
@@ -117,6 +118,7 @@
                             Text="Common Startup App Types"
                             Style="{StaticResource StartupSectionTitleStyle}"/>
                     </StackPanel>
+                    <!-- Example tiles -->
                     <Grid HorizontalAlignment="Stretch" ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"></ColumnDefinition>
@@ -155,10 +157,12 @@
                         Click="OpenStartupSettings_Click"/>
                 </StackPanel>
             </Border>
+            <!-- Advanced settings toggle -->
             <Border>
                 <Button Click="ShowAdvancedSettings_Click" Content="{x:Bind ViewModel.AdvancedSettingsText, Mode=OneWay}" HorizontalAlignment="Center"/>
             </Border>
 
+            <!-- Advanced settings content -->
             <StackPanel Visibility="{x:Bind ViewModel.ShowAdvancedSettings, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Spacing="16">
                 <Border
                     BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
