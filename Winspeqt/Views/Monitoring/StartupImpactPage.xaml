@@ -78,7 +78,12 @@
                         Click="OpenStartupSettings_Click"/>
                 </StackPanel>
             </Border>
-            <Border Grid.Row="3"
+            <Border Grid.Row="3" Margin="0,0,0,32">
+                <Button Click="ShowAdvancedSettings_Click" Content="{x:Bind ViewModel.AdvancedSettingsText, Mode=OneWay}" HorizontalAlignment="Center"/>
+            </Border>
+
+            <StackPanel Grid.Row="4" Visibility="{x:Bind ViewModel.ShowAdvancedSettings, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border
                     BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
                     Background="{ThemeResource SystemControlErrorBackgroundColor}"
                     BorderThickness="2"
@@ -86,21 +91,20 @@
                     Padding="10"
                     Margin="0,0,0,32"
                     MaxWidth="600">
-                <StackPanel Margin="5,5,5,5">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon
+                    <StackPanel Margin="5,5,5,5">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon
                             Glyph="&#xE7BA;"
                             FontSize="20"
                             Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
-                        <TextBlock Text="WARNING:" FontSize="20" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
-                    </StackPanel>
-                    <TextBlock 
+                            <TextBlock Text="WARNING:" FontSize="20" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                        </StackPanel>
+                        <TextBlock 
                         TextWrapping="WrapWholeWords"
                         Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
                         Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in the Windows Settings App unless you are sure that it will not otherwise affect how your system runs." />
-                </StackPanel>
-            </Border>
-            <StackPanel Grid.Row="4">
+                    </StackPanel>
+                </Border>
                 <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>

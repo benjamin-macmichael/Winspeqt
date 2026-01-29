@@ -14,7 +14,7 @@ namespace Winspeqt.ViewModels.Monitoring
 {
     public class StartupImpactViewModel : ObservableObject
     {
-        private  readonly getStartupPrograms _getStartupPrograms;
+        private readonly getStartupPrograms _getStartupPrograms;
         private readonly StartupEnumerator _startupEnumerator;
         private readonly DispatcherQueue _dispatcherQueue;
 
@@ -24,6 +24,15 @@ namespace Winspeqt.ViewModels.Monitoring
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
+
+        private bool _showAdvancedSettings;
+        public bool ShowAdvancedSettings 
+        { 
+            get => _showAdvancedSettings; 
+            set { SetProperty(ref _showAdvancedSettings, value); OnPropertyChanged(); OnPropertyChanged(nameof(AdvancedSettingsText)); }
+        }
+
+        public string AdvancedSettingsText => $"{(ShowAdvancedSettings ? "Hide" : "Show")} Advanced Settings";
 
         private StartupApp _startupApp;
         public StartupApp StartupApp
@@ -44,11 +53,17 @@ namespace Winspeqt.ViewModels.Monitoring
             _startupEnumerator = new StartupEnumerator();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             IsLoading = true;
+            ShowAdvancedSettings = false;
 
             StartupApp = _startupEnumerator.GetStartupItems(false);
             StartupAppGroups = BuildGroups(StartupApp);
 
             _ = LoadScheduledTasksAsync();
+        }
+
+        public void ToggleAdvancedSettings()
+        {
+            ShowAdvancedSettings = !ShowAdvancedSettings;
         }
 
         private static IReadOnlyList<StartupAppGroup> BuildGroups(StartupApp apps)

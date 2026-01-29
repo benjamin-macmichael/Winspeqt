@@ -116,5 +116,10 @@ namespace Winspeqt.Views.Monitoring
                 System.Diagnostics.Debug.WriteLine($"Error opening Startup folder: {ex.Message}");
             }
         }
+
+        private void ShowAdvancedSettings_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ToggleAdvancedSettings();
+        }
     }
 }
