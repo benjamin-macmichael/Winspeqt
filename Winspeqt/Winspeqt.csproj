@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -12,6 +12,12 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Remove="Assets\StartupApps\attribution.txt" />
+    <Content Remove="Assets\StartupApps\dropbox_2015-2017-logo_brandlogos.net_3rdch.png" />
+    <Content Remove="Assets\StartupApps\microsoft_teams_2025-logo_brandlogos.net_9ewvi.png" />
+    <Content Remove="Assets\StartupApps\steam-logo_brandlogos.net_htmkw.png" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="DashboardPage.xaml" />
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />

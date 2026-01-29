@@ -67,10 +67,50 @@
                 CornerRadius="16"
                 Padding="10"
                 Margin="0,0,0,32">
-                <StackPanel Grid.Row="2">
+                <StackPanel>
                     <TextBlock
-                    TextWrapping="WrapWholeWords"
-                    Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
+                        TextWrapping="WrapWholeWords"
+                        Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="2"
+                                CornerRadius="16"
+                                Padding="10"
+                                Margin="5,5,5,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Assets/StartupApps/teams.png" MaxHeight="100" />
+                                <TextBlock TextWrapping="WrapWholeWords" Text="Communications apps such as Microsoft Teams or Slack" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="2"
+                                CornerRadius="16"
+                                Padding="10"
+                                Margin="5,5,5,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Assets/StartupApps/steam.png" MaxHeight="100" />
+                                <TextBlock TextWrapping="WrapWholeWords" Text="Media and game launchers such as Steam or Spotify" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="2"
+                                CornerRadius="16"
+                                Padding="10"
+                                Margin="5,5,5,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Assets/StartupApps/dropbox.png" MaxHeight="100" />
+                                <TextBlock TextWrapping="WrapWholeWords" Text="Clound and sync clients such as Dropbox or One Drive" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                     <Button 
                         Content="View Startup Settings"
                         Margin="0,10,0,0"
