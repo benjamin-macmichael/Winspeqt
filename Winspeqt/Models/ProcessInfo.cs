@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Winspeqt.Models
+﻿namespace Winspeqt.Models
 {
     public class ProcessInfo
     {
@@ -11,30 +9,13 @@ namespace Winspeqt.Models
 
         // Extended info for Task Manager view
         public int ProcessId { get; set; }
-        public string ProcessName { get; set; } = "";
-        public string Description { get; set; } = "";
+        public string ProcessName { get; set; }
+        public string Description { get; set; }
         public double CpuUsagePercent { get; set; }
         public long MemoryUsageMB { get; set; }
-        public string Status { get; set; } = "";
-        public string FriendlyExplanation { get; set; } = "";
-        public string Icon { get; set; } = "";
-
-        // NEW: Category and Time Tracking
-        public ProcessCategory Category { get; set; } = ProcessCategory.Other;
-        public DateTime StartTime { get; set; }
-        public TimeSpan RunningTime => DateTime.Now - StartTime;
-        public string RunningTimeFormatted
-        {
-            get
-            {
-                var time = RunningTime;
-                if (time.TotalDays >= 1)
-                    return $"{(int)time.TotalDays}d {time.Hours}h";
-                if (time.TotalHours >= 1)
-                    return $"{(int)time.TotalHours}h {time.Minutes}m";
-                return $"{(int)time.TotalMinutes}m";
-            }
-        }
+        public string Status { get; set; }
+        public string FriendlyExplanation { get; set; }
+        public string Icon { get; set; }
 
         // Formatted strings for display
         public string CpuUsageDisplay => $"{CpuUsagePercent:F1}%";
@@ -60,17 +41,5 @@ namespace Winspeqt.Models
                 return "#4CAF50"; // Green
             }
         }
-    }
-
-    public enum ProcessCategory
-    {
-        Browser,
-        Gaming,
-        CloudStorage,
-        Communication,
-        SystemServices,
-        Development,
-        Media,
-        Other
     }
 }
