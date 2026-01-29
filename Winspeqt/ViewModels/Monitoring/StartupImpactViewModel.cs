@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
@@ -48,6 +49,8 @@ namespace Winspeqt.ViewModels.Monitoring
             private set => SetProperty(ref _startupAppGroups, value);
         }
 
+        public ICommand RefreshCommand { get; }
+
         public StartupImpactViewModel() {
             _getStartupPrograms = new getStartupPrograms();
             _startupEnumerator = new StartupEnumerator();
@@ -57,6 +60,8 @@ namespace Winspeqt.ViewModels.Monitoring
 
             StartupApp = _startupEnumerator.GetStartupItems(false);
             StartupAppGroups = BuildGroups(StartupApp);
+
+            RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
 
             _ = LoadScheduledTasksAsync();
         }
@@ -138,6 +143,33 @@ namespace Winspeqt.ViewModels.Monitoring
             });
 
             IsLoading = false;
+        }
+
+        private async Task RefreshDataAsync()
+        {
+            if (IsLoading)
+                return;
+
+            IsLoading = true;
+
+            try
+            {
+                var fullStartupApp = await Task.Run(() => _startupEnumerator.GetStartupItems());
+
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    StartupApp = fullStartupApp;
+                    StartupAppGroups = BuildGroups(StartupApp);
+                });
+            }
+            catch
+            {
+                // Keep existing data if refresh fails.
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
     }
 }
