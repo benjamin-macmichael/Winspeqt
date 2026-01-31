@@ -97,7 +97,7 @@
                                     Style="{StaticResource SectionBodyText}"
                                     Text="{Binding Description}"
                                     />
-                                <Button Content="View Location Settings" />
+                                <Button Content="{Binding Button.Label}" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>

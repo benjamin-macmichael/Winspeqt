@@ -9,8 +9,9 @@ namespace Winspeqt.Models
         public string Description { get; }
         public Brush IconColor { get; }
         public string LogoCode { get; }
+        public NavigationButton Button {  get; }
 
-        public SettingsRecommendation (string name, string description, int color, string logoCode)
+        public SettingsRecommendation (string name, string description, int color, string logoCode, string buttonTitle, string buttonLink)
         {
             Dictionary<int, Brush> colorPicker = new Dictionary<int, Brush> ()
             {
@@ -23,6 +24,7 @@ namespace Winspeqt.Models
             Description = description;
             IconColor = colorPicker[color % 4];
             LogoCode = logoCode;
+            Button = new NavigationButton (buttonTitle, buttonLink);
         }
     }
 }
