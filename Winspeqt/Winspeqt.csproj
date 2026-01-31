@@ -26,6 +26,7 @@
     <None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
+	<None Remove="Views\Security\SettingRecommendationsPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -98,6 +99,11 @@
     <Page Update="Views\Monitoring\MonitoringDashboardPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+	  <Page Update="Views\Security\SettingsRecommendationsPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+	  </Page>
   </ItemGroup>
 
   <!--
