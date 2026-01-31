@@ -17,7 +17,7 @@ namespace Winspeqt.Services
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Winspeqt-SecurityScanner/1.0");
-            _httpClient.Timeout = TimeSpan.FromSeconds(10); // Set reasonable timeout
+            _httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
 
         public async Task<List<AppSecurityInfo>> ScanInstalledAppsAsync()
@@ -26,12 +26,10 @@ namespace Winspeqt.Services
             {
                 var apps = new List<AppSecurityInfo>();
 
-                // Scan both 32-bit and 64-bit registry locations
                 apps.AddRange(ScanRegistryKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"));
                 apps.AddRange(ScanRegistryKey(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"));
                 apps.AddRange(ScanRegistryKey(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"));
 
-                // Remove duplicates and filter
                 var uniqueApps = apps
                     .Where(a => !string.IsNullOrWhiteSpace(a.AppName))
                     .Where(a => !string.IsNullOrWhiteSpace(a.InstalledVersion))
@@ -56,7 +54,6 @@ namespace Winspeqt.Services
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Error checking {app.AppName}: {ex.Message}");
-                    // Fall back to local dictionary
                     CheckAppVersionFallback(app);
                 }
             });
@@ -66,7 +63,6 @@ namespace Winspeqt.Services
 
         private async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
         {
-            // Try to get version from WinGet community repository via GitHub raw content
             var wingetId = TryGetWinGetId(app.AppName);
 
             if (!string.IsNullOrEmpty(wingetId))
@@ -75,12 +71,24 @@ namespace Winspeqt.Services
                 if (!string.IsNullOrEmpty(latestVersion))
                 {
                     app.LatestVersion = latestVersion;
+                    app.ConfidenceScore = 95; // High confidence - direct match
+                    app.DataSource = "Direct Match (WinGet)";
                     CompareAndSetStatus(app);
                     return;
                 }
             }
 
-            // Fallback to local dictionary
+            var searchResult = await SearchWinGetAsync(app.AppName, app.Publisher);
+            if (searchResult != null)
+            {
+                app.LatestVersion = searchResult.LatestVersion;
+                app.ConfidenceScore = searchResult.MatchScore;
+                app.DataSource = $"Search Result (WinGet) - Match: {searchResult.MatchScore}%";
+                app.UpdateInstructions = GenerateGenericUpdateInstructions(app.AppName);
+                CompareAndSetStatus(app);
+                return;
+            }
+
             CheckAppVersionFallback(app);
         }
 
@@ -88,8 +96,6 @@ namespace Winspeqt.Services
         {
             try
             {
-                // Query the WinGet REST API (community-run, no key required)
-                // Using v2 API as per their documentation
                 var url = $"https://api.winget.run/v2/packages/{wingetId}";
 
                 System.Diagnostics.Debug.WriteLine($"Fetching from: {url}");
@@ -105,13 +111,11 @@ namespace Winspeqt.Services
 
                     var doc = JsonDocument.Parse(content);
 
-                    // The API returns: {"Packages":[{"Id":"...","Versions":["latest","older",...]}],"Total":1}
                     if (doc.RootElement.TryGetProperty("Packages", out var packages) && packages.GetArrayLength() > 0)
                     {
                         var firstPackage = packages[0];
                         if (firstPackage.TryGetProperty("Versions", out var versions) && versions.GetArrayLength() > 0)
                         {
-                            // The first version in the array is the latest
                             var latestVersion = versions[0].GetString();
                             System.Diagnostics.Debug.WriteLine($"Found version: {latestVersion}");
                             return latestVersion;
@@ -128,15 +132,142 @@ namespace Winspeqt.Services
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error fetching from winget.run: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             }
 
             return null;
         }
 
+        private async Task<SearchResult> SearchWinGetAsync(string appName, string publisher)
+        {
+            try
+            {
+                var searchQuery = CleanAppNameForSearch(appName);
+                var url = $"https://api.winget.run/v2/packages?query={Uri.EscapeDataString(searchQuery)}&take=5";
+
+                System.Diagnostics.Debug.WriteLine($"Searching WinGet for: {searchQuery}");
+
+                var response = await _httpClient.GetAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var doc = JsonDocument.Parse(content);
+
+                    if (doc.RootElement.TryGetProperty("Packages", out var packages) && packages.GetArrayLength() > 0)
+                    {
+                        var bestMatch = FindBestMatch(packages, appName, publisher);
+
+                        if (bestMatch != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Found match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
+                            return bestMatch;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error searching WinGet: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private string CleanAppNameForSearch(string appName)
+        {
+            var cleaned = appName
+                .Replace(" (x64)", "")
+                .Replace(" (x86)", "")
+                .Replace(" (64-bit)", "")
+                .Replace(" (32-bit)", "")
+                .Replace(" 64-bit", "")
+                .Replace(" 32-bit", "")
+                .Trim();
+
+            var parts = cleaned.Split(' ');
+            if (parts.Length > 1 && (parts[^1].All(c => char.IsDigit(c) || c == '.') ||
+                                     int.TryParse(parts[^1], out _)))
+            {
+                cleaned = string.Join(" ", parts.Take(parts.Length - 1));
+            }
+
+            return cleaned;
+        }
+
+        private SearchResult FindBestMatch(JsonElement packages, string appName, string publisher)
+        {
+            var appNameLower = appName.ToLower();
+            var publisherLower = publisher.ToLower();
+
+            SearchResult bestMatch = null;
+            int bestScore = 0;
+
+            for (int i = 0; i < packages.GetArrayLength(); i++)
+            {
+                var package = packages[i];
+
+                if (!package.TryGetProperty("Id", out var idProp) ||
+                    !package.TryGetProperty("Latest", out var latestProp))
+                    continue;
+
+                var packageId = idProp.GetString();
+                var packageName = "";
+                var packagePublisher = "";
+
+                if (latestProp.TryGetProperty("Name", out var nameProp))
+                    packageName = nameProp.GetString()?.ToLower() ?? "";
+
+                if (latestProp.TryGetProperty("Publisher", out var pubProp))
+                    packagePublisher = pubProp.GetString()?.ToLower() ?? "";
+
+                string version = null;
+                if (package.TryGetProperty("Versions", out var versions) && versions.GetArrayLength() > 0)
+                {
+                    version = versions[0].GetString();
+                }
+
+                if (string.IsNullOrEmpty(version))
+                    continue;
+
+                int score = 0;
+
+                if (packageName == appNameLower)
+                    score += 100;
+                else if (packageName.Contains(appNameLower) || appNameLower.Contains(packageName))
+                    score += 50;
+                else
+                {
+                    var appWords = appNameLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    var pkgWords = packageName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    var commonWords = appWords.Intersect(pkgWords).Count();
+                    score += commonWords * 20;
+                }
+
+                if (!string.IsNullOrEmpty(publisherLower) && !string.IsNullOrEmpty(packagePublisher))
+                {
+                    if (packagePublisher == publisherLower)
+                        score += 50;
+                    else if (packagePublisher.Contains(publisherLower) || publisherLower.Contains(packagePublisher))
+                        score += 25;
+                }
+
+                if (score >= 50 && score > bestScore)
+                {
+                    bestMatch = new SearchResult
+                    {
+                        LatestVersion = version,
+                        WinGetId = packageId,
+                        MatchScore = score
+                    };
+                    bestScore = score;
+                }
+            }
+
+            return bestMatch;
+        }
+
         private string TryGetWinGetId(string appName)
         {
-            // Map common app names to their WinGet package IDs
             var knownMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Google Chrome"] = "Google.Chrome",
@@ -157,27 +288,7 @@ namespace Winspeqt.Services
                 ["Python"] = "Python.Python.3.13",
                 ["Node.js"] = "OpenJS.NodeJS",
                 ["Docker Desktop"] = "Docker.DockerDesktop",
-                ["OBS Studio"] = "OBSProject.OBSStudio",
-                ["Slack"] = "SlackTechnologies.Slack",
-                ["WhatsApp"] = "WhatsApp.WhatsApp",
-                ["Telegram"] = "Telegram.TelegramDesktop",
-                ["Brave"] = "Brave.Brave",
-                ["Opera"] = "Opera.Opera",
-                ["Vivaldi"] = "Vivaldi.Vivaldi",
-                ["LibreOffice"] = "TheDocumentFoundation.LibreOffice",
-                ["GIMP"] = "GIMP.GIMP",
-                ["Audacity"] = "Audacity.Audacity",
-                ["HandBrake"] = "HandBrake.HandBrake",
-                ["qBittorrent"] = "qBittorrent.qBittorrent",
-                ["FileZilla"] = "TimKosse.FileZilla.Client",
-                ["PuTTY"] = "PuTTY.PuTTY",
-                ["WinSCP"] = "WinSCP.WinSCP",
-                ["Paint.NET"] = "dotPDN.PaintDotNet",
-                ["Blender"] = "BlenderFoundation.Blender",
-                ["Inkscape"] = "Inkscape.Inkscape",
-                ["KeePass"] = "KeePassXCTeam.KeePassXC",
-                ["Bitwarden"] = "Bitwarden.Bitwarden",
-                ["1Password"] = "AgileBits.1Password"
+                ["OBS Studio"] = "OBSProject.OBSStudio"
             };
 
             foreach (var mapping in knownMappings)
@@ -193,7 +304,6 @@ namespace Winspeqt.Services
 
         private void CheckAppVersionFallback(AppSecurityInfo app)
         {
-            // Don't use outdated local dictionary - just mark as unable to check
             app.Status = SecurityStatus.Unknown;
             app.StatusMessage = "Unable to check version online right now.";
             app.UpdateInstructions = "We couldn't verify if this app is up to date. Please try scanning again later when you have a stable internet connection.\n\n" +
@@ -203,6 +313,8 @@ namespace Winspeqt.Services
                                    $"3. Find 'Check for Updates' option\n\n" +
                                    $"Or visit the official {app.AppName} website for the latest version.";
             app.LatestVersion = "Unable to check";
+            app.ConfidenceScore = 0;
+            app.DataSource = "No match found";
         }
 
         private void CompareAndSetStatus(AppSecurityInfo app)
@@ -214,7 +326,6 @@ namespace Winspeqt.Services
                 app.Status = SecurityStatus.Outdated;
                 app.StatusMessage = "A newer version is available.";
 
-                // Generate generic update instructions if not already set
                 if (string.IsNullOrEmpty(app.UpdateInstructions))
                 {
                     app.UpdateInstructions = GenerateGenericUpdateInstructions(app.AppName);
@@ -263,7 +374,6 @@ namespace Winspeqt.Services
                         var displayName = subKey.GetValue("DisplayName")?.ToString();
                         if (string.IsNullOrWhiteSpace(displayName)) continue;
 
-                        // Skip Windows updates and system components
                         if (displayName.StartsWith("KB") ||
                             displayName.Contains("Update for") ||
                             displayName.Contains("Hotfix for"))
@@ -372,6 +482,13 @@ namespace Winspeqt.Services
         public void Dispose()
         {
             _httpClient?.Dispose();
+        }
+
+        private class SearchResult
+        {
+            public string LatestVersion { get; set; }
+            public string WinGetId { get; set; }
+            public int MatchScore { get; set; }
         }
     }
 }

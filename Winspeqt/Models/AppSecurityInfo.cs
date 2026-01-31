@@ -15,6 +15,24 @@ namespace Winspeqt.Models
         public string StatusMessage { get; set; }
         public string UpdateInstructions { get; set; }
 
+        // Confidence scoring - NEW!
+        public int ConfidenceScore { get; set; } // 0-100
+        public string ConfidenceLevel => ConfidenceScore switch
+        {
+            >= 90 => "High",
+            >= 70 => "Medium",
+            >= 50 => "Low",
+            _ => "Unknown"
+        };
+        public string ConfidenceColor => ConfidenceScore switch
+        {
+            >= 90 => "#4CAF50",
+            >= 70 => "#FF9800",
+            >= 50 => "#F44336",
+            _ => "#9E9E9E"
+        };
+        public string DataSource { get; set; } // "Direct Match", "Search Result", etc.
+
         public bool IsOutdated => Status == SecurityStatus.Outdated;
         public bool IsUnknown => Status == SecurityStatus.Unknown;
         public bool IsUpToDate => Status == SecurityStatus.UpToDate;

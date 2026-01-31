@@ -126,7 +126,7 @@ namespace Winspeqt.ViewModels.Security
             get
             {
                 if (!HasScanned || TotalAppsScanned == 0)
-                    return "Click 'Scan My Apps' to check for outdated software.";
+                    return "Click 'Check for Updates' to check for outdated software.";
 
                 if (CriticalAppsCount > 0)
                     return $"⚠️ {CriticalAppsCount} critical update{(CriticalAppsCount == 1 ? "" : "s")} needed! Update these apps immediately.";
