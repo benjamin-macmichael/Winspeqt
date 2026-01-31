@@ -72,8 +72,8 @@
                 </StackPanel>
             </Grid>
 
-            <GridView Grid.Row="1" ItemsSource="{Binding SettingsRecommendations}" HorizontalAlignment="Center">
-                <GridView.ItemTemplate>
+            <ListView Grid.Row="1" ItemsSource="{Binding SettingsRecommendations}" HorizontalAlignment="Center">
+                <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border 
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -82,7 +82,7 @@
                             CornerRadius="12"
                             Padding="28"
                             Margin="0,0,12,12"
-                            MaxWidth="500">
+                            MaxWidth="1000">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <FontIcon 
@@ -101,113 +101,8 @@
                             </StackPanel>
                         </Border>
                     </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
-
-            <!-- Recommendation Cards -->
-            <Grid Grid.Row="2" Margin="0,0,0,32">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Location Card -->
-                <Border 
-                    Grid.Row="0" Grid.Column="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
-                    Margin="0,0,12,12">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon 
-                                Glyph="&#xe707;"
-                                Style="{StaticResource SectionIconStyle}"
-                                Foreground="#F14F21"/>
-                            <TextBlock 
-                                Text="Location" 
-                                Style="{StaticResource SectionTitleStyle}"/>
-                        </StackPanel>
-                        <TextBlock
-                            Style="{StaticResource SectionBodyText}"
-                            Text="Super spies like to download trackers onto your computer. You think you downloaded a cute little clicker game? No, it's the KGB finding a way to spy on your every move! Catch them in the act and see what apps are being used to keep you under the threat of espionage."
-                            />
-                        <Button Content="View Location Settings" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Lock Time Card -->
-                <Border 
-                    Grid.Row="0" Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
-                    Margin="12,0,0,12">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon 
-                                Glyph="&#xf182;" 
-                                Style="{StaticResource SectionIconStyle}" 
-                                Foreground="#7EB900"/>
-                            <TextBlock
-                                Text="Screen Time Out"
-                                Style="{StaticResource SectionTitleStyle}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Network Card -->
-                <Border 
-                    Grid.Row="1" Grid.Column="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
-                    Margin="0,12,12,0">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon 
-                                Glyph="&#xe777;" 
-                                Style="{StaticResource SectionIconStyle}" 
-                                Foreground="#00A3EE"/>
-                            <TextBlock
-                                Text="Windows Update"
-                                Style="{StaticResource SectionTitleStyle}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Disk Card -->
-                <Border 
-                    Grid.Row="1" Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
-                    Margin="12,12,0,0">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon 
-                                Glyph="&#xe72e;" 
-                                Style="{StaticResource SectionIconStyle}" 
-                                Foreground="#FEB800"/>
-                            <TextBlock
-                                Text="Sign-in Options"
-                                Style="{StaticResource SectionTitleStyle}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </Grid>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
     </ScrollViewer>
 </Page>
