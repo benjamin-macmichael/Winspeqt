@@ -23,6 +23,7 @@
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
     <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
+    <None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
   </ItemGroup>
@@ -66,6 +67,7 @@
     <Folder Include="ViewModels\Optimization\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Security\AppSecurityPage.xaml">
     <Page Update="Views\Monitoring\StartupImpactPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
