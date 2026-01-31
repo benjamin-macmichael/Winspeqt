@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using Microsoft.UI.Xaml.Media;
+using System.Collections.Generic;
 
 namespace Winspeqt.Models
 {
@@ -7,21 +7,21 @@ namespace Winspeqt.Models
     {
         public string Name { get; }
         public string Description { get; }
-        public Color Color { get; }
+        public Brush IconColor { get; }
         public string LogoCode { get; }
 
         public SettingsRecommendation (string name, string description, int color, string logoCode)
         {
-            Dictionary<int, Color> colorPicker = new Dictionary<int, Color> ()
+            Dictionary<int, Brush> colorPicker = new Dictionary<int, Brush> ()
             {
-                { 0, Color.FromArgb(254, 184, 0) }, // yellow
-                { 1, Color.FromArgb(241, 79, 33) }, // red
-                { 2, Color.FromArgb(126, 185, 0) }, // green
-                { 3, Color.FromArgb(0, 163, 238) }, // blue
+                { 0, new SolidColorBrush(Windows.UI.Color.FromArgb(255,254,184,0)) }, // yellow
+                { 1, new SolidColorBrush(Windows.UI.Color.FromArgb(255,241,79,33)) }, // red
+                { 2, new SolidColorBrush(Windows.UI.Color.FromArgb(255,126,185,0)) }, // green
+                { 3, new SolidColorBrush(Windows.UI.Color.FromArgb(255,0,163,238)) }, // blue
             };
             Name = name;
             Description = description;
-            Color = colorPicker[color % 4];
+            IconColor = colorPicker[color % 4];
             LogoCode = logoCode;
         }
     }

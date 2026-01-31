@@ -72,8 +72,40 @@
                 </StackPanel>
             </Grid>
 
+            <GridView Grid.Row="1" ItemsSource="{Binding SettingsRecommendations}" HorizontalAlignment="Center">
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <Border 
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="2"
+                            CornerRadius="12"
+                            Padding="28"
+                            Margin="0,0,12,12"
+                            MaxWidth="500">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <FontIcon 
+                                        Glyph="{Binding LogoCode}"
+                                        Style="{StaticResource SectionIconStyle}"
+                                        Foreground="{Binding IconColor}"/>
+                                    <TextBlock 
+                                        Text="{Binding Name}" 
+                                        Style="{StaticResource SectionTitleStyle}"/>
+                                </StackPanel>
+                                <TextBlock
+                                    Style="{StaticResource SectionBodyText}"
+                                    Text="{Binding Description}"
+                                    />
+                                <Button Content="View Location Settings" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+
             <!-- Recommendation Cards -->
-            <Grid Grid.Row="1" Margin="0,0,0,32">
+            <Grid Grid.Row="2" Margin="0,0,0,32">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
