@@ -66,12 +66,14 @@
     <Folder Include="Controls\" />
     <Folder Include="ViewModels\Optimization\" />
   </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\Security\AppSecurityPage.xaml">
-    <Page Update="Views\Monitoring\StartupImpactPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+	<ItemGroup>
+		<Page Update="Views\Security\AppSecurityPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\Monitoring\StartupImpactPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
   <ItemGroup>
     <Page Update="Views\Security\SecurityStatusPage.xaml">
       <Generator>MSBuild:Compile</Generator>
