@@ -1,17 +1,18 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
 using Winspeqt.ViewModels.Security;
 
 namespace Winspeqt.Views.Security
 {
     public sealed partial class SettingsRecommendationsPage : Page
     {
-        //public TaskManagerViewModel ViewModel { get; }
+        public SettingsRecommendationsViewModel ViewModel { get; }
 
         public SettingsRecommendationsPage()
         {
             this.InitializeComponent();
+            ViewModel = new SettingsRecommendationsViewModel();
+            this.DataContext = ViewModel;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
