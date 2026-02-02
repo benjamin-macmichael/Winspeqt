@@ -36,10 +36,10 @@ namespace Winspeqt.Views.Monitoring
             Frame.Navigate(typeof(Monitoring.StartupImpactPage));
         }
 
-        private async void BackgroundProcessCard_Click(object sender, RoutedEventArgs e)
+        private void BackgroundProcessCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to Background Process page
-            await ShowComingSoonDialog("Background Process Insights");
+            // Navigate to Background Process page
+            Frame.Navigate(typeof(BackgroundProcessPage));
         }
 
         private async System.Threading.Tasks.Task ShowComingSoonDialog(string feature)
