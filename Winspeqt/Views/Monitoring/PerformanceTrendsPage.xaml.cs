@@ -2,7 +2,6 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Winspeqt.ViewModels;
 using Winspeqt.ViewModels.Monitoring;
 
 namespace Winspeqt.Views.Monitoring
