@@ -1,4 +1,6 @@
-﻿namespace Winspeqt.Models
+﻿using System;
+
+namespace Winspeqt.Models
 {
     public class ProcessInfo
     {
@@ -16,6 +18,25 @@
         public string Status { get; set; }
         public string FriendlyExplanation { get; set; }
         public string Icon { get; set; }
+
+        // Category for grouping processes
+        public ProcessCategory Category { get; set; } = ProcessCategory.Other;
+
+        // Running time tracking
+        public DateTime StartTime { get; set; } = DateTime.Now;
+        public TimeSpan RunningTime => DateTime.Now - StartTime;
+        public string RunningTimeFormatted
+        {
+            get
+            {
+                var time = RunningTime;
+                if (time.TotalDays >= 1)
+                    return $"{(int)time.TotalDays}d {time.Hours}h";
+                if (time.TotalHours >= 1)
+                    return $"{(int)time.TotalHours}h {time.Minutes}m";
+                return $"{time.Minutes}m {time.Seconds}s";
+            }
+        }
 
         // Formatted strings for display
         public string CpuUsageDisplay => $"{CpuUsagePercent:F1}%";
@@ -41,5 +62,17 @@
                 return "#4CAF50"; // Green
             }
         }
+    }
+
+    public enum ProcessCategory
+    {
+        Browser,
+        Gaming,
+        CloudStorage,
+        Communication,
+        SystemServices,
+        Development,
+        Media,
+        Other
     }
 }
