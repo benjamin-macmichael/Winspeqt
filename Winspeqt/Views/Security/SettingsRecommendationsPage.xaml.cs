@@ -1,5 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Diagnostics;
 using Winspeqt.ViewModels.Security;
 
 namespace Winspeqt.Views.Security
@@ -20,6 +22,25 @@ namespace Winspeqt.Views.Security
             if (Frame.CanGoBack)
             {
                 Frame.GoBack();
+            }
+        }
+
+        private void LinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string link)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = $"ms-settings:{link}",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error opening {link}: {ex.Message}");
+                }
             }
         }
     }

@@ -97,7 +97,7 @@
                                     Style="{StaticResource SectionBodyText}"
                                     Text="{Binding Description}"
                                     />
-                                <Button Content="{Binding Button.Label}" />
+                                <Button Click="LinkButton_Click" Content="{Binding Button.Label}" CommandParameter="{Binding Button.Target}" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>

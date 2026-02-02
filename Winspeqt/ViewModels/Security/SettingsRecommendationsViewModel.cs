@@ -19,7 +19,7 @@ namespace Winspeqt.ViewModels.Security
                         1,
                         "\ue707",
                         "View Location Settings",
-                        ""
+                        "privacy-location"
                     ),                
                 new(
                         "Screen Time Out",
@@ -27,7 +27,7 @@ namespace Winspeqt.ViewModels.Security
                         2,
                         "\uf182",
                         "View Time Out Settings",
-                        ""
+                        "powersleep"
                     ),
                 new(
                         "Windows Update",
@@ -35,7 +35,7 @@ namespace Winspeqt.ViewModels.Security
                         3,
                         "\ue777",
                         "View Update Settings",
-                        ""
+                        "windowsupdate"
                     ),                
                 new(
                         "Sign-in Options",
@@ -43,7 +43,7 @@ namespace Winspeqt.ViewModels.Security
                         4,
                         "\ue72e",
                         "View Sign-in Settings Settings",
-                        ""
+                        "signinoptions"
                     ),
             ];
         }
