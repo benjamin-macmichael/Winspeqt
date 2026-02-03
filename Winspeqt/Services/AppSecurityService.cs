@@ -63,33 +63,93 @@ namespace Winspeqt.Services
 
         private async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
         {
+            string wingetVersion = null;
+            string chocolateyVersion = null;
+            int wingetScore = 0;
+
+            // Try direct mapping first (WinGet)
             var wingetId = TryGetWinGetId(app.AppName);
 
             if (!string.IsNullOrEmpty(wingetId))
             {
-                var latestVersion = await GetLatestVersionFromWinGetAsync(wingetId);
-                if (!string.IsNullOrEmpty(latestVersion))
+                wingetVersion = await GetLatestVersionFromWinGetAsync(wingetId);
+                if (!string.IsNullOrEmpty(wingetVersion))
                 {
-                    app.LatestVersion = latestVersion;
-                    app.ConfidenceScore = 95; // High confidence - direct match
-                    app.DataSource = "Direct Match (WinGet)";
-                    CompareAndSetStatus(app);
-                    return;
+                    wingetScore = 95; // High confidence for direct match
                 }
             }
 
-            var searchResult = await SearchWinGetAsync(app.AppName, app.Publisher);
-            if (searchResult != null)
+            // If no direct match, try searching WinGet
+            if (string.IsNullOrEmpty(wingetVersion))
             {
-                app.LatestVersion = searchResult.LatestVersion;
-                app.ConfidenceScore = searchResult.MatchScore;
-                app.DataSource = $"Search Result (WinGet) - Match: {searchResult.MatchScore}%";
-                app.UpdateInstructions = GenerateGenericUpdateInstructions(app.AppName);
-                CompareAndSetStatus(app);
+                var searchResult = await SearchWinGetAsync(app.AppName, app.Publisher);
+                if (searchResult != null)
+                {
+                    wingetVersion = searchResult.LatestVersion;
+                    wingetScore = searchResult.MatchScore;
+                }
+            }
+
+            // Also check Chocolatey for validation
+            var chocoResult = await SearchChocolateyAsync(app.AppName, app.Publisher);
+            if (chocoResult != null)
+            {
+                chocolateyVersion = chocoResult.LatestVersion;
+            }
+
+            // Determine best version and confidence
+            if (!string.IsNullOrEmpty(wingetVersion) && !string.IsNullOrEmpty(chocolateyVersion))
+            {
+                // Both sources agree
+                if (wingetVersion == chocolateyVersion)
+                {
+                    app.LatestVersion = wingetVersion;
+                    app.ConfidenceScore = 98; // Very high confidence
+                    app.DataSource = $"✓ Verified by both WinGet and Chocolatey (v{wingetVersion})";
+                }
+                // Both sources have data but versions differ
+                else
+                {
+                    // Use the newer version
+                    var comparison = CompareVersions(wingetVersion, chocolateyVersion);
+                    if (comparison >= 0)
+                    {
+                        app.LatestVersion = wingetVersion;
+                        app.DataSource = $"⚠️ Sources differ - Using WinGet: {wingetVersion} | Chocolatey: {chocolateyVersion}";
+                    }
+                    else
+                    {
+                        app.LatestVersion = chocolateyVersion;
+                        app.DataSource = $"⚠️ Sources differ - Using Chocolatey: {chocolateyVersion} | WinGet: {wingetVersion}";
+                    }
+                    app.ConfidenceScore = 75; // Medium confidence when sources disagree
+                }
+            }
+            // Only WinGet has data
+            else if (!string.IsNullOrEmpty(wingetVersion))
+            {
+                app.LatestVersion = wingetVersion;
+                app.ConfidenceScore = wingetScore;
+                app.DataSource = wingetScore >= 90
+                    ? "WinGet (direct match) - Chocolatey: not found"
+                    : $"WinGet (search match: {wingetScore}%) - Chocolatey: not found";
+            }
+            // Only Chocolatey has data
+            else if (!string.IsNullOrEmpty(chocolateyVersion))
+            {
+                app.LatestVersion = chocolateyVersion;
+                app.ConfidenceScore = chocoResult.MatchScore;
+                app.DataSource = $"Chocolatey (match: {chocoResult.MatchScore}%) - WinGet: not found";
+            }
+            // No data from either source
+            else
+            {
+                CheckAppVersionFallback(app);
                 return;
             }
 
-            CheckAppVersionFallback(app);
+            app.UpdateInstructions = GenerateGenericUpdateInstructions(app.AppName);
+            CompareAndSetStatus(app);
         }
 
         private async Task<string> GetLatestVersionFromWinGetAsync(string wingetId)
@@ -264,6 +324,120 @@ namespace Winspeqt.Services
             }
 
             return bestMatch;
+        }
+
+        private async Task<SearchResult> SearchChocolateyAsync(string appName, string publisher)
+        {
+            try
+            {
+                var searchQuery = CleanAppNameForSearch(appName);
+
+                // Use simpler Chocolatey search - just query parameter, no complex filters
+                var url = $"https://community.chocolatey.org/api/v2/Packages()?$filter=IsLatestVersion&$orderby=DownloadCount desc&$top=10&searchTerm='{Uri.EscapeDataString(searchQuery)}'";
+
+                System.Diagnostics.Debug.WriteLine($"Searching Chocolatey for: {searchQuery}");
+                System.Diagnostics.Debug.WriteLine($"Chocolatey URL: {url}");
+
+                var response = await _httpClient.GetAsync(url);
+
+                System.Diagnostics.Debug.WriteLine($"Chocolatey response status: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    // Parse XML response (Chocolatey uses OData/XML)
+                    var bestMatch = ParseChocolateyResponse(content, appName, publisher);
+
+                    if (bestMatch != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Found Chocolatey match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
+                        return bestMatch;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("No match found in Chocolatey response");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Chocolatey API error: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error searching Chocolatey: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private SearchResult ParseChocolateyResponse(string xmlContent, string appName, string publisher)
+        {
+            try
+            {
+                var appNameLower = appName.ToLower();
+                var publisherLower = publisher.ToLower();
+
+                // Simple XML parsing - look for entry elements
+                var entries = xmlContent.Split(new[] { "<entry>" }, StringSplitOptions.RemoveEmptyEntries);
+
+                SearchResult bestMatch = null;
+                int bestScore = 0;
+
+                foreach (var entry in entries.Skip(1)) // Skip first split (before first entry)
+                {
+                    if (!entry.Contains("</entry>")) continue;
+
+                    // Extract title
+                    var titleMatch = System.Text.RegularExpressions.Regex.Match(entry, @"<title[^>]*>([^<]+)</title>");
+                    if (!titleMatch.Success) continue;
+                    var title = titleMatch.Groups[1].Value.ToLower();
+
+                    // Extract version
+                    var versionMatch = System.Text.RegularExpressions.Regex.Match(entry, @"<d:Version[^>]*>([^<]+)</d:Version>");
+                    if (!versionMatch.Success) continue;
+                    var version = versionMatch.Groups[1].Value;
+
+                    // Extract ID
+                    var idMatch = System.Text.RegularExpressions.Regex.Match(entry, @"<id>https://community\.chocolatey\.org/api/v2/Packages\(Id='([^']+)',Version='[^']+'\)</id>");
+                    var packageId = idMatch.Success ? idMatch.Groups[1].Value : title;
+
+                    // Calculate match score (similar to WinGet scoring)
+                    int score = 0;
+
+                    if (title == appNameLower)
+                        score += 100;
+                    else if (title.Contains(appNameLower) || appNameLower.Contains(title))
+                        score += 50;
+                    else
+                    {
+                        var appWords = appNameLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var titleWords = title.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var commonWords = appWords.Intersect(titleWords).Count();
+                        score += commonWords * 20;
+                    }
+
+                    // Chocolatey doesn't always have publisher info in search results, so be lenient
+                    if (score >= 50 && score > bestScore)
+                    {
+                        bestMatch = new SearchResult
+                        {
+                            LatestVersion = version,
+                            WinGetId = packageId,
+                            MatchScore = score
+                        };
+                        bestScore = score;
+                    }
+                }
+
+                return bestMatch;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error parsing Chocolatey XML: {ex.Message}");
+                return null;
+            }
         }
 
         private string TryGetWinGetId(string appName)
