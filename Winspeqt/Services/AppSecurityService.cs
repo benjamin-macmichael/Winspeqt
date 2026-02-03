@@ -640,13 +640,120 @@ namespace Winspeqt.Services
         {
             var systemKeywords = new[]
             {
+                // Microsoft development tools
                 "microsoft visual c++",
                 "microsoft .net",
+                "asp.net core",
+                "shared framework",
+                "targeting pack",
                 "windows software development kit",
+                "windows sdk",
+                "visual studio",
+                "vs_",
+                "vcpp",
+                "entity framework",
+                "microsoft.net.workload",
+                "microsoft.net.sdk",
+                "aspire.manifest",
+                "emscripten.manifest",
+                "mono.toolchain",
+                "testplatform",
+                "msi development tools",
+                
+                // System runtimes and redistributables
                 "redistributable",
                 "runtime",
+                "vcredist",
+                "directx",
+                "visual c++ library",
+                "universal crt",
+                
+                // Windows components
+                "windows app certification kit",
+                "windows desktop extension sdk",
+                "windows iot extension sdk",
+                "windows mobile extension sdk",
+                "windows team extension sdk",
+                "winrt intellisense",
+                "kits configuration installer",
+                "sdk arm additions",
+                
+                // Microsoft Edge/Browser components
                 "microsoft edge update",
-                "microsoft edge webview"
+                "microsoft edge webview",
+                
+                // Development/Debug tools
+                "diagnosticshub",
+                "icecap_collection",
+                "intellitraceprofilerproxy",
+                "clickonce",
+                "filetracker",
+                "winappdeploy",
+                "application verifier",
+                
+                // Office components (managed by Office)
+                "office 16 click-to-run",
+                "microsoft office",
+                "click-to-run extensibility",
+                "click-to-run licensing",
+                
+                // Driver and hardware utilities (vendor-managed)
+                "nvidia",
+                "amd",
+                "intel driver",
+                "intel graphics",
+                "realtek",
+                "qualcomm",
+                
+                // OEM bloatware/utilities
+                "lenovo vantage",
+                "lenovo system",
+                "lenovo smart",
+                "lenovo now",
+                "dell supportassist",
+                "dell update",
+                "hp support",
+                "hp system event",
+                "asus",
+                "acer",
+                
+                // Game launcher prerequisites (managed by launcher)
+                "launcher prerequisites",
+                "epic games launcher prerequisites",
+                "battle.net helper",
+                
+                // Windows system services
+                "windows subsystem",
+                "app installer",
+                "windows toolscorepkg",
+                "minion", // Windows Minion system service
+                
+                // Update services (managed automatically)
+                "update health tools",
+                "google update",
+                "adobe refresh manager",
+                
+                // Java (often dependency, not user app)
+                "java se development kit",
+                "java(tm)",
+                
+                // System fonts and UI
+                "vs_coreeditorfonts",
+                "font",
+                
+                // Background services
+                "service host",
+                "background task",
+                "helper",
+                
+                // Database components (often dependencies)
+                "mysql connector",
+                "sql server",
+                "clr types",
+                
+                // Compatibility and legacy
+                "compatibility database",
+                "shim infrastructure"
             };
 
             var appNameLower = appName.ToLower();
