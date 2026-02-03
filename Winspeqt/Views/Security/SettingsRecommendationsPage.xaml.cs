@@ -33,7 +33,7 @@ namespace Winspeqt.Views.Security
                 {
                     Process.Start(new ProcessStartInfo
                     {
-                        FileName = $"ms-settings:{link}",
+                        FileName = $"{link}",
                         UseShellExecute = true
                     });
                 }
