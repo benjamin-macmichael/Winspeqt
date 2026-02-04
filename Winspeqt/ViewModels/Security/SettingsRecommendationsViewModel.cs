@@ -7,8 +7,8 @@ namespace Winspeqt.ViewModels.Security
     {
         public ObservableCollection<SettingsRecommendation> SettingsRecommendations { get; set; }
 
-        public SettingsRecommendationsViewModel() 
-        { 
+        public SettingsRecommendationsViewModel()
+        {
             SettingsRecommendations =
             [
                 new(
@@ -18,7 +18,7 @@ namespace Winspeqt.ViewModels.Security
                         "\ue707",
                         "View Location Settings",
                         "ms-settings:privacy-location"
-                    ),                
+                    ),
                 new(
                         "Screen Time Out",
                         "Shorter timeouts lock the screen faster when you step away. This lowers the risk of someone accessing your session without permission.",
@@ -34,7 +34,7 @@ namespace Winspeqt.ViewModels.Security
                         "\ue777",
                         "View Update Settings",
                         "ms-settings:windowsupdate"
-                    ),                
+                    ),
                 new(
                         "Sign-in Options",
                         "Stronger sign-in methods like PINs, biometrics, or MFA help prevent unauthorized access if your device or password is compromised.",

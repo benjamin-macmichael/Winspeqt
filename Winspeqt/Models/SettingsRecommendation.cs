@@ -9,11 +9,11 @@ namespace Winspeqt.Models
         public string Description { get; }
         public Brush IconColor { get; }
         public string LogoCode { get; }
-        public NavigationButton Button {  get; }
+        public NavigationButton Button { get; }
 
-        public SettingsRecommendation (string name, string description, int color, string logoCode, string buttonTitle, string buttonLink)
+        public SettingsRecommendation(string name, string description, int color, string logoCode, string buttonTitle, string buttonLink)
         {
-            Dictionary<int, Brush> colorPicker = new Dictionary<int, Brush> ()
+            Dictionary<int, Brush> colorPicker = new Dictionary<int, Brush>()
             {
                 { 0, new SolidColorBrush(Windows.UI.Color.FromArgb(255,254,184,0)) }, // yellow
                 { 1, new SolidColorBrush(Windows.UI.Color.FromArgb(255,241,79,33)) }, // red
@@ -24,7 +24,7 @@ namespace Winspeqt.Models
             Description = description;
             IconColor = colorPicker[color % 4];
             LogoCode = logoCode;
-            Button = new NavigationButton (buttonTitle, buttonLink);
+            Button = new NavigationButton(buttonTitle, buttonLink);
         }
     }
 }

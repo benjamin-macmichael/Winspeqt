@@ -1,5 +1,5 @@
-using StartupInventory;
 using Microsoft.UI.Dispatching;
+using StartupInventory;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
