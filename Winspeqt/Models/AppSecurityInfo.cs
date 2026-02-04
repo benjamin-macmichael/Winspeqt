@@ -10,12 +10,11 @@ namespace Winspeqt.Models
         public string Publisher { get; set; }
         public string InstallLocation { get; set; }
         public DateTime? InstallDate { get; set; }
-
         public SecurityStatus Status { get; set; }
         public string StatusMessage { get; set; }
         public string UpdateInstructions { get; set; }
 
-        // Confidence scoring - NEW!
+        // Confidence scoring
         public int ConfidenceScore { get; set; } // 0-100
         public string ConfidenceLevel => ConfidenceScore switch
         {
@@ -33,7 +32,11 @@ namespace Winspeqt.Models
         };
         public string DataSource { get; set; } // "Direct Match", "Search Result", etc.
 
-        public bool IsOutdated => Status == SecurityStatus.Outdated;
+        // Package manager IDs - NEW!
+        public string WinGetId { get; set; }
+        public string ChocolateyId { get; set; }
+
+        public bool IsOutdated => Status == SecurityStatus.Outdated || Status == SecurityStatus.Critical;
         public bool IsUnknown => Status == SecurityStatus.Unknown;
         public bool IsUpToDate => Status == SecurityStatus.UpToDate;
 

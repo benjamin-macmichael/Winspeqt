@@ -65,10 +65,12 @@ namespace Winspeqt.Services
         {
             string wingetVersion = null;
             string chocolateyVersion = null;
+            string wingetId = null;
+            string chocolateyId = null;
             int wingetScore = 0;
 
             // Try direct mapping first (WinGet)
-            var wingetId = TryGetWinGetId(app.AppName);
+            wingetId = TryGetWinGetId(app.AppName);
 
             if (!string.IsNullOrEmpty(wingetId))
             {
@@ -86,6 +88,7 @@ namespace Winspeqt.Services
                 if (searchResult != null)
                 {
                     wingetVersion = searchResult.LatestVersion;
+                    wingetId = searchResult.WinGetId;
                     wingetScore = searchResult.MatchScore;
                 }
             }
@@ -95,7 +98,12 @@ namespace Winspeqt.Services
             if (chocoResult != null)
             {
                 chocolateyVersion = chocoResult.LatestVersion;
+                chocolateyId = chocoResult.WinGetId; // We reuse this field for Choco ID
             }
+
+            // Store the IDs
+            app.WinGetId = wingetId;
+            app.ChocolateyId = chocolateyId;
 
             // Determine best version and confidence
             if (!string.IsNullOrEmpty(wingetVersion) && !string.IsNullOrEmpty(chocolateyVersion))
@@ -424,7 +432,7 @@ namespace Winspeqt.Services
                         bestMatch = new SearchResult
                         {
                             LatestVersion = version,
-                            WinGetId = packageId,
+                            WinGetId = packageId, // Store Chocolatey ID here
                             MatchScore = score
                         };
                         bestScore = score;
@@ -497,8 +505,55 @@ namespace Winspeqt.Services
 
             if (comparison < 0)
             {
-                app.Status = SecurityStatus.Outdated;
-                app.StatusMessage = "A newer version is available.";
+                // Determine if this is a critical update
+                bool isCritical = false;
+
+                // Option 3: Apps where ANY outdated version is critical (browsers, security software)
+                var alwaysCriticalApps = new[]
+                {
+                    "google chrome",
+                    "mozilla firefox",
+                    "microsoft edge",
+                    "brave",
+                    "opera",
+                    "safari",
+                    "windows defender",
+                    "malwarebytes",
+                    "avg antivirus",
+                    "avast",
+                    "norton",
+                    "mcafee",
+                    "bitdefender",
+                    "kaspersky"
+                };
+
+                var appNameLower = app.AppName.ToLower();
+                if (alwaysCriticalApps.Any(critical => appNameLower.Contains(critical)))
+                {
+                    isCritical = true;
+                }
+
+                // Option 2: Check if version gap is 2+ major versions
+                if (!isCritical)
+                {
+                    var versionGap = CalculateVersionGap(app.InstalledVersion, app.LatestVersion);
+                    if (versionGap >= 2)
+                    {
+                        isCritical = true;
+                    }
+                }
+
+                // Set status based on criticality
+                if (isCritical)
+                {
+                    app.Status = SecurityStatus.Critical;
+                    app.StatusMessage = "Critical update needed - update immediately for security!";
+                }
+                else
+                {
+                    app.Status = SecurityStatus.Outdated;
+                    app.StatusMessage = "A newer version is available.";
+                }
 
                 if (string.IsNullOrEmpty(app.UpdateInstructions))
                 {
@@ -516,6 +571,30 @@ namespace Winspeqt.Services
                 app.Status = SecurityStatus.UpToDate;
                 app.StatusMessage = "You have a newer or beta version.";
                 app.UpdateInstructions = "No action needed.";
+            }
+        }
+
+        private int CalculateVersionGap(string installedVersion, string latestVersion)
+        {
+            try
+            {
+                var v1 = CleanVersion(installedVersion);
+                var v2 = CleanVersion(latestVersion);
+
+                var parts1 = v1.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+                var parts2 = v2.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+
+                // Compare major version (first number)
+                if (parts1.Length > 0 && parts2.Length > 0)
+                {
+                    return parts2[0] - parts1[0];
+                }
+
+                return 0;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
