@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.ObjectModel;
 using Winspeqt.Models;
 
 namespace Winspeqt.ViewModels.Security
@@ -51,7 +48,7 @@ namespace Winspeqt.ViewModels.Security
                         "Smart App Control adds significant protection from new and emerging threats by blocking apps that are malicious or untrusted.",
                         1,
                         "\ue774",
-                        "Open Windows Security",
+                        "View App Controls",
                         "windowsdefender://appbrowser"
                     ),
                 new(
@@ -67,7 +64,7 @@ namespace Winspeqt.ViewModels.Security
                         "Real-time antivirus scanning detects and blocks known threats. Turning it off increases the chance of malware persisting undetected.",
                         3,
                         "\ue730",
-                        "Open Windows Security",
+                        "View Anti-Virus",
                         "windowsdefender://providers"
                     ),
                 new(
@@ -79,10 +76,6 @@ namespace Winspeqt.ViewModels.Security
                         "ms-settings:privacy-graphicscaptureprogrammatic"
                     ),
             ];
-
-            SettingsRecommendations = new ObservableCollection<SettingsRecommendation>(
-                SettingsRecommendations.OrderByDescending( recommendation => recommendation.Description.Length )
-            );
         }
     }
 }

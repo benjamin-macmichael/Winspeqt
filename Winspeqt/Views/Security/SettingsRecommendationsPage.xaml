@@ -72,37 +72,242 @@
                 </StackPanel>
             </Grid>
 
-            <ListView Grid.Row="1" ItemsSource="{Binding SettingsRecommendations}" HorizontalAlignment="Center">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border 
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="2"
-                            CornerRadius="12"
-                            Padding="28"
-                            Margin="0,0,12,12"
-                            MaxWidth="1000">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <FontIcon 
-                                        Glyph="{Binding LogoCode}"
-                                        Style="{StaticResource SectionIconStyle}"
-                                        Foreground="{Binding IconColor}"/>
-                                    <TextBlock 
-                                        Text="{Binding Name}" 
-                                        Style="{StaticResource SectionTitleStyle}"/>
-                                </StackPanel>
-                                <TextBlock
-                                    Style="{StaticResource SectionBodyText}"
-                                    Text="{Binding Description}"
-                                    />
-                                <Button Click="LinkButton_Click" Content="{Binding Button.Label}" CommandParameter="{Binding Button.Target}" />
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Grid Grid.Row="1" HorizontalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border 
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[0].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[0].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[0].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[0].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[0].Button.Label}" CommandParameter="{Binding SettingsRecommendations[0].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[1].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[1].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[1].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[1].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[1].Button.Label}" CommandParameter="{Binding SettingsRecommendations[1].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[2].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[2].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[2].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[2].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[2].Button.Label}" CommandParameter="{Binding SettingsRecommendations[2].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[3].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[3].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[3].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[3].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[3].Button.Label}" CommandParameter="{Binding SettingsRecommendations[3].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[4].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[4].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[4].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[4].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[4].Button.Label}" CommandParameter="{Binding SettingsRecommendations[4].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[5].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[5].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[5].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[5].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[5].Button.Label}" CommandParameter="{Binding SettingsRecommendations[5].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[6].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[6].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[6].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[6].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[6].Button.Label}" CommandParameter="{Binding SettingsRecommendations[6].Button.Target}" />
+                    </StackPanel>
+                </Border>
+
+                <Border 
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,0,12,12"
+                    MaxWidth="500">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="{Binding SettingsRecommendations[7].LogoCode}"
+                                Style="{StaticResource SectionIconStyle}"
+                                Foreground="{Binding SettingsRecommendations[7].IconColor}"/>
+                            <TextBlock 
+                                Text="{Binding SettingsRecommendations[7].Name}" 
+                                Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock
+                            Style="{StaticResource SectionBodyText}"
+                            Text="{Binding SettingsRecommendations[7].Description}"
+                            />
+                        <Button Click="LinkButton_Click" Content="{Binding SettingsRecommendations[7].Button.Label}" CommandParameter="{Binding SettingsRecommendations[7].Button.Target}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </ScrollViewer>
 </Page>
