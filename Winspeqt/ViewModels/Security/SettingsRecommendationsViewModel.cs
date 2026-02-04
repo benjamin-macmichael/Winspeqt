@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Winspeqt.Models;
 
 namespace Winspeqt.ViewModels.Security
@@ -78,6 +79,10 @@ namespace Winspeqt.ViewModels.Security
                         "ms-settings:privacy-graphicscaptureprogrammatic"
                     ),
             ];
+
+            SettingsRecommendations = new ObservableCollection<SettingsRecommendation>(
+                SettingsRecommendations.OrderByDescending( recommendation => recommendation.Description.Length )
+            );
         }
     }
 }
