@@ -246,7 +246,8 @@
                                 Text="Windows Settings Recommendations" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,12"/>
+                                Margin="0,0,0,12"
+                                TextWrapping="WrapWholeWords"/>
                             <TextBlock 
                                 Text="Learn about security settings like SmartScreen, remote access, and privacy options explained in plain language"
                                 FontSize="15"

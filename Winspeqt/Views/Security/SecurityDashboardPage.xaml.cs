@@ -36,7 +36,7 @@ namespace Winspeqt.Views.Security
 
         private async void SettingsRecommendationsCard_Click(object sender, RoutedEventArgs e)
         {
-            await ShowComingSoonDialog("Windows Settings Recommendations");
+            Frame.Navigate(typeof(SettingsRecommendationsPage));
         }
 
         private async System.Threading.Tasks.Task<ContentDialogResult> ShowComingSoonDialog(string feature)
