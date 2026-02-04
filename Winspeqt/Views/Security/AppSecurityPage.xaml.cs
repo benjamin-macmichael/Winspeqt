@@ -12,12 +12,18 @@ namespace Winspeqt.Views.Security
         {
             this.InitializeComponent();
             ViewModel = new AppSecurityViewModel();
-
             // Subscribe to property changes to update visibility
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
             this.Loaded += AppSecurityPage_Loaded;
             this.Unloaded += AppSecurityPage_Unloaded;
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

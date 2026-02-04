@@ -265,55 +265,139 @@ namespace Winspeqt.ViewModels.Security
 
             await DispatchAsync(async () =>
             {
+                var contentPanel = new Microsoft.UI.Xaml.Controls.StackPanel
+                {
+                    Spacing = 16
+                };
+
+                // Version info section
+                var versionPanel = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 12 };
+
+                versionPanel.Children.Add(CreateInfoBlock("Current Version:", app.InstalledVersion));
+                versionPanel.Children.Add(CreateInfoBlock("Latest Version:", app.LatestVersion));
+
+                contentPanel.Children.Add(versionPanel);
+
+                // Confidence warning (if needed)
+                if (app.ConfidenceScore >= 70 && app.ConfidenceScore < 90)
+                {
+                    var warningBox = new Microsoft.UI.Xaml.Controls.InfoBar
+                    {
+                        Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning,
+                        IsOpen = true,
+                        Message = "We're not 100% sure about the exact version. Please verify before updating.",
+                        IsClosable = false
+                    };
+                    contentPanel.Children.Add(warningBox);
+                }
+                else if (app.ConfidenceScore < 70)
+                {
+                    var warningBox = new Microsoft.UI.Xaml.Controls.InfoBar
+                    {
+                        Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
+                        IsOpen = true,
+                        Message = "Low confidence match - version info may not be accurate. Please verify manually.",
+                        IsClosable = false
+                    };
+                    contentPanel.Children.Add(warningBox);
+                }
+
+                // WinGet command section (only if high confidence)
+                if (app.ConfidenceScore >= 90 && !string.IsNullOrEmpty(app.WinGetId))
+                {
+                    var commandSection = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 8 };
+
+                    var commandHeader = new Microsoft.UI.Xaml.Controls.TextBlock
+                    {
+                        Text = "✨ Quick Update Command",
+                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                        FontSize = 14
+                    };
+
+                    var commandBox = new Microsoft.UI.Xaml.Controls.TextBox
+                    {
+                        Text = $"winget upgrade {app.WinGetId}",
+                        IsReadOnly = true,
+                        FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
+                        FontSize = 13
+                    };
+
+                    var commandHelp = new Microsoft.UI.Xaml.Controls.TextBlock
+                    {
+                        Text = "Copy and paste this into Windows Terminal or PowerShell to update",
+                        FontSize = 12,
+                        Opacity = 0.7,
+                        TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                    };
+
+                    commandSection.Children.Add(commandHeader);
+                    commandSection.Children.Add(commandBox);
+                    commandSection.Children.Add(commandHelp);
+
+                    contentPanel.Children.Add(commandSection);
+                }
+
+                // Separator
+                var separator = new Microsoft.UI.Xaml.Controls.Border
+                {
+                    Height = 1,
+                    Opacity = 0.2,
+                    Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 8)
+                };
+                contentPanel.Children.Add(separator);
+
+                // Search online button (ALWAYS present)
+                var searchButton = new Microsoft.UI.Xaml.Controls.Button
+                {
+                    Content = "🔍 Search How to Update Online",
+                    HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                    Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12)
+                };
+
+                searchButton.Click += async (s, e) =>
+                {
+                    var searchQuery = Uri.EscapeDataString($"how to update {app.AppName} to latest version");
+                    var searchUrl = $"https://www.google.com/search?q={searchQuery}";
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri(searchUrl));
+                };
+
+                contentPanel.Children.Add(searchButton);
+
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
-                    Title = $"How to Update {app.AppName}",
+                    Title = $"Update {app.AppName}",
                     Content = new Microsoft.UI.Xaml.Controls.ScrollViewer
                     {
-                        Content = new Microsoft.UI.Xaml.Controls.StackPanel
-                        {
-                            Spacing = 12,
-                            Children =
-                            {
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = "Current Version:",
-                                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
-                                },
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = app.InstalledVersion,
-                                    Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 12)
-                                },
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = "Latest Version:",
-                                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
-                                },
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = app.LatestVersion,
-                                    Margin = new Microsoft.UI.Xaml.Thickness(0, 0, 0, 12)
-                                },
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = "Update Instructions:",
-                                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
-                                },
-                                new Microsoft.UI.Xaml.Controls.TextBlock
-                                {
-                                    Text = app.UpdateInstructions,
-                                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
-                                }
-                            }
-                        }
+                        Content = contentPanel,
+                        MaxHeight = 500
                     },
-                    CloseButtonText = "Got it!",
+                    CloseButtonText = "Close",
                     XamlRoot = _xamlRoot
                 };
 
                 await dialog.ShowAsync();
             });
+        }
+
+        private Microsoft.UI.Xaml.Controls.StackPanel CreateInfoBlock(string label, string value)
+        {
+            var panel = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 4 };
+
+            panel.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+            {
+                Text = label,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                FontSize = 13,
+                Opacity = 0.7
+            });
+
+            panel.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+            {
+                Text = value,
+                FontSize = 15
+            });
+
+            return panel;
         }
 
         private async Task DispatchAsync(Action action)
