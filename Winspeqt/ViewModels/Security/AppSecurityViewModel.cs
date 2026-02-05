@@ -334,6 +334,56 @@ namespace Winspeqt.ViewModels.Security
                     commandSection.Children.Add(commandBox);
                     commandSection.Children.Add(commandHelp);
 
+                    // Add "Update for Me" button
+                    var updateButton = new Microsoft.UI.Xaml.Controls.Button
+                    {
+                        Content = "⚡ Update for Me",
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                        Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12),
+                        Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 0)
+                    };
+
+                    updateButton.Click += async (s, e) =>
+                    {
+                        try
+                        {
+                            // Run WinGet command in Windows Terminal (or fallback to cmd)
+                            var startInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "wt.exe", // Windows Terminal
+                                Arguments = $"-w 0 nt cmd /k \"winget upgrade {app.WinGetId} --accept-package-agreements --accept-source-agreements && pause\"",
+                                UseShellExecute = true
+                            };
+
+                            try
+                            {
+                                System.Diagnostics.Process.Start(startInfo);
+                            }
+                            catch
+                            {
+                                // Fallback to regular cmd if Windows Terminal not available
+                                startInfo.FileName = "cmd.exe";
+                                startInfo.Arguments = $"/k winget upgrade {app.WinGetId} --accept-package-agreements --accept-source-agreements";
+                                System.Diagnostics.Process.Start(startInfo);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error launching update: {ex.Message}");
+
+                            // Show error to user
+                            var errorDialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                            {
+                                Title = "Unable to Launch Update",
+                                Content = $"Could not open terminal to run the update command. Please try copying and pasting the command manually.\n\nError: {ex.Message}",
+                                CloseButtonText = "OK",
+                                XamlRoot = _xamlRoot
+                            };
+                            await errorDialog.ShowAsync();
+                        }
+                    };
+
+                    commandSection.Children.Add(updateButton);
                     contentPanel.Children.Add(commandSection);
                 }
 
