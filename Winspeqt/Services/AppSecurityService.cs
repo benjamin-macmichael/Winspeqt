@@ -64,10 +64,9 @@ namespace Winspeqt.Services
         private async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
         {
             string wingetVersion = null;
-            string chocolateyVersion = null;
             string wingetId = null;
-            string chocolateyId = null;
             int wingetScore = 0;
+            string wingetPackageName = null;
 
             // Try direct mapping first (WinGet)
             wingetId = TryGetWinGetId(app.AppName);
@@ -78,6 +77,7 @@ namespace Winspeqt.Services
                 if (!string.IsNullOrEmpty(wingetVersion))
                 {
                     wingetScore = 95; // High confidence for direct match
+                    wingetPackageName = app.AppName; // Use app name for direct matches
                 }
             }
 
@@ -90,66 +90,23 @@ namespace Winspeqt.Services
                     wingetVersion = searchResult.LatestVersion;
                     wingetId = searchResult.WinGetId;
                     wingetScore = searchResult.MatchScore;
+                    wingetPackageName = searchResult.PackageName;
                 }
             }
 
-            // Also check Chocolatey for validation
-            var chocoResult = await SearchChocolateyAsync(app.AppName, app.Publisher);
-            if (chocoResult != null)
-            {
-                chocolateyVersion = chocoResult.LatestVersion;
-                chocolateyId = chocoResult.WinGetId; // We reuse this field for Choco ID
-            }
-
-            // Store the IDs
+            // Store the ID and package name
             app.WinGetId = wingetId;
-            app.ChocolateyId = chocolateyId;
+            app.WinGetPackageName = wingetPackageName;
 
-            // Determine best version and confidence
-            if (!string.IsNullOrEmpty(wingetVersion) && !string.IsNullOrEmpty(chocolateyVersion))
-            {
-                // Both sources agree
-                if (wingetVersion == chocolateyVersion)
-                {
-                    app.LatestVersion = wingetVersion;
-                    app.ConfidenceScore = 98; // Very high confidence
-                    app.DataSource = $"✓ Verified by both WinGet and Chocolatey (v{wingetVersion})";
-                }
-                // Both sources have data but versions differ
-                else
-                {
-                    // Use the newer version
-                    var comparison = CompareVersions(wingetVersion, chocolateyVersion);
-                    if (comparison >= 0)
-                    {
-                        app.LatestVersion = wingetVersion;
-                        app.DataSource = $"⚠️ Sources differ - Using WinGet: {wingetVersion} | Chocolatey: {chocolateyVersion}";
-                    }
-                    else
-                    {
-                        app.LatestVersion = chocolateyVersion;
-                        app.DataSource = $"⚠️ Sources differ - Using Chocolatey: {chocolateyVersion} | WinGet: {wingetVersion}";
-                    }
-                    app.ConfidenceScore = 75; // Medium confidence when sources disagree
-                }
-            }
-            // Only WinGet has data
-            else if (!string.IsNullOrEmpty(wingetVersion))
+            // Set version and confidence based on WinGet result
+            if (!string.IsNullOrEmpty(wingetVersion))
             {
                 app.LatestVersion = wingetVersion;
                 app.ConfidenceScore = wingetScore;
                 app.DataSource = wingetScore >= 90
-                    ? "WinGet (direct match) - Chocolatey: not found"
-                    : $"WinGet (search match: {wingetScore}%) - Chocolatey: not found";
+                    ? "WinGet (direct match)"
+                    : $"WinGet (search match: {wingetScore}%)";
             }
-            // Only Chocolatey has data
-            else if (!string.IsNullOrEmpty(chocolateyVersion))
-            {
-                app.LatestVersion = chocolateyVersion;
-                app.ConfidenceScore = chocoResult.MatchScore;
-                app.DataSource = $"Chocolatey (match: {chocoResult.MatchScore}%) - WinGet: not found";
-            }
-            // No data from either source
             else
             {
                 CheckAppVersionFallback(app);
@@ -164,42 +121,51 @@ namespace Winspeqt.Services
         {
             try
             {
-                var url = $"https://api.winget.run/v2/packages/{wingetId}";
+                System.Diagnostics.Debug.WriteLine($"Fetching version for: {wingetId}");
 
-                System.Diagnostics.Debug.WriteLine($"Fetching from: {url}");
-
-                var response = await _httpClient.GetAsync(url);
-
-                System.Diagnostics.Debug.WriteLine($"Response status: {response.StatusCode}");
-
-                if (response.IsSuccessStatusCode)
+                // Use local WinGet command instead of API
+                var process = new System.Diagnostics.Process
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"Response content: {content.Substring(0, Math.Min(200, content.Length))}...");
-
-                    var doc = JsonDocument.Parse(content);
-
-                    if (doc.RootElement.TryGetProperty("Packages", out var packages) && packages.GetArrayLength() > 0)
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
-                        var firstPackage = packages[0];
-                        if (firstPackage.TryGetProperty("Versions", out var versions) && versions.GetArrayLength() > 0)
+                        FileName = "winget",
+                        Arguments = $"show --id {wingetId} -e",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
+
+                process.Start();
+                var output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    // Parse the output to find the version
+                    // Output looks like:
+                    // Found Discord [Discord.Discord]
+                    // Version: 1.0.9223
+                    // ...
+
+                    var lines = output.Split('\n');
+                    foreach (var line in lines)
+                    {
+                        if (line.Trim().StartsWith("Version:", StringComparison.OrdinalIgnoreCase))
                         {
-                            var latestVersion = versions[0].GetString();
-                            System.Diagnostics.Debug.WriteLine($"Found version: {latestVersion}");
-                            return latestVersion;
+                            var version = line.Substring(line.IndexOf(':') + 1).Trim();
+                            System.Diagnostics.Debug.WriteLine($"Found version: {version}");
+                            return version;
                         }
                     }
+                }
 
-                    System.Diagnostics.Debug.WriteLine("Could not find version in response structure");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"API returned error: {response.StatusCode}");
-                }
+                System.Diagnostics.Debug.WriteLine($"WinGet command failed or no version found");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error fetching from winget.run: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error fetching from winget: {ex.Message}");
             }
 
             return null;
@@ -210,23 +176,39 @@ namespace Winspeqt.Services
             try
             {
                 var searchQuery = CleanAppNameForSearch(appName);
-                var url = $"https://api.winget.run/v2/packages?query={Uri.EscapeDataString(searchQuery)}&take=5";
 
                 System.Diagnostics.Debug.WriteLine($"Searching WinGet for: {searchQuery}");
 
-                var response = await _httpClient.GetAsync(url);
-
-                if (response.IsSuccessStatusCode)
+                // Use local WinGet search command
+                var process = new System.Diagnostics.Process
                 {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var doc = JsonDocument.Parse(content);
-
-                    if (doc.RootElement.TryGetProperty("Packages", out var packages) && packages.GetArrayLength() > 0)
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
-                        var bestMatch = FindBestMatch(packages, appName, publisher);
+                        FileName = "winget",
+                        Arguments = $"search \"{searchQuery}\" --count 5",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
 
-                        if (bestMatch != null)
+                process.Start();
+                var output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+
+                if (process.ExitCode == 0)
+                {
+                    // Parse WinGet search output
+                    var bestMatch = ParseWinGetSearchOutput(output, appName, publisher);
+
+                    if (bestMatch != null)
+                    {
+                        // Get the version for the best match
+                        var version = await GetLatestVersionFromWinGetAsync(bestMatch.WinGetId);
+                        if (!string.IsNullOrEmpty(version))
                         {
+                            bestMatch.LatestVersion = version;
                             System.Diagnostics.Debug.WriteLine($"Found match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
                             return bestMatch;
                         }
@@ -239,6 +221,86 @@ namespace Winspeqt.Services
             }
 
             return null;
+        }
+
+        private SearchResult ParseWinGetSearchOutput(string output, string appName, string publisher)
+        {
+            try
+            {
+                var appNameLower = appName.ToLower();
+                var publisherLower = publisher?.ToLower() ?? "";
+
+                // WinGet search output format:
+                // Name              Id                Version  Source
+                // ---------------------------------------------------------
+                // Discord           Discord.Discord   1.0.9223 winget
+
+                var lines = output.Split('\n');
+                SearchResult bestMatch = null;
+                int bestScore = 0;
+                bool inResults = false;
+
+                foreach (var line in lines)
+                {
+                    // Skip header lines
+                    if (line.Contains("Name") && line.Contains("Id") && line.Contains("Version"))
+                    {
+                        inResults = true;
+                        continue;
+                    }
+                    if (line.Contains("---") || string.IsNullOrWhiteSpace(line))
+                        continue;
+                    if (!inResults)
+                        continue;
+
+                    // Parse the line - it's space-separated
+                    var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 2)
+                        continue;
+
+                    var packageName = parts[0].ToLower();
+                    var packageId = parts[1];
+
+                    // Calculate match score
+                    int score = 0;
+
+                    if (packageName == appNameLower)
+                        score += 100;
+                    else if (packageName.Contains(appNameLower) || appNameLower.Contains(packageName))
+                        score += 50;
+                    else
+                    {
+                        var appWords = appNameLower.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var pkgWords = packageName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        var commonWords = appWords.Intersect(pkgWords).Count();
+                        score += commonWords * 20;
+                    }
+
+                    // Publisher matching (if available in ID)
+                    if (!string.IsNullOrEmpty(publisherLower) && packageId.ToLower().Contains(publisherLower))
+                    {
+                        score += 25;
+                    }
+
+                    if (score >= 50 && score > bestScore)
+                    {
+                        bestMatch = new SearchResult
+                        {
+                            WinGetId = packageId,
+                            MatchScore = score,
+                            PackageName = packageName
+                        };
+                        bestScore = score;
+                    }
+                }
+
+                return bestMatch;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error parsing WinGet output: {ex.Message}");
+                return null;
+            }
         }
 
         private string CleanAppNameForSearch(string appName)
@@ -325,7 +387,8 @@ namespace Winspeqt.Services
                     {
                         LatestVersion = version,
                         WinGetId = packageId,
-                        MatchScore = score
+                        MatchScore = score,
+                        PackageName = packageName
                     };
                     bestScore = score;
                 }
@@ -338,28 +401,48 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searchQuery = CleanAppNameForSearch(appName);
+                var searchQuery = CleanAppNameForSearch(appName).ToLower();
 
-                // Use simpler Chocolatey search - just query parameter, no complex filters
-                var url = $"https://community.chocolatey.org/api/v2/Packages()?$filter=IsLatestVersion&$orderby=DownloadCount desc&$top=10&searchTerm='{Uri.EscapeDataString(searchQuery)}'";
+                // Try multiple search strategies
 
-                System.Diagnostics.Debug.WriteLine($"Searching Chocolatey for: {searchQuery}");
-                System.Diagnostics.Debug.WriteLine($"Chocolatey URL: {url}");
+                // Strategy 1: Direct ID match (most reliable)
+                var directUrl = $"https://community.chocolatey.org/api/v2/Packages?$filter=IsLatestVersion and tolower(Id) eq '{Uri.EscapeDataString(searchQuery)}'&$top=1";
 
-                var response = await _httpClient.GetAsync(url);
+                System.Diagnostics.Debug.WriteLine($"Searching Chocolatey (direct): {searchQuery}");
+                System.Diagnostics.Debug.WriteLine($"Chocolatey URL: {directUrl}");
+
+                var response = await _httpClient.GetAsync(directUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var bestMatch = ParseChocolateyResponse(content, appName, publisher);
+
+                    if (bestMatch != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Found Chocolatey match (direct): {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
+                        return bestMatch;
+                    }
+                }
+
+                // Strategy 2: Substring search if direct match fails
+                var searchUrl = $"https://community.chocolatey.org/api/v2/Packages?$filter=IsLatestVersion and substringof('{Uri.EscapeDataString(searchQuery)}', tolower(Id))&$orderby=DownloadCount desc&$top=5";
+
+                System.Diagnostics.Debug.WriteLine($"Searching Chocolatey (substring): {searchQuery}");
+                System.Diagnostics.Debug.WriteLine($"Chocolatey URL: {searchUrl}");
+
+                response = await _httpClient.GetAsync(searchUrl);
 
                 System.Diagnostics.Debug.WriteLine($"Chocolatey response status: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-
-                    // Parse XML response (Chocolatey uses OData/XML)
                     var bestMatch = ParseChocolateyResponse(content, appName, publisher);
 
                     if (bestMatch != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Found Chocolatey match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
+                        System.Diagnostics.Debug.WriteLine($"Found Chocolatey match (substring): {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
                         return bestMatch;
                     }
                     else
@@ -433,7 +516,8 @@ namespace Winspeqt.Services
                         {
                             LatestVersion = version,
                             WinGetId = packageId, // Store Chocolatey ID here
-                            MatchScore = score
+                            MatchScore = score,
+                            PackageName = title
                         };
                         bestScore = score;
                     }
@@ -508,38 +592,42 @@ namespace Winspeqt.Services
                 // Determine if this is a critical update
                 bool isCritical = false;
 
-                // Option 3: Apps where ANY outdated version is critical (browsers, security software)
-                var alwaysCriticalApps = new[]
+                // Only mark as critical if we have high confidence (90%+)
+                if (app.ConfidenceScore >= 90)
                 {
-                    "google chrome",
-                    "mozilla firefox",
-                    "microsoft edge",
-                    "brave",
-                    "opera",
-                    "safari",
-                    "windows defender",
-                    "malwarebytes",
-                    "avg antivirus",
-                    "avast",
-                    "norton",
-                    "mcafee",
-                    "bitdefender",
-                    "kaspersky"
-                };
+                    // Option 3: Apps where ANY outdated version is critical (browsers, security software)
+                    var alwaysCriticalApps = new[]
+                    {
+                        "google chrome",
+                        "mozilla firefox",
+                        "microsoft edge",
+                        "brave",
+                        "opera",
+                        "safari",
+                        "windows defender",
+                        "malwarebytes",
+                        "avg antivirus",
+                        "avast",
+                        "norton",
+                        "mcafee",
+                        "bitdefender",
+                        "kaspersky"
+                    };
 
-                var appNameLower = app.AppName.ToLower();
-                if (alwaysCriticalApps.Any(critical => appNameLower.Contains(critical)))
-                {
-                    isCritical = true;
-                }
-
-                // Option 2: Check if version gap is 2+ major versions
-                if (!isCritical)
-                {
-                    var versionGap = CalculateVersionGap(app.InstalledVersion, app.LatestVersion);
-                    if (versionGap >= 2)
+                    var appNameLower = app.AppName.ToLower();
+                    if (alwaysCriticalApps.Any(critical => appNameLower.Contains(critical)))
                     {
                         isCritical = true;
+                    }
+
+                    // Option 2: Check if version gap is 2+ major versions
+                    if (!isCritical)
+                    {
+                        var versionGap = CalculateVersionGap(app.InstalledVersion, app.LatestVersion);
+                        if (versionGap >= 2)
+                        {
+                            isCritical = true;
+                        }
                     }
                 }
 
@@ -849,6 +937,7 @@ namespace Winspeqt.Services
             public string LatestVersion { get; set; }
             public string WinGetId { get; set; }
             public int MatchScore { get; set; }
+            public string PackageName { get; set; } // The display name from the API
         }
     }
 }
