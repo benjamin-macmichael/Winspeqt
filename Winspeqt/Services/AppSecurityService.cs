@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Winspeqt.Models;
+using System.Net.Http;
 
 namespace Winspeqt.Services
 {
@@ -61,7 +61,7 @@ namespace Winspeqt.Services
             await Task.WhenAll(tasks);
         }
 
-        private async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
+        public async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
         {
             string wingetVersion = null;
             string wingetId = null;
@@ -123,13 +123,12 @@ namespace Winspeqt.Services
             {
                 System.Diagnostics.Debug.WriteLine($"Fetching version for: {wingetId}");
 
-                // Use local WinGet command instead of API
                 var process = new System.Diagnostics.Process
                 {
                     StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "winget",
-                        Arguments = $"show --id {wingetId} -e",
+                        Arguments = $"show --id {wingetId} -e --accept-source-agreements",
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true,
@@ -138,30 +137,48 @@ namespace Winspeqt.Services
                 };
 
                 process.Start();
-                var output = await process.StandardOutput.ReadToEndAsync();
-                await process.WaitForExitAsync();
 
-                if (process.ExitCode == 0)
+                // Use Task.WhenAny to race between completion and timeout
+                var readTask = process.StandardOutput.ReadToEndAsync();
+                var completedTask = await Task.WhenAny(readTask, Task.Delay(15000));
+
+                if (completedTask == readTask)
                 {
-                    // Parse the output to find the version
-                    // Output looks like:
-                    // Found Discord [Discord.Discord]
-                    // Version: 1.0.9223
-                    // ...
+                    // Process completed naturally
+                    var output = await readTask;
+                    process.WaitForExit(1000);
 
-                    var lines = output.Split('\n');
-                    foreach (var line in lines)
+                    if (process.ExitCode == 0)
                     {
-                        if (line.Trim().StartsWith("Version:", StringComparison.OrdinalIgnoreCase))
+                        var lines = output.Split('\n');
+                        foreach (var line in lines)
                         {
-                            var version = line.Substring(line.IndexOf(':') + 1).Trim();
-                            System.Diagnostics.Debug.WriteLine($"Found version: {version}");
-                            return version;
+                            if (line.Trim().StartsWith("Version:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var version = line.Substring(line.IndexOf(':') + 1).Trim();
+                                System.Diagnostics.Debug.WriteLine($"Found version: {version}");
+                                return version;
+                            }
                         }
                     }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"WinGet command failed or no version found");
+                else
+                {
+                    // Timeout - process is hanging, cancel it
+                    System.Diagnostics.Debug.WriteLine($"Process hanging for {wingetId} - cancelling");
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill(); // Kill only this specific process
+                            System.Diagnostics.Debug.WriteLine($"Killed hanging process for {wingetId}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error killing process: {ex.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -179,13 +196,12 @@ namespace Winspeqt.Services
 
                 System.Diagnostics.Debug.WriteLine($"Searching WinGet for: {searchQuery}");
 
-                // Use local WinGet search command
                 var process = new System.Diagnostics.Process
                 {
                     StartInfo = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "winget",
-                        Arguments = $"search \"{searchQuery}\" --count 5",
+                        Arguments = $"search \"{searchQuery}\" --count 5 --accept-source-agreements",
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         RedirectStandardOutput = true,
@@ -194,24 +210,47 @@ namespace Winspeqt.Services
                 };
 
                 process.Start();
-                var output = await process.StandardOutput.ReadToEndAsync();
-                await process.WaitForExitAsync();
 
-                if (process.ExitCode == 0)
+                // Use Task.WhenAny to detect hanging
+                var readTask = process.StandardOutput.ReadToEndAsync();
+                var completedTask = await Task.WhenAny(readTask, Task.Delay(15000));
+
+                if (completedTask == readTask)
                 {
-                    // Parse WinGet search output
-                    var bestMatch = ParseWinGetSearchOutput(output, appName, publisher);
+                    var output = await readTask;
+                    process.WaitForExit(1000);
 
-                    if (bestMatch != null)
+                    if (process.ExitCode == 0)
                     {
-                        // Get the version for the best match
-                        var version = await GetLatestVersionFromWinGetAsync(bestMatch.WinGetId);
-                        if (!string.IsNullOrEmpty(version))
+                        var bestMatch = ParseWinGetSearchOutput(output, appName, publisher);
+
+                        if (bestMatch != null)
                         {
-                            bestMatch.LatestVersion = version;
-                            System.Diagnostics.Debug.WriteLine($"Found match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
-                            return bestMatch;
+                            var version = await GetLatestVersionFromWinGetAsync(bestMatch.WinGetId);
+                            if (!string.IsNullOrEmpty(version))
+                            {
+                                bestMatch.LatestVersion = version;
+                                System.Diagnostics.Debug.WriteLine($"Found match: {bestMatch.WinGetId} -> {bestMatch.LatestVersion}");
+                                return bestMatch;
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    // Timeout - process is hanging, cancel it
+                    System.Diagnostics.Debug.WriteLine($"Search hanging for {searchQuery} - cancelling");
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill(true);
+                            System.Diagnostics.Debug.WriteLine($"Killed hanging search for {searchQuery}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error killing process: {ex.Message}");
                     }
                 }
             }
@@ -844,6 +883,8 @@ namespace Winspeqt.Services
                 "winrt intellisense",
                 "kits configuration installer",
                 "sdk arm additions",
+                "universal general midi",
+                "windows installation assistant",
                 
                 // Microsoft Edge/Browser components
                 "microsoft edge update",
@@ -857,6 +898,8 @@ namespace Winspeqt.Services
                 "filetracker",
                 "winappdeploy",
                 "application verifier",
+                "vs jit debugger",
+                "vs script debugging",
                 
                 // Office components (managed by Office)
                 "office 16 click-to-run",
@@ -920,7 +963,14 @@ namespace Winspeqt.Services
                 
                 // Compatibility and legacy
                 "compatibility database",
-                "shim infrastructure"
+                "shim infrastructure",
+                
+                // Installers and utilities (not actual apps)
+                "machine-wide installer",
+                "machine installer",
+                "self-service plug-in",
+                "sra-tool",
+                "streamer" // Like Splashtop Streamer - utility not main app
             };
 
             var appNameLower = appName.ToLower();
