@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Winspeqt.Models"
     xmlns:helpers="using:Winspeqt.Helpers"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -323,6 +324,17 @@
                                                         Style="{StaticResource CaptionTextBlockStyle}"
                                                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                                         FontSize="10"/>
+
+                                                        <!-- Show matched package name -->
+                                                        <TextBlock 
+                                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                                        FontSize="11"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        TextWrapping="Wrap"
+                                                        Margin="0,4,0,0">
+                                                        <Run Text="WinGet found:"/>
+                                                        <Run Text="{x:Bind WinGetPackageName}" FontWeight="SemiBold"/>
+                                                        </TextBlock>
 
                                                         <TextBlock 
                                                         Style="{StaticResource CaptionTextBlockStyle}"

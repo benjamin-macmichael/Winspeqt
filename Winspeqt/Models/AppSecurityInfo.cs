@@ -32,9 +32,11 @@ namespace Winspeqt.Models
         };
         public string DataSource { get; set; } // "Direct Match", "Search Result", etc.
 
-        // Package manager IDs - NEW!
+        // Package manager ID
         public string WinGetId { get; set; }
-        public string ChocolateyId { get; set; }
+
+        // Package name as found by the API (for display)
+        public string WinGetPackageName { get; set; }
 
         public bool IsOutdated => Status == SecurityStatus.Outdated || Status == SecurityStatus.Critical;
         public bool IsUnknown => Status == SecurityStatus.Unknown;

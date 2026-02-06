@@ -182,9 +182,39 @@ namespace Winspeqt.ViewModels.Security
                 await DispatchAsync(() =>
                 {
                     IsScanning = true;
-                    StatusMessage = "Scanning your installed applications...";
+                    StatusMessage = "Updating package databases...";
                     ScannedApps.Clear();
                     FilteredApps.Clear();
+                });
+
+                // Update WinGet sources first for accurate version info
+                try
+                {
+                    var updateProcess = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "winget",
+                            Arguments = "source update",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        }
+                    };
+                    updateProcess.Start();
+                    await updateProcess.WaitForExitAsync();
+                    System.Diagnostics.Debug.WriteLine("WinGet sources updated successfully");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to update WinGet sources: {ex.Message}");
+                    // Continue anyway - not critical if this fails
+                }
+
+                await DispatchAsync(() =>
+                {
+                    StatusMessage = "Scanning your installed applications...";
                 });
 
                 // Step 1: Scan registry for installed apps
@@ -267,7 +297,7 @@ namespace Winspeqt.ViewModels.Security
             {
                 var contentPanel = new Microsoft.UI.Xaml.Controls.StackPanel
                 {
-                    Spacing = 16
+                    Spacing = 12
                 };
 
                 // Version info section
@@ -316,7 +346,7 @@ namespace Winspeqt.ViewModels.Security
 
                     var commandBox = new Microsoft.UI.Xaml.Controls.TextBox
                     {
-                        Text = $"winget upgrade {app.WinGetId}",
+                        Text = $"winget upgrade --id {app.WinGetId} -e",
                         IsReadOnly = true,
                         FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
                         FontSize = 13
@@ -347,11 +377,11 @@ namespace Winspeqt.ViewModels.Security
                     {
                         try
                         {
-                            // Run WinGet command in Windows Terminal (or fallback to cmd)
+                            // Update WinGet sources first, then upgrade to the latest version
                             var startInfo = new System.Diagnostics.ProcessStartInfo
                             {
                                 FileName = "wt.exe", // Windows Terminal
-                                Arguments = $"-w 0 nt cmd /k \"winget upgrade {app.WinGetId} --accept-package-agreements --accept-source-agreements && pause\"",
+                                Arguments = $"-w 0 nt cmd /k \"echo Updating WinGet sources... && winget source update && echo. && echo Upgrading to latest version... && winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && pause\"",
                                 UseShellExecute = true
                             };
 
@@ -363,7 +393,7 @@ namespace Winspeqt.ViewModels.Security
                             {
                                 // Fallback to regular cmd if Windows Terminal not available
                                 startInfo.FileName = "cmd.exe";
-                                startInfo.Arguments = $"/k winget upgrade {app.WinGetId} --accept-package-agreements --accept-source-agreements";
+                                startInfo.Arguments = $"/k winget source update && winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements";
                                 System.Diagnostics.Process.Start(startInfo);
                             }
                         }
@@ -386,15 +416,6 @@ namespace Winspeqt.ViewModels.Security
                     commandSection.Children.Add(updateButton);
                     contentPanel.Children.Add(commandSection);
                 }
-
-                // Separator
-                var separator = new Microsoft.UI.Xaml.Controls.Border
-                {
-                    Height = 1,
-                    Opacity = 0.2,
-                    Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 8)
-                };
-                contentPanel.Children.Add(separator);
 
                 // Search online button (ALWAYS present)
                 var searchButton = new Microsoft.UI.Xaml.Controls.Button
