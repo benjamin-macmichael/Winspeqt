@@ -22,7 +22,7 @@ namespace Winspeqt.Views.Optimization
         private async void LargeFileFinderCard_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Navigate to Large File Finder page
-            await ShowComingSoonDialog("Large File Finder");
+            Frame.Navigate(typeof(LargeFileFinder));
         }
 
         private async void AppUsageTrackerCard_Click(object sender, RoutedEventArgs e)

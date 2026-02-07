@@ -20,8 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="DashboardPage.xaml" />
+    <None Remove="ViewModels\Optimization\LargeFileFinder.xaml" />
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
     <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
+    <None Remove="Views\Optimization\LargeFileFinder.xaml" />
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
     <None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
@@ -65,7 +67,17 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controls\" />
-    <Folder Include="ViewModels\Optimization\" />
+    <Folder Include="ViewModels\Optimization\NewFolder\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ViewModels\Optimization\LargeFileFinder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Optimization\LargeFileFinder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 	<ItemGroup>
 		<Page Update="Views\Security\AppSecurityPage.xaml">
