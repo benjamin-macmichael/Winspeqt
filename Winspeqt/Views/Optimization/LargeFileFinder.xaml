@@ -6,6 +6,8 @@
     xmlns:local="using:Winspeqt.Views.Optimization"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:Winspeqt.Helpers" 
+    xmlns:optimization="using:Winspeqt.ViewModels.Optimization" d:DataContext="{d:DesignInstance Type=optimization:LargeFileFinderViewModel}"
     mc:Ignorable="d">
 
     <ScrollViewer>
@@ -53,20 +55,18 @@
                      Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
-            <ListView Grid.Row="1">
+            <ListView Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <FontIcon Glyph="&#xE76E;" Margin="0,0,4,0"/>
-                            <TextBlock Text="{Binding}"
+                            <TextBlock Text="{Binding }"
                            FontSize="24" Foreground="Green"/>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.Items>
-                    <x:String>One</x:String>
-                    <ListViewItem>Two</ListViewItem>
-                    <x:String>Three</x:String>
+                    
                 </ListView.Items>
             </ListView>
             <!--<Button Grid.Row="2" Content="Test" Click="" />-->
