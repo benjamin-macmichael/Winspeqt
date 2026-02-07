@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="3354e01c-63f1-4fb0-ae4b-f8087eb991e0"
-    Publisher="CN=benja"
-    Version="1.0.0.0" />
+    Name="Winspeqt.Winspeqt"
+    Publisher="CN=D02096B2-BA50-477B-BBFB-966C72C6E148"
+    Version="0.1.10.0" />
 
-  <mp:PhoneIdentity PhoneProductId="3354e01c-63f1-4fb0-ae4b-f8087eb991e0" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="1775ee26-3289-4fdd-8955-7b7dfec1fbe8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Winspeqt</DisplayName>
-    <PublisherDisplayName>benja</PublisherDisplayName>
+    <PublisherDisplayName>Winspeqt</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -46,6 +46,6 @@
   </Applications>
 
   <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
+    <!--<rescap:Capability Name="runFullTrust" />-->
   </Capabilities>
 </Package>
