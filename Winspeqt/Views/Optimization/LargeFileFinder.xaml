@@ -10,6 +10,10 @@
     xmlns:optimization="using:Winspeqt.ViewModels.Optimization" d:DataContext="{d:DesignInstance Type=optimization:LargeFileFinderViewModel}"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
+    </Page.Resources>
+
     <ScrollViewer>
         <Grid Padding="60">
             <Grid.RowDefinitions>
@@ -60,9 +64,10 @@
                     <DataTemplate>
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <FontIcon Glyph=" &#xF12B;" Margin="0,0,4,0"/>
+                                <FontIcon Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"
+                                          Margin="0,0,4,0"/>
                                 <TextBlock Text="{Binding Name}"
-                               FontSize="24" Foreground="Green"/>
+                                    FontSize="24" Foreground="Green"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding Size}" />
