@@ -65,12 +65,12 @@
             Margin="0,0,0,24">
                 <StackPanel Spacing="4">
                     <TextBlock 
-                    Text="ℹ️ Good to know"
+                    Text="💡 Tip"
                     FontWeight="SemiBold"
                     FontSize="13"
                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                     <TextBlock 
-                    Text="We check online databases to find the latest versions. Results are usually accurate, but it's always good to double-check for important apps."
+                    Text="This scanner uses WinGet to find updates. If an app isn't found, it may not be available in WinGet's catalog. You can still update it manually from the app's official website."
                     TextWrapping="Wrap"
                     FontSize="13"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
@@ -385,7 +385,7 @@
             <!-- Empty State -->
             <StackPanel 
             x:Name="EmptyState"
-            Grid.Row="3"
+            Grid.Row="4"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Spacing="16">
