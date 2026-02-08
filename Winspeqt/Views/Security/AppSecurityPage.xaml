@@ -94,12 +94,19 @@
                 FontSize="16"
                 Margin="0,0,16,0"/>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
                     <ProgressRing 
                     x:Name="ScanningProgress"
                     Width="24" 
                     Height="24"
                     Visibility="Collapsed"/>
+                    <ProgressBar 
+                    x:Name="ScanProgressBar"
+                    Visibility="Collapsed"
+                    Height="4"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="{x:Bind ViewModel.ScanProgress, Mode=OneWay}"/>
                     <TextBlock 
                     x:Name="StatusText"
                     Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
