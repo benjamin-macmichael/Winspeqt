@@ -30,10 +30,17 @@ namespace Winspeqt.ViewModels.Optimization
 
         List<FileSearchItem> FindFilesForFolder(string folder)
         {
-            List<FileSearchItem> folders = PathToObject(Directory.GetDirectories(folder), "folder");
-            List<FileSearchItem> files = PathToObject(Directory.GetFiles(folder), "file");
+            try
+            {
+                List<FileSearchItem> folders = PathToObject(Directory.GetDirectories(folder), "folder");
+                List<FileSearchItem> files = PathToObject(Directory.GetFiles(folder), "file");
 
-            return [..folders, ..files];
+                return [.. folders, .. files];
+
+            } catch
+            {
+                return [];
+            }
         }
 
         List<FileSearchItem> PathToObject(string[] paths, string type)
@@ -41,10 +48,51 @@ namespace Winspeqt.ViewModels.Optimization
             List<FileSearchItem> temp = [];
             foreach (var path in paths)
             {
-                temp.Add(new FileSearchItem("", path, type));
+                string name = System.IO.Path.GetFileName(path);
+                long size = type == "file" ? new System.IO.FileInfo(path).Length : DirSize(new DirectoryInfo(path));
+                ObservableCollection<FileSearchItem>? subdirectories = null; //type == "folder" ? new ObservableCollection<FileSearchItem>(FindFilesForFolder(path)) : null;
+
+                temp.Add(
+                    new FileSearchItem(
+                        name, 
+                        path, 
+                        type, 
+                        size,
+                        subdirectories
+                    )
+                );
             }
 
             return temp;
         }
+
+
+        // Source - https://stackoverflow.com/a/468131
+        // Posted by hao, modified by community. See post 'Timeline' for change history
+        // Retrieved 2026-02-07, License - CC BY-SA 3.0
+        public static long DirSize(DirectoryInfo d)
+        {
+            try
+            {
+                long size = 0;
+                // Add file sizes.
+                FileInfo[] fis = d.GetFiles();
+                foreach (FileInfo fi in fis)
+                {
+                    size += fi.Length;
+                }
+                // Add subdirectory sizes.
+                DirectoryInfo[] dis = d.GetDirectories();
+                foreach (DirectoryInfo di in dis)
+                {
+                    size += DirSize(di);
+                }
+                return size;
+            } catch
+            {
+                return 0;
+            }
+        }
+
     }
 }

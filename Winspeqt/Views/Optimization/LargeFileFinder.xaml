@@ -58,10 +58,16 @@
             <ListView Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE76E;" Margin="0,0,4,0"/>
-                            <TextBlock Text="{Binding }"
-                           FontSize="24" Foreground="Green"/>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon Glyph=" &#xF12B;" Margin="0,0,4,0"/>
+                                <TextBlock Text="{Binding Name}"
+                               FontSize="24" Foreground="Green"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Size}" />
+                                <TextBlock Text="{Binding DataLabel}" />
+                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
