@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-
+ 
 namespace Winspeqt.Views.Monitoring
 {
     public sealed partial class MonitoringDashboardPage : Page

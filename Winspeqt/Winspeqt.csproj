@@ -28,6 +28,9 @@
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
 	<None Remove="Views\Security\SettingRecommendationsPage.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Remove="views\security\Networksecuritypage.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -67,8 +70,13 @@
     <Folder Include="Controls\" />
     <Folder Include="ViewModels\Optimization\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Views\Security\NetworkSecurityPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
 	<ItemGroup>
-		<Page Update="Views\Security\AppSecurityPage.xaml">
+		<Page Include="Views\Security\NetworkSecurityPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Views\Monitoring\StartupImpactPage.xaml">
