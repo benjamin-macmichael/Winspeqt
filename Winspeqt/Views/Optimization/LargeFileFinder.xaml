@@ -61,29 +61,52 @@
                      Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
-            <ListView Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
-                <ListView.ItemTemplate>
+            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
+                <ItemsRepeater.ItemTemplate>
                     <DataTemplate>
-                        <Button Click="StackPanel_Click" CommandParameter="{Binding FilePath}" Width="500" HorizontalAlignment="Center">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <FontIcon Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"
-                                        Margin="0,0,4,0"/>
-                                    <TextBlock Text="{Binding Name}"
-                                        FontSize="24" Foreground="Green"/>
+                        <Button
+                            Click="StackPanel_Click"
+                            CommandParameter="{Binding FilePath}"
+                            MaxWidth="750"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="12,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel
+                                    Grid.Column="0"
+                                    Orientation="Horizontal"
+                                    Spacing="6"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Left">
+                                    <FontIcon
+                                        Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"/>
+                                    <TextBlock
+                                        Text="{Binding Name}"
+                                        FontSize="24"
+                                        Foreground="Green"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal">
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Right">
                                     <TextBlock Text="{Binding Size}" />
                                     <TextBlock Text="{Binding DataLabel}" />
                                 </StackPanel>
-                            </StackPanel>
+                            </Grid>
                         </Button>
                     </DataTemplate>
-                </ListView.ItemTemplate>
-                <ListView.Items>
-
-                </ListView.Items>
-            </ListView>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
             <Border
                 Grid.Row="0" 
                 Grid.RowSpan="3"
