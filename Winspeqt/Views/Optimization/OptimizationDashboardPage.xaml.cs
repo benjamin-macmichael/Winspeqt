@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Winspeqt.Views.Monitoring;
 
 namespace Winspeqt.Views.Optimization
 {
@@ -27,8 +28,7 @@ namespace Winspeqt.Views.Optimization
 
         private async void AppUsageTrackerCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to App Usage Tracker page
-            await ShowComingSoonDialog("App Usage Tracker");
+            Frame.Navigate(typeof(AppUsagePage));
         }
 
         private async void AppDataCleanupCard_Click(object sender, RoutedEventArgs e)

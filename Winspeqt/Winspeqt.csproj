@@ -22,6 +22,7 @@
     <None Remove="DashboardPage.xaml" />
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
     <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
+    <None Remove="Views\Optimization\AppUsagePage.xaml" />
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
     <None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
@@ -55,6 +56,7 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.2" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.0.0-rc6.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1-RTM" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.0-experimental4" />
@@ -68,9 +70,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controls\" />
-    <Folder Include="ViewModels\Optimization\" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Optimization\AppUsagePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <None Update="Views\Security\NetworkSecurityPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
