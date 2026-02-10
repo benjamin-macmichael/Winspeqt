@@ -50,8 +50,20 @@ namespace Winspeqt.Views
 
             appWindow2.Closing += (s, e) =>
             {
-                // Prevent actual closing, minimize to tray instead
+                // Prevent actual closing, hide window instead
                 e.Cancel = true;
+
+                // Actually hide/close the window visibility
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    // In WinUI 3, we can't truly "hide" the window, but we can make it invisible
+                    // by setting AppWindow to not visible
+                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                    var wndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                    var appWnd = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(wndId);
+                    appWnd.Hide();
+                });
+
                 _systemTrayHelper.HideToTray();
             };
         }

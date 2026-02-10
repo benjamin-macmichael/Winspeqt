@@ -72,7 +72,6 @@ namespace Winspeqt.Helpers
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("Using fallback Windows icon");
-                    // Extract icon from shell32.dll (index 15 is a computer/system icon)
                     IntPtr hIcon = ExtractIcon(GetModuleHandle(null), "shell32.dll", 15);
 
                     if (hIcon != IntPtr.Zero)
@@ -90,10 +89,30 @@ namespace Winspeqt.Helpers
 
             System.Diagnostics.Debug.WriteLine($"Icon set: {iconSet}");
 
-            // Force the icon to be visible
+            // Add click handlers
+            try
+            {
+                var taskbarType = _taskbarIcon.GetType();
+
+                var leftClickEvent = taskbarType.GetEvent("TrayLeftMouseUp");
+                if (leftClickEvent != null)
+                {
+                    leftClickEvent.AddEventHandler(_taskbarIcon, new Action<object, EventArgs>((s, e) => ShowMainWindow()));
+                }
+
+                var rightClickEvent = taskbarType.GetEvent("TrayRightMouseUp");
+                if (rightClickEvent != null)
+                {
+                    rightClickEvent.AddEventHandler(_taskbarIcon, new Action<object, EventArgs>((s, e) => ShowContextMenu()));
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to attach click events: {ex.Message}");
+            }
+
             _taskbarIcon.ForceCreate(false);
 
-            // Show notification on startup
             try
             {
                 _taskbarIcon.ShowNotification(
@@ -108,13 +127,75 @@ namespace Winspeqt.Helpers
             }
         }
 
+        private void ShowMainWindow()
+        {
+            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+            {
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+
+                var presenter = appWindow.Presenter as Microsoft.UI.Windowing.OverlappedPresenter;
+                if (presenter != null && presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized)
+                {
+                    presenter.Restore();
+                }
+
+                _mainWindow.Activate();
+            });
+        }
+
+        private void ShowContextMenu()
+        {
+            _mainWindow?.DispatcherQueue.TryEnqueue(async () =>
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Winspeqt",
+                    Content = "What would you like to do?",
+                    PrimaryButtonText = "Open Window",
+                    SecondaryButtonText = "Exit App",
+                    CloseButtonText = "Cancel",
+                    XamlRoot = _mainWindow.Content.XamlRoot
+                };
+
+                var result = await dialog.ShowAsync();
+
+                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+                {
+                    ShowMainWindow();
+                }
+                else if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Secondary)
+                {
+                    ExitApplication();
+                }
+            });
+        }
+
+        private void ExitApplication()
+        {
+            _appUsageService.SaveData();
+            _appUsageService.Dispose();
+
+            _taskbarIcon?.Dispose();
+
+            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_mainWindow is Views.MainWindow mainWin)
+                {
+                    mainWin.CleanupAndExit();
+                }
+                Microsoft.UI.Xaml.Application.Current.Exit();
+            });
+        }
+
         public void HideToTray()
         {
             try
             {
                 _taskbarIcon?.ShowNotification(
                     "Winspeqt Minimized",
-                    "Still tracking in background. Use taskbar to restore.",
+                    "Still tracking in background. Click tray icon to restore.",
                     NotificationIcon.Info
                 );
             }
