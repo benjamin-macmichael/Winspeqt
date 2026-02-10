@@ -64,7 +64,7 @@
             <ListView Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Button Click="StackPanel_Click" CommandParameter="{Binding FilePath}">
+                        <Button Click="StackPanel_Click" CommandParameter="{Binding FilePath}" Width="500" HorizontalAlignment="Center">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <FontIcon Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"

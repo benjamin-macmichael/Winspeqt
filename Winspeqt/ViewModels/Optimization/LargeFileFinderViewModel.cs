@@ -40,22 +40,21 @@ namespace Winspeqt.ViewModels.Optimization
 
         public async Task RetrieveFolderItems(string folder)
         {
+            FolderItems.Clear();
+
             try
             {
-                List<FileSearchItem> folders = PathToObject(Directory.GetDirectories(folder), "folder");
-                List<FileSearchItem> files = PathToObject(Directory.GetFiles(folder), "file");
-
-                FolderItems = new ObservableCollection<FileSearchItem>([.. folders, .. files]);
+                PathToObject(Directory.GetDirectories(folder), "folder");
+                PathToObject(Directory.GetFiles(folder), "file");
             }
             catch
             {
-                FolderItems = [];
+                System.Diagnostics.Debug.Print("Error retrieving large files for path ", folder);
             }
-
             IsLoading = false;
         }
 
-        static List<FileSearchItem> PathToObject(string[] paths, string type)
+        void PathToObject(string[] paths, string type)
         {
             List<FileSearchItem> temp = [];
             foreach (var path in paths)
@@ -64,7 +63,7 @@ namespace Winspeqt.ViewModels.Optimization
                 long size = type == "file" ? new System.IO.FileInfo(path).Length : DirSize(new DirectoryInfo(path));
                 ObservableCollection<FileSearchItem>? subdirectories = null; //type == "folder" ? new ObservableCollection<FileSearchItem>(FindFilesForFolder(path)) : null;
 
-                temp.Add(
+                FolderItems.Add(
                     new FileSearchItem(
                         name, 
                         type == "folder" ? path : "", 
@@ -74,8 +73,6 @@ namespace Winspeqt.ViewModels.Optimization
                     )
                 );
             }
-
-            return temp;
         }
 
 
