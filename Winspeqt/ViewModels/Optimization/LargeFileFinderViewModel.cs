@@ -13,7 +13,12 @@ namespace Winspeqt.ViewModels.Optimization
 {
     public class LargeFileFinderViewModel : ObservableObject
     {
-        public ObservableCollection<FileSearchItem> FolderItems { get; set; }
+        private ObservableCollection<FileSearchItem> _folderItems = new();
+        public ObservableCollection<FileSearchItem> FolderItems 
+        {
+            get => _folderItems;
+            set => SetProperty(ref _folderItems, value);
+        }
 
         private bool _isLoading;
         public bool IsLoading
