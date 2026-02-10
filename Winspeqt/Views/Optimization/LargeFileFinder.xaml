@@ -8,10 +8,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:Winspeqt.Helpers" 
     xmlns:optimization="using:Winspeqt.ViewModels.Optimization" d:DataContext="{d:DesignInstance Type=optimization:LargeFileFinderViewModel}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -62,25 +64,47 @@
             <ListView Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <FontIcon Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"
-                                          Margin="0,0,4,0"/>
-                                <TextBlock Text="{Binding Name}"
-                                    FontSize="24" Foreground="Green"/>
+                        <Button Click="StackPanel_Click" CommandParameter="{Binding FilePath}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <FontIcon Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"
+                                        Margin="0,0,4,0"/>
+                                    <TextBlock Text="{Binding Name}"
+                                        FontSize="24" Foreground="Green"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Size}" />
+                                    <TextBlock Text="{Binding DataLabel}" />
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding Size}" />
-                                <TextBlock Text="{Binding DataLabel}" />
-                            </StackPanel>
-                        </StackPanel>
+                        </Button>
                     </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.Items>
-                    
+
                 </ListView.Items>
             </ListView>
-            <!--<Button Grid.Row="2" Content="Test" Click="" />-->
+            <Border
+                Grid.Row="0" 
+                Grid.RowSpan="3"
+                Background="#CC000000"
+                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel 
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Center"
+                    Spacing="16">
+                    <ProgressRing 
+                        IsActive="True"
+                        Width="80"
+                        Height="80"/>
+                                <TextBlock 
+                        Text="Loading system information..."
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        Foreground="White"/>
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 </Page>

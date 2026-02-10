@@ -40,5 +40,13 @@ namespace Winspeqt.Views.Optimization
                 Frame.GoBack();
             }
         }
+
+        private void StackPanel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string path && path != "")
+            {
+                _ = ViewModel.RetrieveFolderItems(path);
+            }
+        }
     }
 }

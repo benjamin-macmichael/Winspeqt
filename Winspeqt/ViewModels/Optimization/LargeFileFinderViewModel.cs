@@ -14,36 +14,43 @@ namespace Winspeqt.ViewModels.Optimization
     public class LargeFileFinderViewModel : ObservableObject
     {
         public ObservableCollection<FileSearchItem> FolderItems { get; set; }
-        public LargeFileFinderViewModel()
+
+        private bool _isLoading;
+        public bool IsLoading
         {
-            string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            System.Diagnostics.Debug.WriteLine(initialFolder);
-
-            FolderItems = new ObservableCollection<FileSearchItem>(FindFilesForFolder(initialFolder));
-
-            foreach (var folder in FolderItems)
-            {
-                System.Diagnostics.Debug.WriteLine(folder);
-            }
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
         }
 
-        List<FileSearchItem> FindFilesForFolder(string folder)
+        public LargeFileFinderViewModel()
+        {
+            IsLoading = true;
+
+            FolderItems = [];
+
+            string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            _ = RetrieveFolderItems(initialFolder);
+        }
+
+        public async Task RetrieveFolderItems(string folder)
         {
             try
             {
                 List<FileSearchItem> folders = PathToObject(Directory.GetDirectories(folder), "folder");
                 List<FileSearchItem> files = PathToObject(Directory.GetFiles(folder), "file");
 
-                return [.. folders, .. files];
-
-            } catch
-            {
-                return [];
+                FolderItems = new ObservableCollection<FileSearchItem>([.. folders, .. files]);
             }
+            catch
+            {
+                FolderItems = [];
+            }
+
+            IsLoading = false;
         }
 
-        List<FileSearchItem> PathToObject(string[] paths, string type)
+        static List<FileSearchItem> PathToObject(string[] paths, string type)
         {
             List<FileSearchItem> temp = [];
             foreach (var path in paths)
@@ -55,7 +62,7 @@ namespace Winspeqt.ViewModels.Optimization
                 temp.Add(
                     new FileSearchItem(
                         name, 
-                        path, 
+                        type == "folder" ? path : "", 
                         type, 
                         size,
                         subdirectories
