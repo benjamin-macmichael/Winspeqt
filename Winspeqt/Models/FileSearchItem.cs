@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.UI;
+using Microsoft.UI.Xaml.Media;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +17,9 @@ namespace Winspeqt.Models
         public string Type { get; }
         public int Size { get; }
         public DataSize DataLabel { get; private set; }
+
+        public Brush WarningColor { get; }
+
         public ObservableCollection<FileSearchItem>? SubDirectories { get; set; }
 
         // For easy reference to data size. If we get bigger than this, why are they using our program?
@@ -34,6 +39,7 @@ namespace Winspeqt.Models
             Type = type;
             Size = ReduceSize(size);
             SubDirectories = subdirectories;
+            WarningColor = GetBrush(this.DataLabel);
         }
 
         private int ReduceSize(long size)
@@ -46,6 +52,19 @@ namespace Winspeqt.Models
             }
             DataLabel = (DataSize)iterations;
             return Convert.ToInt32(size);
+        }
+
+        SolidColorBrush GetBrush(DataSize size)
+        {
+            return size switch
+            {
+                DataSize.B => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
+                DataSize.KB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 255)),
+                DataSize.MB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
+                DataSize.GB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                DataSize.TB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
+                _ => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255))
+            };
         }
     }
 }

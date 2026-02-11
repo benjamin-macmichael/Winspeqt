@@ -90,7 +90,7 @@
                                     <TextBlock
                                         Text="{Binding Name}"
                                         FontSize="24"
-                                        Foreground="Green"/>
+                                        Foreground="{Binding WarningColor}"/>
                                 </StackPanel>
 
                                 <StackPanel
