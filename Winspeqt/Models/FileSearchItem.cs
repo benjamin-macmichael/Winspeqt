@@ -58,11 +58,11 @@ namespace Winspeqt.Models
         {
             return size switch
             {
-                DataSize.B => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
-                DataSize.KB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 255)),
-                DataSize.MB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
-                DataSize.GB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
-                DataSize.TB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0)),
+                DataSize.B => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 26, 163, 54)),
+                DataSize.KB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 21, 176, 52)),
+                DataSize.MB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 232, 201, 28)),
+                DataSize.GB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 214, 9, 9)),
+                DataSize.TB => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 148, 9, 9)),
                 _ => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255))
             };
         }

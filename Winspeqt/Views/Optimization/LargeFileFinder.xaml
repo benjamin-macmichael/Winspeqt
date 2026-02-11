@@ -61,52 +61,71 @@
                      Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
-            <ItemsRepeater Grid.Row="1" ItemsSource="{Binding FolderItems, Mode=OneWay}">
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate>
-                        <Button
-                            Click="StackPanel_Click"
-                            CommandParameter="{Binding FilePath}"
-                            MaxWidth="750"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Padding="12,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+            <StackPanel Grid.Row="1">
+                <!--Bread crumb goes here-->
+                <Rectangle Height="2" 
+                   Width="750" 
+                   Fill="Black" 
+                   HorizontalAlignment="Center"/>
+                <ItemsRepeater ItemsSource="{Binding FolderItems, Mode=OneWay}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <Button
+                                    Click="StackPanel_Click"
+                                    CommandParameter="{Binding FilePath}"
+                                    MaxWidth="750"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="12,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                <StackPanel
-                                    Grid.Column="0"
-                                    Orientation="Horizontal"
-                                    Spacing="6"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Left">
-                                    <FontIcon
-                                        Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}"/>
-                                    <TextBlock
-                                        Text="{Binding Name}"
-                                        FontSize="24"
-                                        Foreground="{Binding WarningColor}"/>
-                                </StackPanel>
+                                        <StackPanel
+                                            Grid.Column="0"
+                                            Orientation="Horizontal"
+                                            Spacing="6"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Left"
+                                            >
+                                            <FontIcon
+                                                Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}" 
+                                                Foreground="{Binding WarningColor}"/>
+                                            <TextBlock
+                                                Text="{Binding Name}"
+                                                FontSize="24"
+                                                Foreground="{Binding WarningColor}"/>
+                                        </StackPanel>
 
-                                <StackPanel
-                                    Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    Spacing="10"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Right">
-                                    <TextBlock Text="{Binding Size}" />
-                                    <TextBlock Text="{Binding DataLabel}" />
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="10"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right">
+                                            <TextBlock 
+                                                Text="{Binding Size}"
+                                                Foreground="{Binding WarningColor}"/>
+                                            <TextBlock 
+                                                Text="{Binding DataLabel}"
+                                                Foreground="{Binding WarningColor}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                                <Rectangle Height="1" 
+                                   Width="750" 
+                                   Fill="Black" 
+                                   HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </StackPanel>
             <Border
                 Grid.Row="0" 
                 Grid.RowSpan="3"
