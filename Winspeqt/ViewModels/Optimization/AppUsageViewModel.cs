@@ -23,6 +23,7 @@ namespace Winspeqt.ViewModels.Optimization
         private string _searchText;
         private bool _isTrackingEnabled;
         private bool _showOnlyUnused;
+        private bool _showInstalledAppsView;
 
         public AppUsageViewModel() : this(null)
         {
@@ -44,6 +45,12 @@ namespace Winspeqt.ViewModels.Optimization
             ResetTrackingCommand = new RelayCommand(ResetTracking);
             ToggleTrackingCommand = new RelayCommand(ToggleTracking);
             RefreshInstalledAppsCommand = new RelayCommand(RefreshInstalledApps);
+            ShowUsageViewCommand = new RelayCommand(() => ShowInstalledAppsView = false);
+            ShowInstalledAppsCommand = new RelayCommand(() =>
+            {
+                ShowInstalledAppsView = true;
+                if (InstalledApps.Count == 0) RefreshInstalledApps();
+            });
 
             // WinUI 3 timer
             _updateTimer = _dispatcherQueue.CreateTimer();
@@ -109,6 +116,12 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        public bool ShowInstalledAppsView
+        {
+            get => _showInstalledAppsView;
+            set => SetProperty(ref _showInstalledAppsView, value);
+        }
+
         public string TotalScreenTimeFormatted
         {
             get
@@ -138,6 +151,8 @@ namespace Winspeqt.ViewModels.Optimization
         public ICommand ResetTrackingCommand { get; }
         public ICommand ToggleTrackingCommand { get; }
         public ICommand RefreshInstalledAppsCommand { get; }
+        public ICommand ShowUsageViewCommand { get; }
+        public ICommand ShowInstalledAppsCommand { get; }
 
         private void Refresh() => _ = RefreshDataAsync();
 
