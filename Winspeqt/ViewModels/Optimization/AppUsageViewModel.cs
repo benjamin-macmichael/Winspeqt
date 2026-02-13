@@ -17,10 +17,13 @@ namespace Winspeqt.ViewModels.Optimization
         private DispatcherQueueTimer _updateTimer;
 
         private ObservableCollection<AppUsageModel> _applications;
+        private ObservableCollection<InstalledAppModel> _installedApps;
         private AppUsageStats _usageStats;
         private bool _isLoading;
         private string _searchText;
         private bool _isTrackingEnabled;
+        private bool _showOnlyUnused;
+        private bool _showInstalledAppsView;
 
         public AppUsageViewModel() : this(null)
         {
@@ -31,7 +34,9 @@ namespace Winspeqt.ViewModels.Optimization
             // Use provided service or create new one (for design-time)
             _appUsageService = appUsageService ?? new AppUsageService();
             Applications = new ObservableCollection<AppUsageModel>();
+            InstalledApps = new ObservableCollection<InstalledAppModel>();
             IsTrackingEnabled = true;
+            ShowOnlyUnused = true; // Default to showing only unused apps
 
             // Get dispatcher queue for WinUI 3
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
@@ -39,6 +44,13 @@ namespace Winspeqt.ViewModels.Optimization
             RefreshCommand = new RelayCommand(Refresh);
             ResetTrackingCommand = new RelayCommand(ResetTracking);
             ToggleTrackingCommand = new RelayCommand(ToggleTracking);
+            RefreshInstalledAppsCommand = new RelayCommand(RefreshInstalledApps);
+            ShowUsageViewCommand = new RelayCommand(() => ShowInstalledAppsView = false);
+            ShowInstalledAppsCommand = new RelayCommand(() =>
+            {
+                ShowInstalledAppsView = true;
+                if (InstalledApps.Count == 0) RefreshInstalledApps();
+            });
 
             // WinUI 3 timer
             _updateTimer = _dispatcherQueue.CreateTimer();
@@ -53,6 +65,12 @@ namespace Winspeqt.ViewModels.Optimization
         {
             get => _applications;
             set => SetProperty(ref _applications, value);
+        }
+
+        public ObservableCollection<InstalledAppModel> InstalledApps
+        {
+            get => _installedApps;
+            set => SetProperty(ref _installedApps, value);
         }
 
         public AppUsageStats UsageStats
@@ -88,6 +106,22 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _isTrackingEnabled, value);
         }
 
+        public bool ShowOnlyUnused
+        {
+            get => _showOnlyUnused;
+            set
+            {
+                SetProperty(ref _showOnlyUnused, value);
+                RefreshInstalledApps();
+            }
+        }
+
+        public bool ShowInstalledAppsView
+        {
+            get => _showInstalledAppsView;
+            set => SetProperty(ref _showInstalledAppsView, value);
+        }
+
         public string TotalScreenTimeFormatted
         {
             get
@@ -116,12 +150,39 @@ namespace Winspeqt.ViewModels.Optimization
         public ICommand RefreshCommand { get; }
         public ICommand ResetTrackingCommand { get; }
         public ICommand ToggleTrackingCommand { get; }
+        public ICommand RefreshInstalledAppsCommand { get; }
+        public ICommand ShowUsageViewCommand { get; }
+        public ICommand ShowInstalledAppsCommand { get; }
 
         private void Refresh() => _ = RefreshDataAsync();
+
+        private void RefreshInstalledApps() => _ = RefreshInstalledAppsAsync();
 
         private async Task InitializeAsync()
         {
             await RefreshDataAsync();
+            await RefreshInstalledAppsAsync();
+        }
+
+        private async Task RefreshInstalledAppsAsync()
+        {
+            try
+            {
+                var allApps = await _appUsageService.GetInstalledAppsAsync();
+
+                InstalledApps.Clear();
+                foreach (var app in allApps)
+                {
+                    if (!ShowOnlyUnused || app.IsUnused)
+                    {
+                        InstalledApps.Add(app);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading installed apps: {ex.Message}");
+            }
         }
 
         private async Task RefreshDataAsync()

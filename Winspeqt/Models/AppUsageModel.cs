@@ -37,8 +37,70 @@ namespace Winspeqt.Models
                     return $"{(int)timeAgo.TotalMinutes} min ago";
                 else if (timeAgo.TotalDays < 1)
                     return $"{(int)timeAgo.TotalHours} hours ago";
-                else
+                else if (timeAgo.TotalDays < 30)
                     return $"{(int)timeAgo.TotalDays} days ago";
+                else if (timeAgo.TotalDays < 365)
+                    return $"{(int)(timeAgo.TotalDays / 30)} months ago";
+                else
+                    return $"{(int)(timeAgo.TotalDays / 365)} years ago";
+            }
+        }
+    }
+
+    public class InstalledAppModel
+    {
+        public string AppName { get; set; }
+        public string Publisher { get; set; }
+        public string Version { get; set; }
+        public DateTime? InstallDate { get; set; }
+        public DateTime? LastUsed { get; set; }
+        public long SizeInBytes { get; set; }
+        public string UninstallString { get; set; }
+
+        public string FormattedSize
+        {
+            get
+            {
+                if (SizeInBytes == 0) return "Unknown";
+                if (SizeInBytes < 1024) return $"{SizeInBytes} B";
+                if (SizeInBytes < 1024 * 1024) return $"{SizeInBytes / 1024} KB";
+                if (SizeInBytes < 1024 * 1024 * 1024) return $"{SizeInBytes / (1024 * 1024)} MB";
+                return $"{SizeInBytes / (1024 * 1024 * 1024)} GB";
+            }
+        }
+
+        public string FormattedLastUsed
+        {
+            get
+            {
+                if (!LastUsed.HasValue) return "Never used";
+
+                var timeAgo = DateTime.Now - LastUsed.Value;
+                if (timeAgo.TotalDays < 30)
+                    return $"{(int)timeAgo.TotalDays} days ago";
+                else if (timeAgo.TotalDays < 365)
+                    return $"{(int)(timeAgo.TotalDays / 30)} months ago";
+                else
+                    return $"{(int)(timeAgo.TotalDays / 365)} years ago";
+            }
+        }
+
+        public string FormattedInstallDate
+        {
+            get
+            {
+                if (!InstallDate.HasValue) return "Unknown";
+                return InstallDate.Value.ToString("MMM dd, yyyy");
+            }
+        }
+
+        public bool IsUnused
+        {
+            get
+            {
+                if (!LastUsed.HasValue) return true;
+                var daysSinceUse = (DateTime.Now - LastUsed.Value).TotalDays;
+                return daysSinceUse > 90; // Not used in 90+ days
             }
         }
     }

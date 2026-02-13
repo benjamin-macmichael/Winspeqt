@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Win32;
 using Winspeqt.Models;
 
 namespace Winspeqt.Services
@@ -26,6 +27,19 @@ namespace Winspeqt.Services
 
         [DllImport("user32.dll")]
         private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int processId);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const uint GW_OWNER = 4;
 
         public AppUsageService()
         {
@@ -92,8 +106,31 @@ namespace Winspeqt.Services
             try
             {
                 IntPtr hwnd = GetForegroundWindow();
+
+                // Only track if it's a visible, non-tool window
+                if (!IsWindowVisible(hwnd))
+                    return null;
+
+                // Check if it's a tool window (skip those)
+                IntPtr exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                if ((exStyle.ToInt32() & WS_EX_TOOLWINDOW) != 0)
+                    return null;
+
+                // Check if it has an owner (skip owned windows)
+                IntPtr owner = GetWindow(hwnd, GW_OWNER);
+                if (owner != IntPtr.Zero)
+                    return null;
+
                 GetWindowThreadProcessId(hwnd, out int processId);
                 Process process = Process.GetProcessById(processId);
+
+                // Skip system processes
+                string processName = process.ProcessName.ToLower();
+                if (processName == "explorer" || processName == "textinputhost" ||
+                    processName == "searchapp" || processName == "startmenuexperiencehost" ||
+                    processName == "shellexperiencehost" || processName == "applicationframehost")
+                    return null;
+
                 return process.ProcessName;
             }
             catch
@@ -150,14 +187,15 @@ namespace Winspeqt.Services
         {
             return await Task.Run(() =>
             {
-                var runningApps = Process.GetProcesses().Length;
+                // Count only apps we're actually tracking (user apps)
+                var trackedAppsCount = _usageData.Count;
                 var mostUsed = _usageData.Values.OrderByDescending(d => d.TotalUsageTime).FirstOrDefault();
 
                 return new AppUsageStats
                 {
                     TotalScreenTime = TimeSpan.FromSeconds(_usageData.Values.Sum(d => d.TotalUsageTime.TotalSeconds)),
-                    TotalAppsUsed = _usageData.Count,
-                    ActiveApps = runningApps,
+                    TotalAppsUsed = trackedAppsCount,
+                    ActiveApps = trackedAppsCount, // Just show how many apps we've tracked
                     MostUsedApp = mostUsed != null ? GetFriendlyAppName(mostUsed.ProcessName) : "N/A",
                     TrackingStartTime = _usageData.Values.OrderBy(d => d.FirstUsed).FirstOrDefault()?.FirstUsed ?? DateTime.Now
                 };
@@ -265,6 +303,190 @@ namespace Winspeqt.Services
             _trackingTimer?.Dispose();
             _saveTimer?.Stop();
             _saveTimer?.Dispose();
+        }
+
+        public async Task<List<InstalledAppModel>> GetInstalledAppsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var apps = new List<InstalledAppModel>();
+
+                // Get apps from registry (both 32-bit and 64-bit)
+                apps.AddRange(GetAppsFromRegistry(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"));
+                apps.AddRange(GetAppsFromRegistry(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"));
+
+                // Remove duplicates and sort by last used
+                return apps
+                    .GroupBy(a => a.AppName)
+                    .Select(g => g.First())
+                    .Where(a => !string.IsNullOrWhiteSpace(a.AppName))
+                    .OrderByDescending(a => a.IsUnused)
+                    .ThenByDescending(a => a.LastUsed ?? DateTime.MinValue)
+                    .ToList();
+            });
+        }
+
+        private List<InstalledAppModel> GetAppsFromRegistry(string registryPath)
+        {
+            var apps = new List<InstalledAppModel>();
+
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(registryPath))
+                {
+                    if (key == null) return apps;
+
+                    foreach (var subKeyName in key.GetSubKeyNames())
+                    {
+                        using (var subKey = key.OpenSubKey(subKeyName))
+                        {
+                            if (subKey == null) continue;
+
+                            var displayName = subKey.GetValue("DisplayName")?.ToString();
+                            if (string.IsNullOrWhiteSpace(displayName)) continue;
+
+                            // Skip system components and updates
+                            if (displayName.Contains("Update") || displayName.Contains("Redistributable") ||
+                                displayName.StartsWith("Microsoft Visual C++") || displayName.StartsWith("KB"))
+                                continue;
+
+                            var app = new InstalledAppModel
+                            {
+                                AppName = displayName,
+                                Publisher = subKey.GetValue("Publisher")?.ToString(),
+                                Version = subKey.GetValue("DisplayVersion")?.ToString(),
+                                UninstallString = subKey.GetValue("UninstallString")?.ToString()
+                            };
+
+                            // Try to parse install date
+                            var installDateStr = subKey.GetValue("InstallDate")?.ToString();
+                            if (!string.IsNullOrEmpty(installDateStr) && installDateStr.Length == 8)
+                            {
+                                if (DateTime.TryParseExact(installDateStr, "yyyyMMdd", null,
+                                    System.Globalization.DateTimeStyles.None, out DateTime installDate))
+                                {
+                                    app.InstallDate = installDate;
+                                }
+                            }
+
+                            // Try to get size
+                            var sizeValue = subKey.GetValue("EstimatedSize");
+                            if (sizeValue != null && int.TryParse(sizeValue.ToString(), out int sizeKB))
+                            {
+                                app.SizeInBytes = sizeKB * 1024L;
+                            }
+
+                            // Get the install location or exe path
+                            var installLocation = subKey.GetValue("InstallLocation")?.ToString();
+                            var displayIcon = subKey.GetValue("DisplayIcon")?.ToString();
+
+                            // Try to find the executable and get its last access time
+                            DateTime? exeLastAccess = null;
+
+                            // Try from DisplayIcon first (often points to exe)
+                            if (!string.IsNullOrEmpty(displayIcon))
+                            {
+                                var exePath = displayIcon.Split(',')[0].Trim('"');
+                                exeLastAccess = GetFileLastAccessTime(exePath);
+                            }
+
+                            // Try from install location
+                            if (!exeLastAccess.HasValue && !string.IsNullOrEmpty(installLocation))
+                            {
+                                if (Directory.Exists(installLocation))
+                                {
+                                    var exeFiles = Directory.GetFiles(installLocation, "*.exe", SearchOption.TopDirectoryOnly);
+                                    if (exeFiles.Length > 0)
+                                    {
+                                        exeLastAccess = GetFileLastAccessTime(exeFiles[0]);
+                                    }
+                                }
+                            }
+
+                            // Check if we've tracked this app (our tracking data)
+                            var trackedApp = _usageData.Values.FirstOrDefault(d =>
+                            {
+                                // Try exact process name match
+                                if (d.ProcessName.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+                                    return true;
+
+                                // Try first word of display name
+                                var firstWord = displayName.Split(' ')[0];
+                                if (d.ProcessName.Equals(firstWord, StringComparison.OrdinalIgnoreCase))
+                                    return true;
+
+                                // Try if process name is contained in display name
+                                if (displayName.Contains(d.ProcessName, StringComparison.OrdinalIgnoreCase))
+                                    return true;
+
+                                // Try if display name is contained in process name
+                                if (d.ProcessName.Contains(displayName, StringComparison.OrdinalIgnoreCase))
+                                    return true;
+
+                                // Try removing common suffixes/prefixes
+                                var cleanedDisplay = displayName
+                                    .Replace("Microsoft ", "", StringComparison.OrdinalIgnoreCase)
+                                    .Replace("Google ", "", StringComparison.OrdinalIgnoreCase)
+                                    .Split(' ')[0];
+                                if (d.ProcessName.Equals(cleanedDisplay, StringComparison.OrdinalIgnoreCase))
+                                    return true;
+
+                                return false;
+                            });
+
+                            // Use the most recent date between tracked data and file access
+                            if (trackedApp != null && exeLastAccess.HasValue)
+                            {
+                                app.LastUsed = trackedApp.LastUsed > exeLastAccess.Value ? trackedApp.LastUsed : exeLastAccess.Value;
+                            }
+                            else if (trackedApp != null)
+                            {
+                                app.LastUsed = trackedApp.LastUsed;
+                            }
+                            else if (exeLastAccess.HasValue)
+                            {
+                                app.LastUsed = exeLastAccess.Value;
+                            }
+                            else
+                            {
+                                // Fallback: if installed recently, assume used at install
+                                if (app.InstallDate.HasValue && (DateTime.Now - app.InstallDate.Value).TotalDays < 30)
+                                {
+                                    app.LastUsed = app.InstallDate;
+                                }
+                            }
+
+                            apps.Add(app);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error reading registry {registryPath}: {ex.Message}");
+            }
+
+            return apps;
+        }
+
+        private DateTime? GetFileLastAccessTime(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    var fileInfo = new FileInfo(filePath);
+                    // Return the most recent of LastAccessTime or LastWriteTime
+                    return fileInfo.LastAccessTime > fileInfo.LastWriteTime
+                        ? fileInfo.LastAccessTime
+                        : fileInfo.LastWriteTime;
+                }
+            }
+            catch
+            {
+                // File access denied or doesn't exist
+            }
+            return null;
         }
     }
 
