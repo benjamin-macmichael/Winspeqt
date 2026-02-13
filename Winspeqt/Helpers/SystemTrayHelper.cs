@@ -1,139 +1,216 @@
-﻿using H.NotifyIcon;
-using H.NotifyIcon.Core;
-using Microsoft.UI.Xaml;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using Microsoft.UI.Xaml;
 using Winspeqt.Services;
 
 namespace Winspeqt.Helpers
 {
     public class SystemTrayHelper : IDisposable
     {
-        private TaskbarIcon _taskbarIcon;
         private AppUsageService _appUsageService;
         private Window _mainWindow;
+        private IntPtr _hwnd;
+        private bool _isTracking = true;
 
-        // Import shell32.dll to extract system icons
+        private const int WM_APP = 0x8000;
+        private const int WM_TRAYICON = WM_APP + 1;
+        private const uint NIF_MESSAGE = 0x00000001;
+        private const uint NIF_ICON = 0x00000002;
+        private const uint NIF_TIP = 0x00000004;
+        private const uint NIM_ADD = 0x00000000;
+        private const uint NIM_MODIFY = 0x00000001;
+        private const uint NIM_DELETE = 0x00000002;
+        private const int WM_LBUTTONDBLCLK = 0x0203;
+        private const int WM_RBUTTONUP = 0x0205;
+        private const int WM_LBUTTONUP = 0x0202;
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool Shell_NotifyIcon(uint dwMessage, ref NOTIFYICONDATA lpData);
+
         [DllImport("shell32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CreatePopupMenu();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool InsertMenu(IntPtr hMenu, uint uPosition, uint uFlags, UIntPtr uIDNewItem, string lpNewItem);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        private static extern int TrackPopupMenuEx(IntPtr hMenu, uint uFlags, int x, int y, IntPtr hWnd, IntPtr lptpm);
+
+        [DllImport("user32.dll")]
+        private static extern bool DestroyMenu(IntPtr hMenu);
+
+        [DllImport("user32.dll")]
+        private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private const uint MF_STRING = 0x00000000;
+        private const uint MF_SEPARATOR = 0x00000800;
+        private const uint TPM_RETURNCMD = 0x0100;
+        private const uint TPM_RIGHTBUTTON = 0x0002;
+
+        private const int IDM_OPEN = 1001;
+        private const int IDM_PAUSE = 1002;
+        private const int IDM_EXIT = 1003;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct NOTIFYICONDATA
+        {
+            public uint cbSize;
+            public IntPtr hWnd;
+            public uint uID;
+            public uint uFlags;
+            public uint uCallbackMessage;
+            public IntPtr hIcon;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            public string szTip;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer _messageTimer;
 
         public SystemTrayHelper(Window mainWindow, AppUsageService appUsageService)
         {
             _mainWindow = mainWindow;
             _appUsageService = appUsageService;
+            _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(mainWindow);
+
             InitializeTrayIcon();
+            StartMessagePolling();
+        }
+
+        private void StartMessagePolling()
+        {
+            _messageTimer = _mainWindow.DispatcherQueue.CreateTimer();
+            _messageTimer.Interval = TimeSpan.FromMilliseconds(100);
+            _messageTimer.Tick += (s, e) => CheckTrayMessages();
+            _messageTimer.Start();
+        }
+
+        private void CheckTrayMessages()
+        {
+            // Poll for messages - simplified approach
         }
 
         private void InitializeTrayIcon()
         {
-            _taskbarIcon = new TaskbarIcon
-            {
-                ToolTipText = "Winspeqt - App Usage Tracker"
-            };
+            IntPtr hIcon = IntPtr.Zero;
 
-            // Try multiple possible icon paths
-            bool iconSet = false;
             string[] possiblePaths = new[]
             {
                 System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "QuantumLens.ico"),
-                System.IO.Path.Combine(AppContext.BaseDirectory, "QuantumLens.ico"),
-                "Assets/QuantumLens.ico",
-                "QuantumLens.ico"
             };
 
             foreach (var iconPath in possiblePaths)
             {
-                try
+                if (System.IO.File.Exists(iconPath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Trying icon path: {iconPath}");
-
-                    if (System.IO.File.Exists(iconPath))
+                    try
                     {
-                        System.Diagnostics.Debug.WriteLine($"Icon found at: {iconPath}");
-                        var icon = new System.Drawing.Icon(iconPath);
-                        _taskbarIcon.Icon = icon;
-                        iconSet = true;
+                        var icon = new Icon(iconPath);
+                        hIcon = icon.Handle;
                         break;
                     }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to load icon from {iconPath}: {ex.Message}");
+                    catch { }
                 }
             }
 
-            // Fallback to default Windows icon if app icon didn't work
-            if (!iconSet)
+            if (hIcon == IntPtr.Zero)
             {
-                try
-                {
-                    System.Diagnostics.Debug.WriteLine("Using fallback Windows icon");
-                    IntPtr hIcon = ExtractIcon(GetModuleHandle(null), "shell32.dll", 15);
-
-                    if (hIcon != IntPtr.Zero)
-                    {
-                        var icon = System.Drawing.Icon.FromHandle(hIcon);
-                        _taskbarIcon.Icon = icon;
-                        iconSet = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to load Windows icon: {ex.Message}");
-                }
+                hIcon = ExtractIcon(GetModuleHandle(null), "shell32.dll", 15);
             }
 
-            System.Diagnostics.Debug.WriteLine($"Icon set: {iconSet}");
-
-            // Add click handlers
-            try
+            var nid = new NOTIFYICONDATA
             {
-                var taskbarType = _taskbarIcon.GetType();
+                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATA)),
+                hWnd = _hwnd,
+                uID = 1,
+                uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP,
+                uCallbackMessage = WM_TRAYICON,
+                hIcon = hIcon,
+                szTip = "Winspeqt - Right-click for menu"
+            };
 
-                var leftClickEvent = taskbarType.GetEvent("TrayLeftMouseUp");
-                if (leftClickEvent != null)
+            Shell_NotifyIcon(NIM_ADD, ref nid);
+
+            // Hook window procedure
+            HookWindowProc();
+        }
+
+        private WndProcDelegate _wndProcDelegate;
+        private IntPtr _oldWndProc;
+
+        private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongW")]
+        private static extern IntPtr SetWindowLong32(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        private const int GWLP_WNDPROC = -4;
+
+        private void HookWindowProc()
+        {
+            _wndProcDelegate = new WndProcDelegate(WndProc);
+
+            IntPtr funcPtr = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate);
+
+            if (IntPtr.Size == 8)
+                _oldWndProc = SetWindowLongPtr64(_hwnd, GWLP_WNDPROC, funcPtr);
+            else
+                _oldWndProc = SetWindowLong32(_hwnd, GWLP_WNDPROC, funcPtr);
+        }
+
+        private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+        {
+            if (msg == WM_TRAYICON)
+            {
+                int lParamInt = lParam.ToInt32();
+
+                if (lParamInt == WM_LBUTTONDBLCLK)
                 {
-                    leftClickEvent.AddEventHandler(_taskbarIcon, new Action<object, EventArgs>((s, e) => ShowMainWindow()));
+                    _mainWindow.DispatcherQueue.TryEnqueue(() => ShowMainWindow());
+                    return IntPtr.Zero;
                 }
-
-                var rightClickEvent = taskbarType.GetEvent("TrayRightMouseUp");
-                if (rightClickEvent != null)
+                else if (lParamInt == WM_RBUTTONUP)
                 {
-                    rightClickEvent.AddEventHandler(_taskbarIcon, new Action<object, EventArgs>((s, e) => ShowContextMenu()));
+                    _mainWindow.DispatcherQueue.TryEnqueue(() => ShowContextMenu());
+                    return IntPtr.Zero;
                 }
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to attach click events: {ex.Message}");
-            }
 
-            _taskbarIcon.ForceCreate(false);
-
-            try
-            {
-                _taskbarIcon.ShowNotification(
-                    "Winspeqt Running",
-                    "App usage tracking is active in the background",
-                    NotificationIcon.Info
-                );
-            }
-            catch
-            {
-                // Notifications not supported in this version
-            }
+            return CallWindowProc(_oldWndProc, hWnd, msg, wParam, lParam);
         }
 
         private void ShowMainWindow()
         {
-            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+            try
             {
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
                 var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
+
+                appWindow.Show();
 
                 var presenter = appWindow.Presenter as Microsoft.UI.Windowing.OverlappedPresenter;
                 if (presenter != null && presenter.State == Microsoft.UI.Windowing.OverlappedPresenterState.Minimized)
@@ -142,34 +219,64 @@ namespace Winspeqt.Helpers
                 }
 
                 _mainWindow.Activate();
-            });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing window: {ex.Message}");
+            }
         }
 
         private void ShowContextMenu()
         {
-            _mainWindow?.DispatcherQueue.TryEnqueue(async () =>
+            try
             {
-                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
-                {
-                    Title = "Winspeqt",
-                    Content = "What would you like to do?",
-                    PrimaryButtonText = "Open Window",
-                    SecondaryButtonText = "Exit App",
-                    CloseButtonText = "Cancel",
-                    XamlRoot = _mainWindow.Content.XamlRoot
-                };
+                IntPtr hMenu = CreatePopupMenu();
 
-                var result = await dialog.ShowAsync();
+                InsertMenu(hMenu, 0, MF_STRING, (UIntPtr)IDM_OPEN, "Open Winspeqt");
+                InsertMenu(hMenu, 1, MF_SEPARATOR, UIntPtr.Zero, null);
+                InsertMenu(hMenu, 2, MF_STRING, (UIntPtr)IDM_PAUSE, _isTracking ? "Pause Tracking" : "Resume Tracking");
+                InsertMenu(hMenu, 3, MF_SEPARATOR, UIntPtr.Zero, null);
+                InsertMenu(hMenu, 4, MF_STRING, (UIntPtr)IDM_EXIT, "Exit");
 
-                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+                POINT pt;
+                GetCursorPos(out pt);
+                SetForegroundWindow(_hwnd);
+
+                int cmd = TrackPopupMenuEx(hMenu, TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.X, pt.Y, _hwnd, IntPtr.Zero);
+
+                if (cmd == IDM_OPEN)
                 {
                     ShowMainWindow();
                 }
-                else if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Secondary)
+                else if (cmd == IDM_PAUSE)
+                {
+                    ToggleTracking();
+                }
+                else if (cmd == IDM_EXIT)
                 {
                     ExitApplication();
                 }
-            });
+
+                DestroyMenu(hMenu);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing menu: {ex.Message}");
+            }
+        }
+
+        private void ToggleTracking()
+        {
+            if (_isTracking)
+            {
+                _appUsageService.StopTracking();
+                _isTracking = false;
+            }
+            else
+            {
+                _appUsageService.StartTracking();
+                _isTracking = true;
+            }
         }
 
         private void ExitApplication()
@@ -177,9 +284,15 @@ namespace Winspeqt.Helpers
             _appUsageService.SaveData();
             _appUsageService.Dispose();
 
-            _taskbarIcon?.Dispose();
+            var nid = new NOTIFYICONDATA
+            {
+                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATA)),
+                hWnd = _hwnd,
+                uID = 1
+            };
+            Shell_NotifyIcon(NIM_DELETE, ref nid);
 
-            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+            _mainWindow.DispatcherQueue.TryEnqueue(() =>
             {
                 if (_mainWindow is Views.MainWindow mainWin)
                 {
@@ -191,30 +304,20 @@ namespace Winspeqt.Helpers
 
         public void HideToTray()
         {
-            try
-            {
-                _taskbarIcon?.ShowNotification(
-                    "Winspeqt Minimized",
-                    "Still tracking in background. Click tray icon to restore.",
-                    NotificationIcon.Info
-                );
-            }
-            catch
-            {
-                // Notifications not supported
-            }
+            // Window hidden
         }
 
         public void Dispose()
         {
-            try
+            _messageTimer?.Stop();
+
+            var nid = new NOTIFYICONDATA
             {
-                _taskbarIcon?.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors
-            }
+                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATA)),
+                hWnd = _hwnd,
+                uID = 1
+            };
+            Shell_NotifyIcon(NIM_DELETE, ref nid);
         }
     }
 }
