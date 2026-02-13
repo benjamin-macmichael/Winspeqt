@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.UI.Dispatching;
@@ -125,19 +126,43 @@ namespace Winspeqt.ViewModels.Optimization
 
         private async Task RefreshDataAsync()
         {
-            IsLoading = true;
             try
             {
                 var apps = await _appUsageService.GetAppUsageDataAsync();
                 var stats = await _appUsageService.GetUsageStatsAsync();
 
-                Applications.Clear();
+                // Update existing items or add new ones instead of clearing
                 foreach (var app in apps)
                 {
                     if (string.IsNullOrWhiteSpace(SearchText) ||
                         app.AppName.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
                     {
-                        Applications.Add(app);
+                        var existing = Applications.FirstOrDefault(a => a.ProcessName == app.ProcessName);
+                        if (existing != null)
+                        {
+                            // Update existing item properties
+                            var index = Applications.IndexOf(existing);
+                            Applications[index] = app;
+                        }
+                        else
+                        {
+                            // Add new item
+                            Applications.Add(app);
+                        }
+                    }
+                }
+
+                // Remove items that are no longer in the list
+                var currentProcessNames = apps.Where(a =>
+                    string.IsNullOrWhiteSpace(SearchText) ||
+                    a.AppName.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+                    .Select(a => a.ProcessName).ToHashSet();
+
+                for (int i = Applications.Count - 1; i >= 0; i--)
+                {
+                    if (!currentProcessNames.Contains(Applications[i].ProcessName))
+                    {
+                        Applications.RemoveAt(i);
                     }
                 }
 
@@ -146,10 +171,6 @@ namespace Winspeqt.ViewModels.Optimization
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error refreshing app usage data: {ex.Message}");
-            }
-            finally
-            {
-                IsLoading = false;
             }
         }
 
