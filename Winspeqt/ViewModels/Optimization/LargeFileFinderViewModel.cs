@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 
@@ -13,6 +14,8 @@ namespace Winspeqt.ViewModels.Optimization
 {
     public class LargeFileFinderViewModel : ObservableObject
     {
+        private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
+
         private ObservableCollection<FileSearchItem> _folderItems = new();
         public ObservableCollection<FileSearchItem> FolderItems 
         {
@@ -29,41 +32,62 @@ namespace Winspeqt.ViewModels.Optimization
 
         public LargeFileFinderViewModel()
         {
-            IsLoading = true;
-
             FolderItems = [];
+        }
+
+        public async Task LoadAsync()
+        {
+            IsLoading = true;
 
             string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            _ = RetrieveFolderItems(initialFolder);
+            await RetrieveFolderItems(initialFolder);
         }
 
         public async Task RetrieveFolderItems(string folder)
         {
-            FolderItems.Clear();
+            IsLoading = true;
+
+            var items = await Task.Run(() => BuildFolderItems(folder));
+
+            _dispatcher.TryEnqueue(() =>
+            {
+                FolderItems.Clear();
+                foreach (var item in items)
+                {
+                    FolderItems.Add(item);
+                }
+
+                IsLoading = false;
+            });
+        }
+
+        private List<FileSearchItem> BuildFolderItems(string folder)
+        {
+            List<FileSearchItem> temp = [];
 
             try
             {
-                PathToObject(Directory.GetDirectories(folder), "folder");
-                PathToObject(Directory.GetFiles(folder), "file");
+                PathToObject(temp, Directory.GetDirectories(folder), "folder");
+                PathToObject(temp, Directory.GetFiles(folder), "file");
             }
-            catch
+            catch (Exception ex)
             {
-                System.Diagnostics.Debug.Print("Error retrieving large files for path ", folder);
+                System.Diagnostics.Debug.Print("Error retrieving large files for path {0}: {1}", folder, ex.ToString());
             }
-            IsLoading = false;
+
+            return temp;
         }
 
-        void PathToObject(string[] paths, string type)
+        void PathToObject(List<FileSearchItem> target, string[] paths, string type)
         {
-            List<FileSearchItem> temp = [];
             foreach (var path in paths)
             {
                 string name = System.IO.Path.GetFileName(path);
                 long size = type == "file" ? new System.IO.FileInfo(path).Length : DirSize(new DirectoryInfo(path));
                 ObservableCollection<FileSearchItem>? subdirectories = null; //type == "folder" ? new ObservableCollection<FileSearchItem>(FindFilesForFolder(path)) : null;
 
-                FolderItems.Add(
+                target.Add(
                     new FileSearchItem(
                         name, 
                         type == "folder" ? path : "", 

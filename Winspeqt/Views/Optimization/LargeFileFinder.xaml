@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="Winspeqt.Views.Optimization.LargeFileFinder"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -14,6 +14,7 @@
     <Page.Resources>
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:DataSizeToBrushConverter x:Key="DataSizeToBrushConverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -95,11 +96,11 @@
                                             >
                                             <FontIcon
                                                 Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}" 
-                                                Foreground="{Binding WarningColor}"/>
+                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
                                             <TextBlock
                                                 Text="{Binding Name}"
                                                 FontSize="24"
-                                                Foreground="{Binding WarningColor}"/>
+                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
                                         </StackPanel>
 
                                         <StackPanel
@@ -110,10 +111,10 @@
                                             HorizontalAlignment="Right">
                                             <TextBlock 
                                                 Text="{Binding Size}"
-                                                Foreground="{Binding WarningColor}"/>
+                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
                                             <TextBlock 
                                                 Text="{Binding DataLabel}"
-                                                Foreground="{Binding WarningColor}"/>
+                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -150,3 +151,4 @@
         </Grid>
     </ScrollViewer>
 </Page>
+
