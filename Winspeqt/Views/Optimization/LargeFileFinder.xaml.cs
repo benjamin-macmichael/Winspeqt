@@ -47,11 +47,20 @@ namespace Winspeqt.Views.Optimization
             }
         }
 
-        private void StackPanel_Click(object sender, RoutedEventArgs e)
+        private void Folder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is string path && path != "")
             {
                 _ = ViewModel.RetrieveFolderItems(path);
+            }
+        }
+
+        private void BreadCrumb_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is int index)
+            {
+                _ = ViewModel.RetrieveFolderItems(ViewModel.PathItems[index].Path);
+                ViewModel.ResetBreadCrumb(index);
             }
         }
     }

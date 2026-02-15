@@ -55,12 +55,8 @@ namespace Winspeqt.ViewModels.Optimization
         public async Task RetrieveFolderItems(string folder)
         {
             IsLoading = true;
-            PathItem test = new PathItem(folder);
-            System.Diagnostics.Debug.Print(test.ToString());
-            System.Diagnostics.Debug.Print($"{folder}.");
-            PathItem test2 = test;
 
-            PathItems.Add(test);
+            PathItems.Add(new PathItem(folder, PathItems.Count));
 
             var items = await Task.Run(() => BuildFolderItems(folder));
 
@@ -141,5 +137,10 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        public void ResetBreadCrumb(int index)
+        {
+            IEnumerable<PathItem> test = PathItems.Take(index);
+            PathItems = new ObservableCollection<PathItem>(test);
+        }
     }
 }

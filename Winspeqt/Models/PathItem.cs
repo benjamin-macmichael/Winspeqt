@@ -10,10 +10,12 @@ namespace Winspeqt.Models
     {
         public string Name { get; }
         public string Path { get; }
-        public PathItem(string path) 
+        public int Index { get; }
+        public PathItem(string path, int index) 
         {
             Path = path;
             Name = System.IO.Path.GetFileName(path);
+            Index = index;
         }
     }
 }

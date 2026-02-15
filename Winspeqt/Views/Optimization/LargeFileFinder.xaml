@@ -63,16 +63,44 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1">
-                <ItemsRepeater ItemsSource="{Binding PathItems, Mode=OneWay}" MaxWidth="750" HorizontalAlignment="Stretch">
-                    <ItemsRepeater.ItemTemplate>
+                <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
+                          MaxWidth="750"
+                          HorizontalAlignment="Stretch"
+                          ScrollViewer.HorizontalScrollMode="Enabled"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollMode="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="MinHeight" Value="0"/>
+                            <Setter Property="MinWidth" Value="0"/>
+                            <Setter Property="Width" Value="Auto"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="/" />
-                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="/" FontSize="24" />
+                                <Button
+                                    Click="BreadCrumb_Click"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    CommandParameter="{Binding Index}">
+                                    <TextBlock Text="{Binding Name}" FontSize="24" />
+                                </Button>
                             </StackPanel>
                         </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
+                    </ListView.ItemTemplate>
+                </ListView>
                 <Rectangle Height="2" 
                    Width="750" 
                    Fill="Black" 
@@ -82,7 +110,7 @@
                         <DataTemplate>
                             <StackPanel>
                                 <Button
-                                    Click="StackPanel_Click"
+                                    Click="Folder_Click"
                                     CommandParameter="{Binding FilePath}"
                                     MaxWidth="750"
                                     HorizontalAlignment="Stretch"
