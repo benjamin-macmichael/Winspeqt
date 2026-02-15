@@ -63,7 +63,16 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1">
-                <!--Bread crumb goes here-->
+                <ItemsRepeater ItemsSource="{Binding PathItems, Mode=OneWay}" MaxWidth="750" HorizontalAlignment="Stretch">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="/" />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
                 <Rectangle Height="2" 
                    Width="750" 
                    Fill="Black" 

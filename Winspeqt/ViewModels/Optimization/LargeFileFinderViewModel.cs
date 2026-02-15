@@ -23,6 +23,13 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _folderItems, value);
         }
 
+        private ObservableCollection<PathItem> _pathItems = new();
+        public ObservableCollection<PathItem> PathItems
+        {
+            get => _pathItems;
+            set => SetProperty(ref _pathItems, value);
+        }
+
         private bool _isLoading;
         public bool IsLoading
         {
@@ -33,6 +40,7 @@ namespace Winspeqt.ViewModels.Optimization
         public LargeFileFinderViewModel()
         {
             FolderItems = [];
+            PathItems = [];
         }
 
         public async Task LoadAsync()
@@ -47,6 +55,12 @@ namespace Winspeqt.ViewModels.Optimization
         public async Task RetrieveFolderItems(string folder)
         {
             IsLoading = true;
+            PathItem test = new PathItem(folder);
+            System.Diagnostics.Debug.Print(test.ToString());
+            System.Diagnostics.Debug.Print($"{folder}.");
+            PathItem test2 = test;
+
+            PathItems.Add(test);
 
             var items = await Task.Run(() => BuildFolderItems(folder));
 
