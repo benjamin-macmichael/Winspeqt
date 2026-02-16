@@ -247,12 +247,16 @@
 
             <!-- Installed Apps Section Header -->
             <Grid Grid.Row="0" Padding="30,20,30,10" Background="#1E1E1E">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
+                <StackPanel Grid.Column="0" Grid.Row="0">
                     <TextBlock Text="Installed Applications" 
                           FontSize="28" 
                           FontWeight="Bold" 
@@ -263,25 +267,36 @@
                           Margin="0,5,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                     <Button Content="← Back to Usage" 
                         Command="{Binding ShowUsageViewCommand}"
                         Background="#3E3E42"
                         Foreground="White"
                         Padding="20,10"
                         CornerRadius="6"/>
-
-                    <CheckBox Content="Show only unused (90+ days)" 
-                         IsChecked="{Binding ShowOnlyUnused, Mode=TwoWay}"
-                         Foreground="White"
-                         FontSize="12"/>
-                    <Button Content="↻ Refresh List" 
-                        Command="{Binding RefreshInstalledAppsCommand}"
-                        Background="#007ACC"
-                        Foreground="White"
-                        Padding="15,8"
-                        CornerRadius="4"/>
                 </StackPanel>
+
+                <!-- Disclaimer -->
+                <Border Grid.Row="1" 
+                    Grid.ColumnSpan="2" 
+                    Background="#2D2D30" 
+                    CornerRadius="6" 
+                    Padding="20,15"
+                    Margin="0,15,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="ℹ️" 
+                              FontSize="20" 
+                              VerticalAlignment="Center"/>
+                        <TextBlock Foreground="#CCCCCC" 
+                              FontSize="14"
+                              TextWrapping="Wrap"
+                              VerticalAlignment="Center">
+                        <Run Text="Usage history is based on Winspeqt's tracking. Apps showing "/>
+                        <Run Text="&quot;Not tracked&quot;" FontWeight="SemiBold" Foreground="White"/>
+                        <Run Text=" haven't been used while Winspeqt was running. The longer you use Winspeqt, the more accurate this data becomes."/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
             </Grid>
 
             <!-- Installed Apps List -->

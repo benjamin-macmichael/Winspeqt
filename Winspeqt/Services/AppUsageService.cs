@@ -345,10 +345,8 @@ namespace Winspeqt.Services
                             var displayName = subKey.GetValue("DisplayName")?.ToString();
                             if (string.IsNullOrWhiteSpace(displayName)) continue;
 
-                            // Skip system components and updates
-                            if (displayName.Contains("Update") || displayName.Contains("Redistributable") ||
-                                displayName.StartsWith("Microsoft Visual C++") || displayName.StartsWith("KB"))
-                                continue;
+                            // Skip system components, updates, and junk
+                            if (ShouldSkipApp(displayName)) continue;
 
                             var app = new InstalledAppModel
                             {
@@ -376,34 +374,7 @@ namespace Winspeqt.Services
                                 app.SizeInBytes = sizeKB * 1024L;
                             }
 
-                            // Get the install location or exe path
-                            var installLocation = subKey.GetValue("InstallLocation")?.ToString();
-                            var displayIcon = subKey.GetValue("DisplayIcon")?.ToString();
-
-                            // Try to find the executable and get its last access time
-                            DateTime? exeLastAccess = null;
-
-                            // Try from DisplayIcon first (often points to exe)
-                            if (!string.IsNullOrEmpty(displayIcon))
-                            {
-                                var exePath = displayIcon.Split(',')[0].Trim('"');
-                                exeLastAccess = GetFileLastAccessTime(exePath);
-                            }
-
-                            // Try from install location
-                            if (!exeLastAccess.HasValue && !string.IsNullOrEmpty(installLocation))
-                            {
-                                if (Directory.Exists(installLocation))
-                                {
-                                    var exeFiles = Directory.GetFiles(installLocation, "*.exe", SearchOption.TopDirectoryOnly);
-                                    if (exeFiles.Length > 0)
-                                    {
-                                        exeLastAccess = GetFileLastAccessTime(exeFiles[0]);
-                                    }
-                                }
-                            }
-
-                            // Check if we've tracked this app (our tracking data)
+                            // ONLY use Winspeqt's tracking data - it's the only reliable source
                             var trackedApp = _usageData.Values.FirstOrDefault(d =>
                             {
                                 // Try exact process name match
@@ -434,27 +405,11 @@ namespace Winspeqt.Services
                                 return false;
                             });
 
-                            // Use the most recent date between tracked data and file access
-                            if (trackedApp != null && exeLastAccess.HasValue)
-                            {
-                                app.LastUsed = trackedApp.LastUsed > exeLastAccess.Value ? trackedApp.LastUsed : exeLastAccess.Value;
-                            }
-                            else if (trackedApp != null)
+                            if (trackedApp != null)
                             {
                                 app.LastUsed = trackedApp.LastUsed;
                             }
-                            else if (exeLastAccess.HasValue)
-                            {
-                                app.LastUsed = exeLastAccess.Value;
-                            }
-                            else
-                            {
-                                // Fallback: if installed recently, assume used at install
-                                if (app.InstallDate.HasValue && (DateTime.Now - app.InstallDate.Value).TotalDays < 30)
-                                {
-                                    app.LastUsed = app.InstallDate;
-                                }
-                            }
+                            // Otherwise LastUsed stays null = "Not tracked by Winspeqt"
 
                             apps.Add(app);
                         }
@@ -469,24 +424,47 @@ namespace Winspeqt.Services
             return apps;
         }
 
-        private DateTime? GetFileLastAccessTime(string filePath)
+        private bool ShouldSkipApp(string displayName)
         {
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    var fileInfo = new FileInfo(filePath);
-                    // Return the most recent of LastAccessTime or LastWriteTime
-                    return fileInfo.LastAccessTime > fileInfo.LastWriteTime
-                        ? fileInfo.LastAccessTime
-                        : fileInfo.LastWriteTime;
-                }
-            }
-            catch
-            {
-                // File access denied or doesn't exist
-            }
-            return null;
+            var nameLower = displayName.ToLower();
+
+            // Skip updates and patches
+            if (nameLower.Contains("update") || nameLower.Contains("hotfix") ||
+                nameLower.Contains("service pack") || nameLower.StartsWith("kb"))
+                return true;
+
+            // Skip runtimes and redistributables
+            if (nameLower.Contains("redistributable") || nameLower.Contains("runtime") ||
+                nameLower.Contains("microsoft visual c++") || nameLower.Contains(".net framework") ||
+                nameLower.Contains("vcredist") || nameLower.Contains("directx"))
+                return true;
+
+            // Skip drivers
+            if (nameLower.Contains("driver") || nameLower.Contains("amd software") ||
+                nameLower.Contains("nvidia") || nameLower.Contains("intel graphics"))
+                return true;
+
+            // Skip Windows components
+            if (nameLower.StartsWith("microsoft edge") && nameLower.Contains("webview") ||
+                nameLower.Contains("windows sdk") || nameLower.Contains("windows software development kit") ||
+                nameLower.Contains("windows app certification kit") || nameLower.Contains("windows assessment"))
+                return true;
+
+            // Skip common system utilities that users don't interact with
+            if (nameLower.Contains("microsoft visual studio installer") ||
+                nameLower.Contains("microsoft build tools") || nameLower.Contains("microsoft .net") ||
+                nameLower.Contains("microsoft web deploy") || nameLower.Contains("iis "))
+                return true;
+
+            // Skip language packs
+            if (nameLower.Contains("language pack") || nameLower.Contains("mui "))
+                return true;
+
+            // Skip if it's just a version number or GUID
+            if (displayName.Length < 3 || displayName.All(c => char.IsDigit(c) || c == '.' || c == '-'))
+                return true;
+
+            return false;
         }
     }
 

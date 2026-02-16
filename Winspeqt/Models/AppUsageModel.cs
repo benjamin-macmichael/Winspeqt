@@ -73,10 +73,14 @@ namespace Winspeqt.Models
         {
             get
             {
-                if (!LastUsed.HasValue) return "Never used";
+                if (!LastUsed.HasValue) return "Not tracked";
 
                 var timeAgo = DateTime.Now - LastUsed.Value;
-                if (timeAgo.TotalDays < 30)
+                if (timeAgo.TotalDays < 1)
+                    return "Today";
+                else if (timeAgo.TotalDays < 7)
+                    return $"{(int)timeAgo.TotalDays} days ago";
+                else if (timeAgo.TotalDays < 30)
                     return $"{(int)timeAgo.TotalDays} days ago";
                 else if (timeAgo.TotalDays < 365)
                     return $"{(int)(timeAgo.TotalDays / 30)} months ago";
@@ -98,7 +102,8 @@ namespace Winspeqt.Models
         {
             get
             {
-                if (!LastUsed.HasValue) return true;
+                // If not tracked at all, don't mark as unused (we don't know)
+                if (!LastUsed.HasValue) return false;
                 var daysSinceUse = (DateTime.Now - LastUsed.Value).TotalDays;
                 return daysSinceUse > 90; // Not used in 90+ days
             }

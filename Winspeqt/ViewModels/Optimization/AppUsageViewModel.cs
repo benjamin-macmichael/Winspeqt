@@ -36,7 +36,7 @@ namespace Winspeqt.ViewModels.Optimization
             Applications = new ObservableCollection<AppUsageModel>();
             InstalledApps = new ObservableCollection<InstalledAppModel>();
             IsTrackingEnabled = true;
-            ShowOnlyUnused = true; // Default to showing only unused apps
+            ShowOnlyUnused = false; // Default to showing ALL apps
 
             // Get dispatcher queue for WinUI 3
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
