@@ -63,6 +63,20 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1">
+                <Button 
+                    Content="Default"
+                    CommandParameter="Default"
+                    Click="SortItems_Click"/>
+                <Button 
+                    Content="Name"
+                    CommandParameter="Name"
+                    Click="SortItems_Click"/>
+                <Button 
+                    Content="Size"
+                    CommandParameter="Size"
+                    Click="SortItems_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Row="1">
                 <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
                           MaxWidth="750"
                           HorizontalAlignment="Stretch"

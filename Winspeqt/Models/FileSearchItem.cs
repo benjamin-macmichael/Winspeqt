@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace Winspeqt.Models
 {
     public class FileSearchItem
     {
         public string Name { get; }
+        
         public string FilePath { get; }
         public string Type { get; }
         public int Size { get; }

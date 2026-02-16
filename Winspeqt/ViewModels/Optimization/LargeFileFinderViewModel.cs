@@ -142,5 +142,25 @@ namespace Winspeqt.ViewModels.Optimization
             IEnumerable<PathItem> test = PathItems.Take(index);
             PathItems = new ObservableCollection<PathItem>(test);
         }
+
+        public void SortFiles(string field)
+        {
+            IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
+
+            if (field == "Name")
+            {
+                listItems = listItems.OrderBy(item => item.Name);
+            } 
+            else if (field == "Size")
+            {
+                listItems = listItems.OrderByDescending(item => item.Size);
+            } 
+            else
+            {
+                listItems = listItems.OrderBy(item => item.Name).OrderByDescending(item => item.Type);
+            }
+
+            FolderItems = new ObservableCollection<FileSearchItem>(listItems);
+        }
     }
 }

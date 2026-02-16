@@ -63,5 +63,13 @@ namespace Winspeqt.Views.Optimization
                 ViewModel.ResetBreadCrumb(index);
             }
         }
+
+        private void SortItems_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.CommandParameter is string orderBy)
+            {
+                ViewModel.SortFiles(orderBy);
+            }
+        }
     }
 }
