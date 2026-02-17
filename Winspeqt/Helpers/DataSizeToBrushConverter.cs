@@ -10,19 +10,19 @@ namespace Winspeqt.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var size = value is FileSearchItem.DataSize dataSize
+            var size = value is Enums.DataSize dataSize
                 ? dataSize
-                : Enum.TryParse(value?.ToString(), out FileSearchItem.DataSize parsed)
+                : Enum.TryParse(value?.ToString(), out Enums.DataSize parsed)
                     ? parsed
-                    : FileSearchItem.DataSize.B;
+                    : Enums.DataSize.B;
 
             return size switch
             {
-                FileSearchItem.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
-                FileSearchItem.DataSize.KB => new SolidColorBrush(Color.FromArgb(255, 21, 176, 52)),
-                FileSearchItem.DataSize.MB => new SolidColorBrush(Color.FromArgb(255, 232, 201, 28)),
-                FileSearchItem.DataSize.GB => new SolidColorBrush(Color.FromArgb(255, 214, 9, 9)),
-                FileSearchItem.DataSize.TB => new SolidColorBrush(Color.FromArgb(255, 148, 9, 9)),
+                Enums.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
+                Enums.DataSize.KB => new SolidColorBrush(Color.FromArgb(255, 21, 176, 52)),
+                Enums.DataSize.MB => new SolidColorBrush(Color.FromArgb(255, 232, 201, 28)),
+                Enums.DataSize.GB => new SolidColorBrush(Color.FromArgb(255, 214, 9, 9)),
+                Enums.DataSize.TB => new SolidColorBrush(Color.FromArgb(255, 148, 9, 9)),
                 _ => new SolidColorBrush(Color.FromArgb(255, 255, 255, 255))
             };
         }

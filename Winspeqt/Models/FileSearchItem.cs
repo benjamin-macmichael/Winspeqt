@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
+using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.Models
 {
@@ -14,16 +15,6 @@ namespace Winspeqt.Models
         public DataSize DataLabel { get; private set; }
 
         public ObservableCollection<FileSearchItem>? SubDirectories { get; set; }
-
-        // For easy reference to data size. If we get bigger than this, why are they using our program?
-        public enum DataSize
-        {
-            B,
-            KB,
-            MB,
-            GB,
-            TB,
-        }
 
         public FileSearchItem(string name, string path, string type, long size, ObservableCollection<FileSearchItem>? subdirectories)
         {

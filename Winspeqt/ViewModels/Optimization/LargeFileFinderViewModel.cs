@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
+using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.ViewModels.Optimization
 {
@@ -153,7 +154,7 @@ namespace Winspeqt.ViewModels.Optimization
             } 
             else if (field == "Size")
             {
-                listItems = listItems.OrderByDescending(item => item.Size);
+                listItems = listItems.OrderByDescending(item => item.Size).OrderByDescending(item => item.DataLabel);
             } 
             else
             {
