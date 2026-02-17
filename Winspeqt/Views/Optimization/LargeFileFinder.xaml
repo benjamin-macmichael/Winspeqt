@@ -56,13 +56,47 @@
                     </StackPanel>
                     
                     <TextBlock 
-                     Text="Scan your folders to find the largest files taking up space on your PC" 
-                     FontSize="18" 
-                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                     Margin="0,8,0,0"/>
+                        Text="Scan your folders to find the largest files taking up space on your PC" 
+                        FontSize="18" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1">
+                <StackPanel 
+                    Orientation="Horizontal"
+                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    MaxWidth="750"
+                    HorizontalAlignment="Center"
+                >
+                    <TextBlock
+                        Text="Calculating folder sizes. This may take a moment."
+                        FontSize="20"
+                        TextWrapping="WrapWholeWords"
+                        HorizontalAlignment="Stretch"
+                        />
+                    <ProgressRing 
+                        IsActive="True"
+                        Width="20"
+                        Height="20" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" MaxWidth="750" HorizontalAlignment="Stretch">
+                    <TextBlock 
+                        Text="Sort by:" 
+                        FontSize="16" 
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,12,0"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <ComboBox 
+                        ItemsSource="{Binding SortOptions}"
+                        SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        MinWidth="150"
+                        FontSize="15"
+                        />
+                </StackPanel>
                 <Button 
                     Content="Default"
                     CommandParameter="Default"
@@ -76,7 +110,12 @@
                     CommandParameter="Size"
                     Click="SortItems_Click"/>
             </StackPanel>
-            <StackPanel Grid.Row="1">
+            <StackPanel Grid.Row="2">
+                <StackPanel
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Stretch"
+                    >
+                </StackPanel>
                 <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
                           MaxWidth="750"
                           HorizontalAlignment="Stretch"
@@ -92,7 +131,7 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="Padding" Value="0"/>
-                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Margin" Value="0,0,0,7"/>
                             <Setter Property="MinHeight" Value="0"/>
                             <Setter Property="MinWidth" Value="0"/>
                             <Setter Property="Width" Value="Auto"/>
@@ -178,27 +217,6 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </StackPanel>
-            <Border
-                Grid.Row="0" 
-                Grid.RowSpan="3"
-                Background="#CC000000"
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                <StackPanel 
-                    HorizontalAlignment="Center" 
-                    VerticalAlignment="Center"
-                    Spacing="16">
-                    <ProgressRing 
-                        IsActive="True"
-                        Width="80"
-                        Height="80"/>
-                                <TextBlock 
-                        Text="Loading system information..."
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        HorizontalAlignment="Center"
-                        Foreground="White"/>
-                </StackPanel>
-            </Border>
         </Grid>
     </ScrollViewer>
 </Page>

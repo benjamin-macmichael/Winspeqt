@@ -140,7 +140,7 @@ namespace Winspeqt.ViewModels.Optimization
 
         public void ResetBreadCrumb(int index)
         {
-            IEnumerable<PathItem> test = PathItems.Take(index);
+            IEnumerable<PathItem> test = PathItems.Take(index + 1);
             PathItems = new ObservableCollection<PathItem>(test);
         }
 
