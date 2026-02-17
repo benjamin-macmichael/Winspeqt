@@ -38,10 +38,27 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _isLoading, value);
         }
 
+        private string _selectedSortOption = "Default";
+        public string SelectedSortOption
+        {
+            get => _selectedSortOption;
+            set
+            {
+                if (SetProperty(ref _selectedSortOption, value))
+                {
+                    SortFiles();
+                }
+            }
+        }
+
+        public ObservableCollection<string> SortOptions { get; set; }
+
+
         public LargeFileFinderViewModel()
         {
             FolderItems = [];
             PathItems = [];
+            SortOptions = new ObservableCollection<string> { "Default", "Name", "Size" };
         }
 
         public async Task LoadAsync()
@@ -144,15 +161,15 @@ namespace Winspeqt.ViewModels.Optimization
             PathItems = new ObservableCollection<PathItem>(test);
         }
 
-        public void SortFiles(string field)
+        public void SortFiles()
         {
             IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
 
-            if (field == "Name")
+            if (this.SelectedSortOption == "Name")
             {
                 listItems = listItems.OrderBy(item => item.Name);
             } 
-            else if (field == "Size")
+            else if (this.SelectedSortOption == "Size")
             {
                 listItems = listItems.OrderByDescending(item => item.Size).OrderByDescending(item => item.DataLabel);
             } 

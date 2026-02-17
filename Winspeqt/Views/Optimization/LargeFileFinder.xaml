@@ -97,18 +97,6 @@
                         FontSize="15"
                         />
                 </StackPanel>
-                <Button 
-                    Content="Default"
-                    CommandParameter="Default"
-                    Click="SortItems_Click"/>
-                <Button 
-                    Content="Name"
-                    CommandParameter="Name"
-                    Click="SortItems_Click"/>
-                <Button 
-                    Content="Size"
-                    CommandParameter="Size"
-                    Click="SortItems_Click"/>
             </StackPanel>
             <StackPanel Grid.Row="2">
                 <StackPanel
