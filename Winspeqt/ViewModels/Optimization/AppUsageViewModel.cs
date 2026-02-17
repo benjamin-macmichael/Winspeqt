@@ -22,43 +22,41 @@ namespace Winspeqt.ViewModels.Optimization
         private bool _isLoading;
         private string _searchText;
         private bool _isTrackingEnabled;
+        private bool _hasOptedIn;
         private bool _showOnlyUnused;
         private bool _showInstalledAppsView;
 
-        public AppUsageViewModel() : this(null)
-        {
-        }
+        public AppUsageViewModel() : this(null) { }
 
         public AppUsageViewModel(AppUsageService appUsageService)
         {
-            // Use provided service or create new one (for design-time)
             _appUsageService = appUsageService ?? new AppUsageService();
             Applications = new ObservableCollection<AppUsageModel>();
             InstalledApps = new ObservableCollection<InstalledAppModel>();
-            IsTrackingEnabled = true;
-            ShowOnlyUnused = false; // Default to showing ALL apps
+            ShowOnlyUnused = false;
 
-            // Get dispatcher queue for WinUI 3
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             RefreshCommand = new RelayCommand(Refresh);
             ResetTrackingCommand = new RelayCommand(ResetTracking);
             ToggleTrackingCommand = new RelayCommand(ToggleTracking);
+            OptInCommand = new RelayCommand(OptIn);
             RefreshInstalledAppsCommand = new RelayCommand(RefreshInstalledApps);
             ShowUsageViewCommand = new RelayCommand(() => ShowInstalledAppsView = false);
             ShowInstalledAppsCommand = new RelayCommand(() =>
             {
                 ShowInstalledAppsView = true;
-                RefreshInstalledApps(); // Always refresh when switching to this view
+                RefreshInstalledApps();
             });
 
-            // WinUI 3 timer
-            _updateTimer = _dispatcherQueue.CreateTimer();
-            _updateTimer.Interval = TimeSpan.FromSeconds(5);
-            _updateTimer.Tick += async (s, e) => await RefreshDataAsync();
-            _updateTimer.Start();
+            // Load persisted states
+            _hasOptedIn = GetOptInPreference();
+            _isTrackingEnabled = _hasOptedIn && GetTrackingEnabledPreference();
 
-            _ = InitializeAsync();
+            if (_hasOptedIn)
+            {
+                StartTimerAndInit();
+            }
         }
 
         public ObservableCollection<AppUsageModel> Applications
@@ -106,6 +104,12 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _isTrackingEnabled, value);
         }
 
+        public bool HasOptedIn
+        {
+            get => _hasOptedIn;
+            set => SetProperty(ref _hasOptedIn, value);
+        }
+
         public bool ShowOnlyUnused
         {
             get => _showOnlyUnused;
@@ -138,45 +142,110 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 if (UsageStats == null) return "0 min";
                 var duration = DateTime.Now - UsageStats.TrackingStartTime;
-                if (duration.TotalDays >= 1)
-                    return $"{(int)duration.TotalDays} days";
-                else if (duration.TotalHours >= 1)
-                    return $"{(int)duration.TotalHours} hours";
-                else
-                    return $"{(int)duration.TotalMinutes} min";
+                if (duration.TotalDays >= 1) return $"{(int)duration.TotalDays} days";
+                else if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours} hours";
+                else return $"{(int)duration.TotalMinutes} min";
             }
         }
 
         public ICommand RefreshCommand { get; }
         public ICommand ResetTrackingCommand { get; }
         public ICommand ToggleTrackingCommand { get; }
+        public ICommand OptInCommand { get; }
         public ICommand RefreshInstalledAppsCommand { get; }
         public ICommand ShowUsageViewCommand { get; }
         public ICommand ShowInstalledAppsCommand { get; }
 
         private void Refresh() => _ = RefreshDataAsync();
-
         private void RefreshInstalledApps() => _ = RefreshInstalledAppsAsync();
 
-        private bool GetTrackingPreference()
+        private void OptIn()
+        {
+            HasOptedIn = true;
+            IsTrackingEnabled = true;
+            SaveOptInPreference(true);
+            SaveTrackingEnabledPreference(true);
+            StartTimerAndInit();
+        }
+
+        private void ToggleTracking()
+        {
+            IsTrackingEnabled = !IsTrackingEnabled;
+            SaveTrackingEnabledPreference(IsTrackingEnabled);
+
+            if (IsTrackingEnabled)
+            {
+                _appUsageService.StartTracking();
+                if (_updateTimer == null)
+                {
+                    _updateTimer = _dispatcherQueue.CreateTimer();
+                    _updateTimer.Interval = TimeSpan.FromSeconds(5);
+                    _updateTimer.Tick += async (s, e) => await RefreshDataAsync();
+                }
+                _updateTimer.Start();
+                _ = RefreshDataAsync();
+            }
+            else
+            {
+                _appUsageService.StopTracking();
+                _updateTimer?.Stop();
+            }
+        }
+
+        private void StartTimerAndInit()
+        {
+            // Respect persisted paused state — stop service if user had paused
+            if (!_isTrackingEnabled)
+                _appUsageService.StopTracking();
+
+            _updateTimer = _dispatcherQueue.CreateTimer();
+            _updateTimer.Interval = TimeSpan.FromSeconds(5);
+            _updateTimer.Tick += async (s, e) => await RefreshDataAsync();
+
+            if (_isTrackingEnabled)
+                _updateTimer.Start();
+
+            _ = InitializeAsync();
+        }
+
+        private bool GetOptInPreference()
+        {
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                if (localSettings.Values.ContainsKey("AppUsageOptedIn"))
+                    return (bool)localSettings.Values["AppUsageOptedIn"];
+                return false;
+            }
+            catch { return false; }
+        }
+
+        private void SaveOptInPreference(bool optedIn)
+        {
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                localSettings.Values["AppUsageOptedIn"] = optedIn;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving opt-in preference: {ex.Message}");
+            }
+        }
+
+        private bool GetTrackingEnabledPreference()
         {
             try
             {
                 var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
                 if (localSettings.Values.ContainsKey("AppUsageTrackingEnabled"))
-                {
                     return (bool)localSettings.Values["AppUsageTrackingEnabled"];
-                }
-                // Default to false - user must opt in
-                return false;
+                return true; // default to enabled once opted in
             }
-            catch
-            {
-                return false;
-            }
+            catch { return true; }
         }
 
-        private void SaveTrackingPreference(bool enabled)
+        private void SaveTrackingEnabledPreference(bool enabled)
         {
             try
             {
@@ -185,7 +254,7 @@ namespace Winspeqt.ViewModels.Optimization
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving tracking preference: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error saving tracking enabled preference: {ex.Message}");
             }
         }
 
@@ -200,14 +269,11 @@ namespace Winspeqt.ViewModels.Optimization
             try
             {
                 var allApps = await _appUsageService.GetInstalledAppsAsync();
-
                 InstalledApps.Clear();
                 foreach (var app in allApps)
                 {
                     if (!ShowOnlyUnused || app.IsUnused)
-                    {
                         InstalledApps.Add(app);
-                    }
                 }
             }
             catch (Exception ex)
@@ -223,7 +289,6 @@ namespace Winspeqt.ViewModels.Optimization
                 var apps = await _appUsageService.GetAppUsageDataAsync();
                 var stats = await _appUsageService.GetUsageStatsAsync();
 
-                // Update existing items or add new ones instead of clearing
                 foreach (var app in apps)
                 {
                     if (string.IsNullOrWhiteSpace(SearchText) ||
@@ -232,19 +297,16 @@ namespace Winspeqt.ViewModels.Optimization
                         var existing = Applications.FirstOrDefault(a => a.ProcessName == app.ProcessName);
                         if (existing != null)
                         {
-                            // Update existing item properties
                             var index = Applications.IndexOf(existing);
                             Applications[index] = app;
                         }
                         else
                         {
-                            // Add new item
                             Applications.Add(app);
                         }
                     }
                 }
 
-                // Remove items that are no longer in the list
                 var currentProcessNames = apps.Where(a =>
                     string.IsNullOrWhiteSpace(SearchText) ||
                     a.AppName.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
@@ -253,9 +315,7 @@ namespace Winspeqt.ViewModels.Optimization
                 for (int i = Applications.Count - 1; i >= 0; i--)
                 {
                     if (!currentProcessNames.Contains(Applications[i].ProcessName))
-                    {
                         Applications.RemoveAt(i);
-                    }
                 }
 
                 UsageStats = stats;
@@ -270,33 +330,6 @@ namespace Winspeqt.ViewModels.Optimization
         {
             _appUsageService.ResetTracking();
             _ = RefreshDataAsync();
-        }
-
-        private void ToggleTracking()
-        {
-            IsTrackingEnabled = !IsTrackingEnabled;
-            SaveTrackingPreference(IsTrackingEnabled);
-
-            if (IsTrackingEnabled)
-            {
-                _appUsageService.StartTracking();
-
-                // Start timer if not already started
-                if (_updateTimer == null)
-                {
-                    _updateTimer = _dispatcherQueue.CreateTimer();
-                    _updateTimer.Interval = TimeSpan.FromSeconds(5);
-                    _updateTimer.Tick += async (s, e) => await RefreshDataAsync();
-                }
-                _updateTimer.Start();
-
-                _ = InitializeAsync();
-            }
-            else
-            {
-                _appUsageService.StopTracking();
-                _updateTimer?.Stop();
-            }
         }
     }
 }

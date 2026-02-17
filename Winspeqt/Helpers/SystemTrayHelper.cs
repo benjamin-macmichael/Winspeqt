@@ -11,7 +11,6 @@ namespace Winspeqt.Helpers
         private AppUsageService _appUsageService;
         private Window _mainWindow;
         private IntPtr _hwnd;
-        private bool _isTracking = true;
 
         private const int WM_APP = 0x8000;
         private const int WM_TRAYICON = WM_APP + 1;
@@ -19,11 +18,9 @@ namespace Winspeqt.Helpers
         private const uint NIF_ICON = 0x00000002;
         private const uint NIF_TIP = 0x00000004;
         private const uint NIM_ADD = 0x00000000;
-        private const uint NIM_MODIFY = 0x00000001;
         private const uint NIM_DELETE = 0x00000002;
         private const int WM_LBUTTONDBLCLK = 0x0203;
         private const int WM_RBUTTONUP = 0x0205;
-        private const int WM_LBUTTONUP = 0x0202;
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
         private static extern bool Shell_NotifyIcon(uint dwMessage, ref NOTIFYICONDATA lpData);
@@ -61,7 +58,6 @@ namespace Winspeqt.Helpers
         private const uint TPM_RIGHTBUTTON = 0x0002;
 
         private const int IDM_OPEN = 1001;
-        private const int IDM_PAUSE = 1002;
         private const int IDM_EXIT = 1003;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -150,7 +146,6 @@ namespace Winspeqt.Helpers
 
             Shell_NotifyIcon(NIM_ADD, ref nid);
 
-            // Hook window procedure
             HookWindowProc();
         }
 
@@ -173,7 +168,6 @@ namespace Winspeqt.Helpers
         private void HookWindowProc()
         {
             _wndProcDelegate = new WndProcDelegate(WndProc);
-
             IntPtr funcPtr = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate);
 
             if (IntPtr.Size == 8)
@@ -234,9 +228,7 @@ namespace Winspeqt.Helpers
 
                 InsertMenu(hMenu, 0, MF_STRING, (UIntPtr)IDM_OPEN, "Open Winspeqt");
                 InsertMenu(hMenu, 1, MF_SEPARATOR, UIntPtr.Zero, null);
-                InsertMenu(hMenu, 2, MF_STRING, (UIntPtr)IDM_PAUSE, _isTracking ? "Pause Tracking" : "Resume Tracking");
-                InsertMenu(hMenu, 3, MF_SEPARATOR, UIntPtr.Zero, null);
-                InsertMenu(hMenu, 4, MF_STRING, (UIntPtr)IDM_EXIT, "Exit");
+                InsertMenu(hMenu, 2, MF_STRING, (UIntPtr)IDM_EXIT, "Exit");
 
                 POINT pt;
                 GetCursorPos(out pt);
@@ -248,10 +240,6 @@ namespace Winspeqt.Helpers
                 {
                     ShowMainWindow();
                 }
-                else if (cmd == IDM_PAUSE)
-                {
-                    ToggleTracking();
-                }
                 else if (cmd == IDM_EXIT)
                 {
                     ExitApplication();
@@ -262,20 +250,6 @@ namespace Winspeqt.Helpers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error showing menu: {ex.Message}");
-            }
-        }
-
-        private void ToggleTracking()
-        {
-            if (_isTracking)
-            {
-                _appUsageService.StopTracking();
-                _isTracking = false;
-            }
-            else
-            {
-                _appUsageService.StartTracking();
-                _isTracking = true;
             }
         }
 
