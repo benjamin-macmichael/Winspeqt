@@ -49,7 +49,7 @@ namespace Winspeqt.ViewModels.Optimization
             ShowInstalledAppsCommand = new RelayCommand(() =>
             {
                 ShowInstalledAppsView = true;
-                if (InstalledApps.Count == 0) RefreshInstalledApps();
+                RefreshInstalledApps(); // Always refresh when switching to this view
             });
 
             // WinUI 3 timer
@@ -158,6 +158,37 @@ namespace Winspeqt.ViewModels.Optimization
 
         private void RefreshInstalledApps() => _ = RefreshInstalledAppsAsync();
 
+        private bool GetTrackingPreference()
+        {
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                if (localSettings.Values.ContainsKey("AppUsageTrackingEnabled"))
+                {
+                    return (bool)localSettings.Values["AppUsageTrackingEnabled"];
+                }
+                // Default to false - user must opt in
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void SaveTrackingPreference(bool enabled)
+        {
+            try
+            {
+                var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+                localSettings.Values["AppUsageTrackingEnabled"] = enabled;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving tracking preference: {ex.Message}");
+            }
+        }
+
         private async Task InitializeAsync()
         {
             await RefreshDataAsync();
@@ -244,15 +275,27 @@ namespace Winspeqt.ViewModels.Optimization
         private void ToggleTracking()
         {
             IsTrackingEnabled = !IsTrackingEnabled;
+            SaveTrackingPreference(IsTrackingEnabled);
+
             if (IsTrackingEnabled)
             {
                 _appUsageService.StartTracking();
+
+                // Start timer if not already started
+                if (_updateTimer == null)
+                {
+                    _updateTimer = _dispatcherQueue.CreateTimer();
+                    _updateTimer.Interval = TimeSpan.FromSeconds(5);
+                    _updateTimer.Tick += async (s, e) => await RefreshDataAsync();
+                }
                 _updateTimer.Start();
+
+                _ = InitializeAsync();
             }
             else
             {
                 _appUsageService.StopTracking();
-                _updateTimer.Stop();
+                _updateTimer?.Stop();
             }
         }
     }

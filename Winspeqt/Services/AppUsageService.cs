@@ -309,162 +309,21 @@ namespace Winspeqt.Services
         {
             return await Task.Run(() =>
             {
-                var apps = new List<InstalledAppModel>();
-
-                // Get apps from registry (both 32-bit and 64-bit)
-                apps.AddRange(GetAppsFromRegistry(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"));
-                apps.AddRange(GetAppsFromRegistry(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"));
-
-                // Remove duplicates and sort by last used
-                return apps
-                    .GroupBy(a => a.AppName)
-                    .Select(g => g.First())
-                    .Where(a => !string.IsNullOrWhiteSpace(a.AppName))
-                    .OrderByDescending(a => a.IsUnused)
-                    .ThenByDescending(a => a.LastUsed ?? DateTime.MinValue)
+                // Just convert our tracked apps to InstalledAppModel format
+                return _usageData.Values
+                    .Select(tracked => new InstalledAppModel
+                    {
+                        AppName = GetFriendlyAppName(tracked.ProcessName),
+                        Publisher = "Unknown", // We don't track this
+                        Version = "Unknown", // We don't track this
+                        InstallDate = tracked.FirstUsed,
+                        LastUsed = tracked.LastUsed,
+                        SizeInBytes = 0, // We don't track this
+                        UninstallString = null
+                    })
+                    .OrderByDescending(a => a.LastUsed)
                     .ToList();
             });
-        }
-
-        private List<InstalledAppModel> GetAppsFromRegistry(string registryPath)
-        {
-            var apps = new List<InstalledAppModel>();
-
-            try
-            {
-                using (var key = Registry.LocalMachine.OpenSubKey(registryPath))
-                {
-                    if (key == null) return apps;
-
-                    foreach (var subKeyName in key.GetSubKeyNames())
-                    {
-                        using (var subKey = key.OpenSubKey(subKeyName))
-                        {
-                            if (subKey == null) continue;
-
-                            var displayName = subKey.GetValue("DisplayName")?.ToString();
-                            if (string.IsNullOrWhiteSpace(displayName)) continue;
-
-                            // Skip system components, updates, and junk
-                            if (ShouldSkipApp(displayName)) continue;
-
-                            var app = new InstalledAppModel
-                            {
-                                AppName = displayName,
-                                Publisher = subKey.GetValue("Publisher")?.ToString(),
-                                Version = subKey.GetValue("DisplayVersion")?.ToString(),
-                                UninstallString = subKey.GetValue("UninstallString")?.ToString()
-                            };
-
-                            // Try to parse install date
-                            var installDateStr = subKey.GetValue("InstallDate")?.ToString();
-                            if (!string.IsNullOrEmpty(installDateStr) && installDateStr.Length == 8)
-                            {
-                                if (DateTime.TryParseExact(installDateStr, "yyyyMMdd", null,
-                                    System.Globalization.DateTimeStyles.None, out DateTime installDate))
-                                {
-                                    app.InstallDate = installDate;
-                                }
-                            }
-
-                            // Try to get size
-                            var sizeValue = subKey.GetValue("EstimatedSize");
-                            if (sizeValue != null && int.TryParse(sizeValue.ToString(), out int sizeKB))
-                            {
-                                app.SizeInBytes = sizeKB * 1024L;
-                            }
-
-                            // ONLY use Winspeqt's tracking data - it's the only reliable source
-                            var trackedApp = _usageData.Values.FirstOrDefault(d =>
-                            {
-                                // Try exact process name match
-                                if (d.ProcessName.Equals(displayName, StringComparison.OrdinalIgnoreCase))
-                                    return true;
-
-                                // Try first word of display name
-                                var firstWord = displayName.Split(' ')[0];
-                                if (d.ProcessName.Equals(firstWord, StringComparison.OrdinalIgnoreCase))
-                                    return true;
-
-                                // Try if process name is contained in display name
-                                if (displayName.Contains(d.ProcessName, StringComparison.OrdinalIgnoreCase))
-                                    return true;
-
-                                // Try if display name is contained in process name
-                                if (d.ProcessName.Contains(displayName, StringComparison.OrdinalIgnoreCase))
-                                    return true;
-
-                                // Try removing common suffixes/prefixes
-                                var cleanedDisplay = displayName
-                                    .Replace("Microsoft ", "", StringComparison.OrdinalIgnoreCase)
-                                    .Replace("Google ", "", StringComparison.OrdinalIgnoreCase)
-                                    .Split(' ')[0];
-                                if (d.ProcessName.Equals(cleanedDisplay, StringComparison.OrdinalIgnoreCase))
-                                    return true;
-
-                                return false;
-                            });
-
-                            if (trackedApp != null)
-                            {
-                                app.LastUsed = trackedApp.LastUsed;
-                            }
-                            // Otherwise LastUsed stays null = "Not tracked by Winspeqt"
-
-                            apps.Add(app);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error reading registry {registryPath}: {ex.Message}");
-            }
-
-            return apps;
-        }
-
-        private bool ShouldSkipApp(string displayName)
-        {
-            var nameLower = displayName.ToLower();
-
-            // Skip updates and patches
-            if (nameLower.Contains("update") || nameLower.Contains("hotfix") ||
-                nameLower.Contains("service pack") || nameLower.StartsWith("kb"))
-                return true;
-
-            // Skip runtimes and redistributables
-            if (nameLower.Contains("redistributable") || nameLower.Contains("runtime") ||
-                nameLower.Contains("microsoft visual c++") || nameLower.Contains(".net framework") ||
-                nameLower.Contains("vcredist") || nameLower.Contains("directx"))
-                return true;
-
-            // Skip drivers
-            if (nameLower.Contains("driver") || nameLower.Contains("amd software") ||
-                nameLower.Contains("nvidia") || nameLower.Contains("intel graphics"))
-                return true;
-
-            // Skip Windows components
-            if (nameLower.StartsWith("microsoft edge") && nameLower.Contains("webview") ||
-                nameLower.Contains("windows sdk") || nameLower.Contains("windows software development kit") ||
-                nameLower.Contains("windows app certification kit") || nameLower.Contains("windows assessment"))
-                return true;
-
-            // Skip common system utilities that users don't interact with
-            if (nameLower.Contains("microsoft visual studio installer") ||
-                nameLower.Contains("microsoft build tools") || nameLower.Contains("microsoft .net") ||
-                nameLower.Contains("microsoft web deploy") || nameLower.Contains("iis "))
-                return true;
-
-            // Skip language packs
-            if (nameLower.Contains("language pack") || nameLower.Contains("mui "))
-                return true;
-
-            // Skip if it's just a version number or GUID
-            if (displayName.Length < 3 || displayName.All(c => char.IsDigit(c) || c == '.' || c == '-'))
-                return true;
-
-            return false;
         }
     }
 
