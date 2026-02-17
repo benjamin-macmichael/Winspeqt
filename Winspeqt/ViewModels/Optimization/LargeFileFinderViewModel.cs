@@ -86,6 +86,8 @@ namespace Winspeqt.ViewModels.Optimization
                     FolderItems.Add(item);
                 }
 
+                SortFiles();
+
                 IsLoading = false;
             });
         }
