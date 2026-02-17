@@ -62,12 +62,13 @@
                         Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
-            <StackPanel Grid.Row="1">
+            <StackPanel Grid.Row="1" MaxWidth="750">
                 <StackPanel 
                     Orientation="Horizontal"
                     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     MaxWidth="750"
                     HorizontalAlignment="Center"
+                    Padding="0,0,0,25"
                 >
                     <TextBlock
                         Text="Calculating folder sizes. This may take a moment."
@@ -80,23 +81,34 @@
                         Width="20"
                         Height="20" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" MaxWidth="750" HorizontalAlignment="Stretch">
-                    <TextBlock 
-                        Text="Sort by:" 
-                        FontSize="16" 
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        Margin="0,0,12,0"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <ComboBox 
-                        ItemsSource="{Binding SortOptions}"
-                        SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        MinWidth="150"
-                        FontSize="15"
-                        />
-                </StackPanel>
+                <Grid MaxWidth="750" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Column="0">
+                        <TextBlock 
+                            Text="Sort by:" 
+                            FontSize="16" 
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Margin="0,0,12,0"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <ComboBox 
+                            ItemsSource="{Binding SortOptions}"
+                            SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            MinWidth="150"
+                            FontSize="15"
+                            />
+                    </StackPanel>
+                    <Button 
+                        Content="View Folder in File Explorer" 
+                        Grid.Column="1" 
+                        HorizontalAlignment="Right" 
+                        Click="ViewFileExplorer_Click"/>
+                </Grid>
             </StackPanel>
             <StackPanel Grid.Row="2">
                 <StackPanel

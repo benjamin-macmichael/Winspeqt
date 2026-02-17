@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -61,6 +62,23 @@ namespace Winspeqt.Views.Optimization
             {
                 _ = ViewModel.RetrieveFolderItems(ViewModel.PathItems[index].Path);
                 ViewModel.ResetBreadCrumb(index);
+            }
+        }
+
+        private void ViewFileExplorer_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path ?? string.Empty,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening File Explorer for path {ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path}: {ex.Message}");
             }
         }
     }
