@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -20,6 +21,50 @@ namespace Winspeqt.ViewModels.Monitoring
         private bool _isLoading;
         private string _searchQuery = string.Empty;
         private bool _isRefreshing;
+
+        // Process categorization dictionaries
+        private readonly HashSet<string> _browserProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "chrome", "firefox", "msedge", "opera", "brave", "vivaldi", "safari",
+            "iexplore", "browser", "edge", "chromium"
+        };
+
+        private readonly HashSet<string> _gamingProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "steam", "epicgameslauncher", "origin", "uplay", "battlenet", "gog",
+            "discord", "xbox", "nvidia", "geforce", "amd", "radeon", "game"
+        };
+
+        private readonly HashSet<string> _cloudStorageProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "onedrive", "dropbox", "googledrive", "box", "sync", "backup",
+            "icloud", "mega", "pcloud"
+        };
+
+        private readonly HashSet<string> _communicationProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "slack", "teams", "zoom", "skype", "discord", "telegram", "whatsapp",
+            "signal", "messenger", "webex", "meet"
+        };
+
+        private readonly HashSet<string> _mediaProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "spotify", "itunes", "vlc", "media", "wmplayer", "musicbee", "foobar",
+            "audacity", "obs", "handbrake", "plex", "kodi"
+        };
+
+        private readonly HashSet<string> _developmentProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "devenv", "code", "vscode", "rider", "intellij", "pycharm", "webstorm",
+            "visualstudio", "eclipse", "netbeans", "atom", "sublime", "notepad++",
+            "git", "docker", "node", "python", "java", "dotnet"
+        };
+
+        private readonly HashSet<string> _systemServicesProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "svchost", "system", "services", "winlogon", "csrss", "lsass",
+            "spoolsv", "explorer", "dwm", "taskhost", "searchindexer", "runtime"
+        };
 
         public BackgroundProcessViewModel()
         {
@@ -44,7 +89,7 @@ namespace Winspeqt.ViewModels.Monitoring
             // Delay initialization to let the UI load first
             _dispatcherQueue.TryEnqueue(async () =>
             {
-                await Task.Delay(100); // Small delay to let UI render
+                await Task.Delay(100);
                 await InitializeAsync();
             });
         }
@@ -100,7 +145,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
         private async Task RefreshDataAsync()
         {
-            // Prevent concurrent refreshes
             if (_isRefreshing) return;
             _isRefreshing = true;
 
@@ -108,7 +152,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
             try
             {
-                // Run on background thread to avoid UI freezing
                 var processes = await Task.Run(async () =>
                 {
                     try
@@ -118,12 +161,12 @@ namespace Winspeqt.ViewModels.Monitoring
                     catch (AccessViolationException ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"AccessViolation in GetRunningProcessesAsync: {ex.Message}");
-                        return new System.Collections.Generic.List<ProcessInfo>();
+                        return new List<ProcessInfo>();
                     }
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"Error getting processes: {ex.Message}");
-                        return new System.Collections.Generic.List<ProcessInfo>();
+                        return new List<ProcessInfo>();
                     }
                 });
 
@@ -138,6 +181,8 @@ namespace Winspeqt.ViewModels.Monitoring
                         {
                             if (process != null)
                             {
+                                // Categorize the process
+                                process.Category = CategorizeProcess(process);
                                 AllProcesses.Add(process);
                             }
                         }
@@ -162,6 +207,36 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        private ProcessCategory CategorizeProcess(ProcessInfo process)
+        {
+            var processName = process.ProcessName?.ToLower() ?? "";
+            var description = process.Description?.ToLower() ?? "";
+
+            // Check each category
+            if (_browserProcesses.Any(b => processName.Contains(b) || description.Contains(b)))
+                return ProcessCategory.Browser;
+
+            if (_gamingProcesses.Any(g => processName.Contains(g) || description.Contains(g)))
+                return ProcessCategory.Gaming;
+
+            if (_cloudStorageProcesses.Any(c => processName.Contains(c) || description.Contains(c)))
+                return ProcessCategory.CloudStorage;
+
+            if (_communicationProcesses.Any(c => processName.Contains(c) || description.Contains(c)))
+                return ProcessCategory.Communication;
+
+            if (_mediaProcesses.Any(m => processName.Contains(m) || description.Contains(m)))
+                return ProcessCategory.Media;
+
+            if (_developmentProcesses.Any(d => processName.Contains(d) || description.Contains(d)))
+                return ProcessCategory.Development;
+
+            if (_systemServicesProcesses.Any(s => processName.Contains(s) || description.Contains(s)))
+                return ProcessCategory.SystemServices;
+
+            return ProcessCategory.Other;
+        }
+
         private void GroupProcessesByCategory()
         {
             BrowserProcesses.Clear();
@@ -173,36 +248,51 @@ namespace Winspeqt.ViewModels.Monitoring
             DevelopmentProcesses.Clear();
             OtherProcesses.Clear();
 
-            foreach (var process in AllProcesses)
-            {
-                if (process == null) continue;
+            // Group processes by category
+            var categorizedProcesses = AllProcesses
+                .Where(p => p != null)
+                .GroupBy(p => p.Category)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
-                switch (process.Category)
+            // Add top 5 by memory usage to each category
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Browser, BrowserProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Gaming, GamingProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.CloudStorage, CloudStorageProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Communication, CommunicationProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Media, MediaProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Development, DevelopmentProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.SystemServices, SystemServicesProcesses);
+            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Other, OtherProcesses);
+        }
+
+        private void AddTopProcessesToCategory(
+            Dictionary<ProcessCategory, List<ProcessInfo>> categorizedProcesses,
+            ProcessCategory category,
+            ObservableCollection<ProcessInfo> targetCollection)
+        {
+            if (categorizedProcesses.TryGetValue(category, out var processes))
+            {
+                // Sort by memory usage (descending) and take top 5
+                // Try to use WorkingSet64, PrivateMemorySize64, or fall back to ProcessId
+                var topProcesses = processes
+                    .OrderByDescending(p =>
+                    {
+                        // Parse memory from display string if available
+                        if (!string.IsNullOrEmpty(p.MemoryUsageDisplay))
+                        {
+                            var memStr = p.MemoryUsageDisplay.Replace("MB", "").Replace("GB", "").Trim();
+                            if (double.TryParse(memStr, out var mem))
+                            {
+                                return p.MemoryUsageDisplay.Contains("GB") ? mem * 1024 : mem;
+                            }
+                        }
+                        return 0;
+                    })
+                    .Take(5);
+
+                foreach (var process in topProcesses)
                 {
-                    case ProcessCategory.Browser:
-                        BrowserProcesses.Add(process);
-                        break;
-                    case ProcessCategory.Gaming:
-                        GamingProcesses.Add(process);
-                        break;
-                    case ProcessCategory.CloudStorage:
-                        CloudStorageProcesses.Add(process);
-                        break;
-                    case ProcessCategory.Communication:
-                        CommunicationProcesses.Add(process);
-                        break;
-                    case ProcessCategory.SystemServices:
-                        SystemServicesProcesses.Add(process);
-                        break;
-                    case ProcessCategory.Development:
-                        DevelopmentProcesses.Add(process);
-                        break;
-                    case ProcessCategory.Media:
-                        MediaProcesses.Add(process);
-                        break;
-                    default:
-                        OtherProcesses.Add(process);
-                        break;
+                    targetCollection.Add(process);
                 }
             }
         }
@@ -249,7 +339,7 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 systemProcess = System.Diagnostics.Process.GetProcessById(process.ProcessId);
                 systemProcess.Kill();
-                await systemProcess.WaitForExitAsync(); // Wait for process to actually end
+                await systemProcess.WaitForExitAsync();
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
@@ -289,7 +379,6 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             catch (ArgumentException)
             {
-                // Process already exited
                 System.Diagnostics.Debug.WriteLine($"Process {process.ProcessId} already exited");
                 return true;
             }
@@ -300,7 +389,6 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             catch (System.ComponentModel.Win32Exception ex)
             {
-                // Access denied
                 System.Diagnostics.Debug.WriteLine($"Access denied ending process: {ex.Message}");
                 return false;
             }
@@ -311,7 +399,7 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             finally
             {
-                systemProcess?.Dispose(); // Always dispose the process handle!
+                systemProcess?.Dispose();
             }
         }
 

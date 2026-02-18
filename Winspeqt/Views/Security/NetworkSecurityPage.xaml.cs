@@ -12,5 +12,13 @@ namespace Winspeqt.Views.Security
             this.InitializeComponent();
             ViewModel = new NetworkSecurityViewModel();
         }
+
+        private void BackButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+        }
     }
 }
