@@ -20,11 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="DashboardPage.xaml" />
+    <None Remove="ViewModels\Optimization\LargeFileFinder.xaml" />
     <None Remove="Views\Monitoring\MonitoringDashboardPage.xaml" />
     <None Remove="Views\Monitoring\TaskManagerPage.xaml" />
-    <None Remove="Views\Optimization\AppUsagePage.xaml" />
+	<None Remove="Views\Optimization\LargeFileFinder.xaml" />
+
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
-    <None Remove="Views\Security\AppSecurityPage.xaml" />
+	<None Remove="Views\Optimization\AppUsagePage.xaml" />
+	<None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
 	<None Remove="Views\Security\SettingRecommendationsPage.xaml" />
@@ -78,6 +81,17 @@
     <None Update="Views\Security\NetworkSecurityPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Folder Include="ViewModels\Optimization\NewFolder\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ViewModels\Optimization\LargeFileFinder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Optimization\LargeFileFinder.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 	<ItemGroup>
 		<Page Include="Views\Security\NetworkSecurityPage.xaml">
