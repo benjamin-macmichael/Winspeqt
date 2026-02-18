@@ -16,7 +16,7 @@ namespace Winspeqt.Views.Monitoring
             ViewModel = new BackgroundProcessViewModel();
         }
 
-    
+
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {

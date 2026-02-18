@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
-using Microsoft.Win32;
 using Winspeqt.Models;
 
 namespace Winspeqt.Services

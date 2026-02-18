@@ -2,7 +2,6 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
-using System.Threading.Tasks;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
