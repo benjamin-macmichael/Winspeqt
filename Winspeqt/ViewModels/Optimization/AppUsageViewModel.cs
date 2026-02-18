@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.UI.Dispatching;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.UI.Dispatching;
+using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
-using Winspeqt.Helpers;
 
 namespace Winspeqt.ViewModels.Optimization
 {
