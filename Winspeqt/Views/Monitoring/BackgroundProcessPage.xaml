@@ -18,216 +18,361 @@
 
     <Page.Resources>
         <helpers:CollectionCountToVisibilityConverter x:Key="CollectionCountToVisibilityConverter"/>
-        <DataTemplate x:Key="ProcessCardTemplate" x:DataType="models:ProcessInfo">
+
+        <!-- Compact Grid Card Template -->
+        <DataTemplate x:Key="ProcessGridCardTemplate" x:DataType="models:ProcessInfo">
             <Border 
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
+                BorderThickness="2"
                 CornerRadius="12"
                 Padding="20"
-                Margin="0,0,0,12">
+                MinHeight="140"
+                HorizontalAlignment="Stretch">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <Border Grid.Column="0" Width="56" Height="56" CornerRadius="12" Margin="0,0,20,0">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0"/>
-                                <GradientStop Color="{ThemeResource SystemAccentColorLight1}" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <TextBlock Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="28"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontWeight="SemiBold"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
-                        <TextBlock Text="{x:Bind Description}" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="16"/>
-                        <TextBlock Text="{x:Bind FriendlyExplanation}" Style="{StaticResource CaptionTextBlockStyle}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Opacity="0.8"
-                                   MaxWidth="500" TextTrimming="CharacterEllipsis" MaxLines="2"/>
+                    <!-- Icon and Title -->
+                    <Grid Grid.Row="0">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="8,4">
-                                <TextBlock Text="{x:Bind ProcessName}" Style="{StaticResource CaptionTextBlockStyle}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="Consolas"/>
+                            <Border Width="40" Height="40" CornerRadius="8">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="{ThemeResource SystemAccentColor}" Offset="0"/>
+                                        <GradientStop Color="{ThemeResource SystemAccentColorLight1}" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="20"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                           Foreground="White" FontWeight="SemiBold"/>
                             </Border>
-                            <Border Background="{ThemeResource AccentFillColorSecondaryBrush}" CornerRadius="4" Padding="8,4">
-                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                    <FontIcon Glyph="&#xE121;" FontSize="10" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="{x:Bind RunningTimeFormatted, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}"
-                                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind Description}" 
+                                           FontSize="15" 
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{x:Bind ProcessName}" 
+                                           FontSize="11"
+                                           FontFamily="Consolas"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
                         </StackPanel>
+                    </Grid>
+
+                    <!-- Memory Usage -->
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,12,0,12">
+                        <TextBlock Text="Memory Usage" 
+                                   FontSize="11"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="{x:Bind MemoryUsageDisplay}" 
+                                   FontSize="24"
+                                   FontWeight="Bold"/>
+                        <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,4,0,0">
+                            <Run Text="Running: "/>
+                            <Run Text="{x:Bind RunningTimeFormatted, Mode=OneWay}" FontWeight="SemiBold"/>
+                        </TextBlock>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="12">
-                        <StackPanel Spacing="4" HorizontalAlignment="Right">
-                            <TextBlock Text="{x:Bind MemoryUsageDisplay}" Style="{StaticResource SubtitleTextBlockStyle}"
-                                       FontWeight="Bold" HorizontalAlignment="Right" FontSize="18"/>
-                            <Border Background="{ThemeResource SystemFillColorSuccessBrush}" CornerRadius="4" 
-                                    Padding="8,4" HorizontalAlignment="Right">
-                                <TextBlock Text="{x:Bind Status}" Style="{StaticResource CaptionTextBlockStyle}"
-                                           Foreground="White" FontSize="11" FontWeight="SemiBold"/>
-                            </Border>
-                        </StackPanel>
-                        <Button Content="End Task" Click="EndProcess_Click" Tag="{x:Bind}"
-                                HorizontalAlignment="Right" Padding="16,8" CornerRadius="6">
+                    <!-- Actions -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" 
+                                Background="{ThemeResource SystemFillColorSuccessBrush}" 
+                                CornerRadius="4" 
+                                Padding="8,4"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="{x:Bind Status}" 
+                                       FontSize="10"
+                                       Foreground="White" 
+                                       FontWeight="SemiBold"/>
+                        </Border>
+
+                        <Button Grid.Column="1" 
+                                Content="End" 
+                                Click="EndProcess_Click" 
+                                Tag="{x:Bind}"
+                                Padding="12,6" 
+                                FontSize="12"
+                                CornerRadius="6">
                             <Button.Style>
                                 <Style TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
                                     <Setter Property="Background" Value="{ThemeResource SystemFillColorCriticalBrush}"/>
                                 </Style>
                             </Button.Style>
                         </Button>
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="32">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer>
+        <Grid Padding="60">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Back Button -->
-        <Button Grid.Row="0" Click="BackButton_Click" Style="{StaticResource SubtleButtonStyle}"
-                Padding="8" Margin="0,0,0,16" HorizontalAlignment="Left">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <FontIcon Glyph="&#xE72B;" FontSize="16"/>
-                <TextBlock Text="Back to Dashboard" VerticalAlignment="Center"/>
-            </StackPanel>
-        </Button>
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="1" Spacing="12" Margin="0,0,0,32">
-            <TextBlock Text="Background Processes" Style="{StaticResource TitleLargeTextBlockStyle}" FontWeight="Bold"/>
-            <TextBlock Text="Manage running processes organized by category" Style="{StaticResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" Opacity="0.8"/>
-        </StackPanel>
+                <Button 
+                    Grid.Column="0"
+                    Content="← Back"
+                    Click="BackButton_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Margin="0,0,20,0"/>
 
-        <!-- Battery Status -->
-        <StackPanel Grid.Row="2" Margin="0,0,0,24" 
-                    Visibility="{x:Bind ViewModel.BatteryDevices.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-            <TextBlock Text="🔋 Battery Status" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold" Margin="0,0,0,16"/>
-            <ItemsControl ItemsSource="{x:Bind ViewModel.BatteryDevices, Mode=OneWay}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="16"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:BatteryInfo">
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1"
-                                CornerRadius="12" Padding="20" MinWidth="220">
-                            <StackPanel Spacing="12">
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <TextBlock Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="24" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{x:Bind DeviceName}" Style="{StaticResource BodyStrongTextBlockStyle}" 
-                                               VerticalAlignment="Center" FontSize="15"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock 
+                        Text="Background Processes" 
+                        FontSize="36" 
+                        FontWeight="Bold"/>
+                    <TextBlock 
+                        Text="Top 5 processes by memory usage in each category" 
+                        FontSize="18" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <Button 
+                    Grid.Column="2"
+                    Command="{x:Bind ViewModel.RefreshCommand}"
+                    FontSize="16"
+                    Padding="16,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Refresh"/>
+                        <TextBlock Text="Refresh"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Battery Status (if any) -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,32" 
+                        Visibility="{x:Bind ViewModel.BatteryDevices.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                <TextBlock Text="🔋 Battery Status" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.BatteryDevices, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="16"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:BatteryInfo">
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                    BorderThickness="2"
+                                    CornerRadius="12" 
+                                    Padding="20" 
+                                    MinWidth="220">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <TextBlock Text="{x:Bind Icon}" FontFamily="Segoe MDL2 Assets" FontSize="24"/>
+                                        <TextBlock Text="{x:Bind DeviceName}" FontSize="15" FontWeight="SemiBold"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{x:Bind BatteryLevelFormatted}" FontSize="28" FontWeight="Bold"/>
+                                    <ProgressBar Value="{x:Bind BatteryLevel}" Maximum="100" Height="8"/>
+                                    <TextBlock Text="{x:Bind Status}" FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
-                                <TextBlock Text="{x:Bind BatteryLevelFormatted}" Style="{StaticResource TitleTextBlockStyle}" 
-                                           FontWeight="Bold" FontSize="28"/>
-                                <ProgressBar Value="{x:Bind BatteryLevel}" Maximum="100" Height="8"/>
-                                <TextBlock Text="{x:Bind Status}" Style="{StaticResource CaptionTextBlockStyle}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-
-        <!-- Search and Refresh -->
-        <Grid Grid.Row="3" Margin="0,0,0,24">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="2">
-                <AutoSuggestBox PlaceholderText="Search processes by name or description..." QueryIcon="Find"
-                                Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                VerticalAlignment="Center" Background="Transparent" BorderThickness="0"/>
-            </Border>
-            <Button Grid.Column="1" Command="{x:Bind ViewModel.RefreshCommand}" Margin="12,0,0,0" 
-                    VerticalAlignment="Center" Height="40" Padding="16,0">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <SymbolIcon Symbol="Refresh"/>
-                    <TextBlock Text="Refresh"/>
-                </StackPanel>
-            </Button>
-        </Grid>
-
-        <!-- Process Categories -->
-        <ScrollViewer Grid.Row="4">
-            <StackPanel Spacing="32">
-                <!-- Browsers -->
-                <StackPanel Visibility="{x:Bind ViewModel.BrowserProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="🌐 Browsers" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.BrowserProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Gaming -->
-                <StackPanel Visibility="{x:Bind ViewModel.GamingProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="🎮 Gaming" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.GamingProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Cloud Storage -->
-                <StackPanel Visibility="{x:Bind ViewModel.CloudStorageProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="☁️ Cloud Storage" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.CloudStorageProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Communication -->
-                <StackPanel Visibility="{x:Bind ViewModel.CommunicationProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="💬 Communication" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.CommunicationProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Media -->
-                <StackPanel Visibility="{x:Bind ViewModel.MediaProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="🎵 Media" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.MediaProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Development -->
-                <StackPanel Visibility="{x:Bind ViewModel.DevelopmentProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="💻 Development" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.DevelopmentProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- System Services -->
-                <StackPanel Visibility="{x:Bind ViewModel.SystemServicesProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="⚙️ System Services" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.SystemServicesProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
-
-                <!-- Other -->
-                <StackPanel Visibility="{x:Bind ViewModel.OtherProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                    <TextBlock Text="📦 Other" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="Bold" Margin="0,0,0,16" FontSize="20"/>
-                    <ItemsControl ItemsSource="{x:Bind ViewModel.OtherProcesses, Mode=OneWay}" 
-                                  ItemTemplate="{StaticResource ProcessCardTemplate}"/>
-                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
-          
-        </ScrollViewer>
-    </Grid>
+            <!-- Search Bar -->
+            <Border Grid.Row="2" 
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="2"
+                    Margin="0,0,0,32">
+                <AutoSuggestBox PlaceholderText="Search processes by name or description..." 
+                                QueryIcon="Find"
+                                Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                VerticalAlignment="Center" 
+                                Background="Transparent" 
+                                BorderThickness="0"/>
+            </Border>
+
+            <!-- Process Categories in Grid -->
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="48">
+
+                    <!-- Browsers -->
+                    <StackPanel Visibility="{x:Bind ViewModel.BrowserProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="🌐 Browsers" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.BrowserProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Gaming -->
+                    <StackPanel Visibility="{x:Bind ViewModel.GamingProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="🎮 Gaming" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.GamingProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Communication -->
+                    <StackPanel Visibility="{x:Bind ViewModel.CommunicationProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="💬 Communication" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.CommunicationProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Cloud Storage -->
+                    <StackPanel Visibility="{x:Bind ViewModel.CloudStorageProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="☁️ Cloud Storage" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.CloudStorageProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Media -->
+                    <StackPanel Visibility="{x:Bind ViewModel.MediaProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="🎵 Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.MediaProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Development -->
+                    <StackPanel Visibility="{x:Bind ViewModel.DevelopmentProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="💻 Development" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.DevelopmentProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- System Services -->
+                    <StackPanel Visibility="{x:Bind ViewModel.SystemServicesProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="⚙️ System Services" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.SystemServicesProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Other -->
+                    <StackPanel Visibility="{x:Bind ViewModel.OtherProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
+                        <TextBlock Text="📦 Other" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.OtherProcesses, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="400" MaximumRowsOrColumns="3"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,12,12">
+                                        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ProcessGridCardTemplate}" HorizontalContentAlignment="Stretch"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </ScrollViewer>
 </Page>
