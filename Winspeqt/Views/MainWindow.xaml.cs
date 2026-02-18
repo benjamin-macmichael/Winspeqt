@@ -2,6 +2,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
+using System.Threading.Tasks;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
@@ -80,6 +81,11 @@ namespace Winspeqt.Views
             _appUsageService?.SaveData();
             _appUsageService?.Dispose();
             _systemTrayHelper?.Dispose();
+        }
+
+        private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAN__rlZTTtUNVBIVU5GRDJaUVVJT0lFQVNRSkJJUVY5RC4u"));
         }
     }
 }

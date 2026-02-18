@@ -20,6 +20,14 @@
                 <Setter Property="FontFamily" Value="Segoe UI Variable"/>
                 <Setter Property="FontStyle" Value="Normal"/>
             </Style>
+            <Style x:Key="FloatingFeedbackButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="#FF1F6FEB"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="14,10"/>
+                <Setter Property="CornerRadius" Value="18"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
