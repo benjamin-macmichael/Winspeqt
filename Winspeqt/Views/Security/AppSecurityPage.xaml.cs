@@ -32,8 +32,9 @@ namespace Winspeqt.Views.Security
             if (e.PropertyName == nameof(ViewModel.IsScanning))
             {
                 ScanButton.IsEnabled = !ViewModel.IsScanning;
-                ScanningProgress.Visibility = ViewModel.IsScanning ? Visibility.Visible : Visibility.Collapsed;
-                StatusText.Visibility = ViewModel.IsScanning ? Visibility.Collapsed : Visibility.Visible;
+                ScanningProgress.Visibility = ViewModel.IsScanning ? Visibility.Collapsed : Visibility.Collapsed;
+                ScanProgressBar.Visibility = ViewModel.IsScanning ? Visibility.Visible : Visibility.Collapsed;
+                StatusText.Visibility = Visibility.Visible;
             }
             else if (e.PropertyName == nameof(ViewModel.HasScanned))
             {

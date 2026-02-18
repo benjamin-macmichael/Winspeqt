@@ -31,7 +31,7 @@ namespace Winspeqt.Views.Security
 
         private async void NetworkSecurityCard_Click(object sender, RoutedEventArgs e)
         {
-            await ShowComingSoonDialog("Network Security Monitor");
+            Frame.Navigate(typeof(NetworkSecurityPage));
         }
 
         private async void SettingsRecommendationsCard_Click(object sender, RoutedEventArgs e)

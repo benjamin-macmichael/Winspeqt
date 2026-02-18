@@ -18,6 +18,8 @@ namespace Winspeqt.ViewModels.Security
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly SemaphoreSlim _scanLock = new SemaphoreSlim(1, 1);
         private Microsoft.UI.Xaml.XamlRoot _xamlRoot;
+        private static DateTime? _lastSourceUpdate = null;
+        private static readonly TimeSpan SourceUpdateCooldown = TimeSpan.FromHours(6); // Only update every 6 hours
 
         public void SetXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
@@ -43,6 +45,13 @@ namespace Winspeqt.ViewModels.Security
         {
             get => _statusMessage;
             set => SetProperty(ref _statusMessage, value);
+        }
+
+        private double _scanProgress;
+        public double ScanProgress
+        {
+            get => _scanProgress;
+            set => SetProperty(ref _scanProgress, value);
         }
 
         private int _totalAppsScanned;
@@ -182,34 +191,93 @@ namespace Winspeqt.ViewModels.Security
                 await DispatchAsync(() =>
                 {
                     IsScanning = true;
-                    StatusMessage = "Updating package databases...";
+                    StatusMessage = "Checking WinGet version...";
+                    ScanProgress = 0;
                     ScannedApps.Clear();
                     FilteredApps.Clear();
                 });
 
-                // Update WinGet sources first for accurate version info
-                try
+                // Check if WinGet is outdated
+                var isOutdated = await CheckWinGetOutdatedAsync();
+                if (isOutdated)
                 {
-                    var updateProcess = new System.Diagnostics.Process
+                    await ShowWinGetOutdatedWarningAsync();
+                    // If user cancels, IsScanning will already be set to false
+                    if (!IsScanning)
                     {
-                        StartInfo = new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = "winget",
-                            Arguments = "source update",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        }
-                    };
-                    updateProcess.Start();
-                    await updateProcess.WaitForExitAsync();
-                    System.Diagnostics.Debug.WriteLine("WinGet sources updated successfully");
+                        return;
+                    }
                 }
-                catch (Exception ex)
+
+                // Check if we need to update WinGet sources
+                bool shouldUpdateSources = !_lastSourceUpdate.HasValue ||
+                                          (DateTime.Now - _lastSourceUpdate.Value) > SourceUpdateCooldown;
+
+                if (shouldUpdateSources)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to update WinGet sources: {ex.Message}");
-                    // Continue anyway - not critical if this fails
+                    await DispatchAsync(() =>
+                    {
+                        StatusMessage = "Updating package databases...";
+                        ScanProgress = 0;
+                    });
+
+                    // Update WinGet sources first for accurate version info
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine("Starting WinGet source update...");
+
+                        var updateProcess = new System.Diagnostics.Process
+                        {
+                            StartInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "winget",
+                                Arguments = "source update",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
+                            }
+                        };
+
+                        updateProcess.Start();
+
+                        // Wait max 30 seconds for source update
+                        var completed = updateProcess.WaitForExit(30000); // 30 seconds in milliseconds
+
+                        if (completed)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"WinGet source update completed with exit code: {updateProcess.ExitCode}");
+                            if (updateProcess.ExitCode == 0)
+                            {
+                                _lastSourceUpdate = DateTime.Now;
+                                System.Diagnostics.Debug.WriteLine($"WinGet sources updated successfully. Next update after: {_lastSourceUpdate.Value.Add(SourceUpdateCooldown)}");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("WinGet source update timed out after 30 seconds - continuing anyway");
+                            try { updateProcess.Kill(); } catch { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to update WinGet sources: {ex.Message}");
+                        // Continue anyway - not critical if this fails
+                    }
+                }
+                else
+                {
+                    var timeSinceUpdate = DateTime.Now - _lastSourceUpdate.Value;
+                    System.Diagnostics.Debug.WriteLine($"Skipping WinGet source update - last updated {timeSinceUpdate.TotalMinutes:F1} minutes ago");
+
+                    await DispatchAsync(() =>
+                    {
+                        StatusMessage = "Using cached package database...";
+                        ScanProgress = 0;
+                    });
+
+                    // Small delay so user sees the message
+                    await Task.Delay(500);
                 }
 
                 await DispatchAsync(() =>
@@ -223,18 +291,45 @@ namespace Winspeqt.ViewModels.Security
                 await DispatchAsync(() =>
                 {
                     StatusMessage = $"Found {apps.Count} apps. Checking for updates online...";
+                    ScanProgress = 10; // 10% after finding apps
                 });
 
-                // Step 2: Check versions against online APIs
-                await _securityService.CheckAppVersionsAsync(apps);
+                // Step 2: Check versions in parallel with progress updates
+                int checkedCount = 0;
+                int total = apps.Count;
 
-                _allApps = apps;
+                var tasks = apps.Select(async app =>
+                {
+                    try
+                    {
+                        await _securityService.CheckSingleAppVersionAsync(app);
+
+                        // Update progress
+                        Interlocked.Increment(ref checkedCount);
+                        var progress = 10 + (checkedCount * 90.0 / total); // 10% base + 90% for checking
+                        await DispatchAsync(() =>
+                        {
+                            StatusMessage = $"Checking for updates... ({checkedCount} of {total})";
+                            ScanProgress = progress;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error checking {app.AppName}: {ex.Message}");
+                        Interlocked.Increment(ref checkedCount);
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+
+                // Filter out apps with Unknown status (not found in WinGet)
+                _allApps = apps.Where(a => a.Status != SecurityStatus.Unknown).ToList();
 
                 // Calculate statistics
-                var totalApps = apps.Count;
-                var outdated = apps.Count(a => a.Status == SecurityStatus.Outdated);
-                var critical = apps.Count(a => a.Status == SecurityStatus.Critical);
-                var upToDate = apps.Count(a => a.Status == SecurityStatus.UpToDate);
+                var totalApps = _allApps.Count;
+                var outdated = _allApps.Count(a => a.Status == SecurityStatus.Outdated);
+                var critical = _allApps.Count(a => a.Status == SecurityStatus.Critical);
+                var upToDate = _allApps.Count(a => a.Status == SecurityStatus.UpToDate);
 
                 await DispatchAsync(() =>
                 {
@@ -252,6 +347,7 @@ namespace Winspeqt.ViewModels.Security
 
                     IsScanning = false;
                     HasScanned = true;
+                    ScanProgress = 100;
                     StatusMessage = $"Scan complete! Found {totalApps} applications.";
                 });
             }
@@ -377,11 +473,23 @@ namespace Winspeqt.ViewModels.Security
                     {
                         try
                         {
-                            // Update WinGet sources first, then upgrade to the latest version
+                            // Enhanced command that handles WinGet upgrade failures gracefully
                             var startInfo = new System.Diagnostics.ProcessStartInfo
                             {
                                 FileName = "wt.exe", // Windows Terminal
-                                Arguments = $"-w 0 nt cmd /k \"echo Updating WinGet sources... && winget source update && echo. && echo Upgrading to latest version... && winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && pause\"",
+                                Arguments = $"-w 0 nt cmd /k \"echo Updating WinGet sources... && " +
+                                           $"winget source update && " +
+                                           $"echo. && " +
+                                           $"echo Upgrading {app.AppName}... && " +
+                                           $"echo. && " +
+                                           $"winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && " +
+                                           $"(echo. && echo ================================ && echo SUCCESS: {app.AppName} has been updated! && echo ================================) || " +
+                                           $"(echo. && echo ================================ && echo UPDATE FAILED && echo ================================ && echo. && " +
+                                           $"echo This app may not have been installed with WinGet originally. && echo. && " +
+                                           $"echo To update {app.AppName}, please: && echo. && " +
+                                           $"echo   1. Visit the official {app.AppName} website && echo   2. Download the latest installer && echo   3. Run the installer to update && echo. && " +
+                                           $"echo Or search online for 'how to update {app.AppName}' && echo.) && " +
+                                           $"pause\"",
                                 UseShellExecute = true
                             };
 
@@ -393,7 +501,16 @@ namespace Winspeqt.ViewModels.Security
                             {
                                 // Fallback to regular cmd if Windows Terminal not available
                                 startInfo.FileName = "cmd.exe";
-                                startInfo.Arguments = $"/k winget source update && winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements";
+                                startInfo.Arguments = $"/k echo Updating WinGet sources... && " +
+                                                     $"winget source update && " +
+                                                     $"echo. && " +
+                                                     $"echo Upgrading {app.AppName}... && " +
+                                                     $"echo. && " +
+                                                     $"winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && " +
+                                                     $"(echo. && echo SUCCESS: {app.AppName} has been updated!) || " +
+                                                     $"(echo. && echo UPDATE FAILED - This app may not have been installed with WinGet. && " +
+                                                     $"echo Please visit the official {app.AppName} website to download the latest version. && echo.) && " +
+                                                     $"pause";
                                 System.Diagnostics.Process.Start(startInfo);
                             }
                         }
@@ -469,6 +586,164 @@ namespace Winspeqt.ViewModels.Security
             });
 
             return panel;
+        }
+
+        private async Task<bool> CheckWinGetOutdatedAsync()
+        {
+            try
+            {
+                // Get local WinGet version
+                var localVersion = await GetLocalWinGetVersionAsync();
+                if (string.IsNullOrEmpty(localVersion))
+                {
+                    System.Diagnostics.Debug.WriteLine("Could not get local WinGet version");
+                    return false; // Can't determine, assume it's fine
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Local WinGet version: {localVersion}");
+
+                // Get latest WinGet version from GitHub API
+                var latestVersion = await GetLatestWinGetVersionAsync();
+                if (string.IsNullOrEmpty(latestVersion))
+                {
+                    System.Diagnostics.Debug.WriteLine("Could not get latest WinGet version from GitHub");
+                    return false; // Can't determine, assume it's fine
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Latest WinGet version: {latestVersion}");
+
+                // Compare versions (both should be like "v1.7.10861" or "1.7.10861")
+                var localClean = localVersion.TrimStart('v');
+                var latestClean = latestVersion.TrimStart('v');
+
+                var localParts = localClean.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+                var latestParts = latestClean.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
+
+                // Compare major and minor versions (ignore patch)
+                if (localParts.Length >= 2 && latestParts.Length >= 2)
+                {
+                    // If major version is behind
+                    if (localParts[0] < latestParts[0])
+                    {
+                        System.Diagnostics.Debug.WriteLine("WinGet is outdated (major version behind)");
+                        return true;
+                    }
+                    // If same major but minor is behind
+                    if (localParts[0] == latestParts[0] && localParts[1] < latestParts[1])
+                    {
+                        System.Diagnostics.Debug.WriteLine("WinGet is outdated (minor version behind)");
+                        return true;
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine("WinGet is up to date");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error checking WinGet version: {ex.Message}");
+                return false; // On error, assume it's fine and continue
+            }
+        }
+
+        private async Task<string> GetLocalWinGetVersionAsync()
+        {
+            try
+            {
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "winget",
+                        Arguments = "--version",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
+
+                process.Start();
+                var output = await process.StandardOutput.ReadToEndAsync();
+
+                if (process.WaitForExit(5000))
+                {
+                    return output.Trim();
+                }
+
+                try { process.Kill(); } catch { }
+            }
+            catch { }
+
+            return null;
+        }
+
+        private async Task<string> GetLatestWinGetVersionAsync()
+        {
+            try
+            {
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "Winspeqt");
+                client.Timeout = TimeSpan.FromSeconds(5);
+
+                // GitHub API to get latest release
+                var response = await client.GetAsync("https://api.github.com/repos/microsoft/winget-cli/releases/latest");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var doc = System.Text.Json.JsonDocument.Parse(json);
+
+                    if (doc.RootElement.TryGetProperty("tag_name", out var tagName))
+                    {
+                        return tagName.GetString(); // Returns like "v1.7.10861"
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching latest WinGet version: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        private async Task ShowWinGetOutdatedWarningAsync()
+        {
+            if (_xamlRoot == null) return;
+
+            await DispatchAsync(async () =>
+            {
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = "Outdated WinGet",
+                    Content = "Your WinGet version is outdated.\n\n" +
+                             "For best results, update WinGet through the Microsoft Store by searching for 'App Installer'.\n\n" +
+                             "You can continue scanning, but some apps may not be found or version info may be inaccurate.",
+                    PrimaryButtonText = "Continue Anyway",
+                    SecondaryButtonText = "Open Microsoft Store",
+                    CloseButtonText = "Cancel",
+                    XamlRoot = _xamlRoot
+                };
+
+                var result = await dialog.ShowAsync();
+
+                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Secondary)
+                {
+                    // Open Microsoft Store to App Installer
+                    await Windows.System.Launcher.LaunchUriAsync(
+                        new Uri("ms-windows-store://pdp/?ProductId=9nblggh4nns1"));
+
+                    // Cancel the scan
+                    IsScanning = false;
+                }
+                else if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.None)
+                {
+                    // User clicked Cancel
+                    IsScanning = false;
+                }
+                // Primary button (Continue Anyway) - just continue with the scan
+            });
         }
 
         private async Task DispatchAsync(Action action)
