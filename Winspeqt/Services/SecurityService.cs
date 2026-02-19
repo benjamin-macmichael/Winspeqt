@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Management;
 using System.Threading.Tasks;
 using Winspeqt.Models;
@@ -9,24 +10,25 @@ namespace Winspeqt.Services
     {
         public async Task<SecurityStatusInfo> GetSecurityStatusAsync()
         {
-            // Run all security checks in parallel for speed
             var defenderTask = Task.Run(() => CheckWindowsDefender());
             var firewallTask = Task.Run(() => CheckFirewall());
             var updateTask = Task.Run(() => CheckWindowsUpdate());
             var bitlockerTask = Task.Run(() => CheckBitLocker());
+            var driveHealthTask = Task.Run(() => CheckDriveHealth());
+            var secureBootTask = Task.Run(() => CheckSecureBoot());
 
-            // Wait for all to complete
-            await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask);
+            await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask, driveHealthTask, secureBootTask);
 
             var status = new SecurityStatusInfo
             {
                 WindowsDefenderStatus = defenderTask.Result,
                 FirewallStatus = firewallTask.Result,
                 WindowsUpdateStatus = updateTask.Result,
-                BitLockerStatus = bitlockerTask.Result
+                BitLockerStatus = bitlockerTask.Result,
+                DriveHealthStatus = driveHealthTask.Result,
+                SecureBootStatus = secureBootTask.Result
             };
 
-            // Calculate overall security score
             status.OverallSecurityScore = CalculateSecurityScore(status);
             status.OverallStatus = GetOverallStatus(status.OverallSecurityScore);
 
@@ -166,8 +168,7 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher(
-                    "SELECT * FROM Win32_QuickFixEngineering");
+                var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_QuickFixEngineering");
 
                 DateTime lastUpdate = DateTime.MinValue;
                 int updateCount = 0;
@@ -255,7 +256,6 @@ namespace Winspeqt.Services
         {
             try
             {
-                // First try the full BitLocker WMI namespace (Pro/Enterprise/Education)
                 ManagementScope scope = new ManagementScope(@"root\CIMV2\Security\MicrosoftVolumeEncryption");
 
                 try
@@ -265,14 +265,12 @@ namespace Winspeqt.Services
                 }
                 catch (ManagementException)
                 {
-                    // Full BitLocker not available, try Device Encryption (Windows Home)
                     return CheckDeviceEncryption();
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error checking BitLocker: {ex.GetType().Name} - {ex.Message}");
-
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
@@ -298,22 +296,16 @@ namespace Winspeqt.Services
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     totalVolumes++;
-
                     try
                     {
                         var protectionStatus = Convert.ToInt32(obj["ProtectionStatus"]);
-
-                        // 1 = Protected, 0 = Unprotected
                         if (protectionStatus == 1)
                         {
                             hasEncryptedVolume = true;
                             encryptedVolumes++;
                         }
                     }
-                    catch
-                    {
-                        continue;
-                    }
+                    catch { continue; }
                 }
 
                 if (totalVolumes == 0)
@@ -380,7 +372,6 @@ namespace Winspeqt.Services
             {
                 System.Diagnostics.Debug.WriteLine("Checking Device Encryption...");
 
-                // Check Windows Device Encryption (available on some Windows Home devices)
                 var searcher = new ManagementObjectSearcher(@"root\CIMV2\Security\MicrosoftTpm",
                     "SELECT * FROM Win32_Tpm");
 
@@ -403,7 +394,6 @@ namespace Winspeqt.Services
                     System.Diagnostics.Debug.WriteLine($"TPM query error: {tpmEx.Message}");
                 }
 
-                // Try to check if device encryption is actually on by checking registry
                 bool hasEncryptionKeys = false;
                 try
                 {
@@ -425,7 +415,6 @@ namespace Winspeqt.Services
                     System.Diagnostics.Debug.WriteLine($"Registry check error: {regEx.Message}");
                 }
 
-                // If we found encryption keys in registry, it's encrypted
                 if (hasEncryptionKeys)
                 {
                     return new SecurityComponentStatus
@@ -438,7 +427,6 @@ namespace Winspeqt.Services
                     };
                 }
 
-                // No encryption keys but TPM present
                 if (tpmPresent)
                 {
                     if (tpmEnabled && tpmActivated)
@@ -465,7 +453,6 @@ namespace Winspeqt.Services
                     }
                 }
 
-                // No TPM found
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
@@ -480,7 +467,6 @@ namespace Winspeqt.Services
                 System.Diagnostics.Debug.WriteLine($"Device Encryption check failed: {ex.GetType().Name} - {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
 
-                // Provide a helpful fallback message
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
@@ -492,35 +478,198 @@ namespace Winspeqt.Services
             }
         }
 
+        public SecurityComponentStatus CheckDriveHealth()
+        {
+            try
+            {
+                var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
+                var issues = new List<string>();
+                int totalDrives = 0;
+
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    totalDrives++;
+                    var model = obj["Model"]?.ToString() ?? "Unknown Drive";
+                    var status = obj["Status"]?.ToString() ?? "Unknown";
+
+                    // Win32_DiskDrive Status values: "OK", "Degraded", "Error", "Unknown", "Pred Fail"
+                    if (status != "OK")
+                        issues.Add($"{model}: {status}");
+                }
+
+                if (totalDrives == 0)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "No Drives Found",
+                        Message = "No drives could be detected",
+                        Icon = "?",
+                        Color = "#9E9E9E"
+                    };
+                }
+
+                if (issues.Count == 0)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = true,
+                        Status = "Healthy",
+                        Message = $"All {totalDrives} drive(s) are reporting healthy status. No issues detected.",
+                        Icon = "✓",
+                        Color = "#4CAF50"
+                    };
+                }
+                else if (issues.Count < totalDrives)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "Warning",
+                        Message = $"{issues.Count} of {totalDrives} drive(s) may have issues: {string.Join(", ", issues)}. Consider backing up your data.",
+                        Icon = "⚠",
+                        Color = "#FF9800"
+                    };
+                }
+                else
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "At Risk",
+                        Message = $"Drive issues detected: {string.Join(", ", issues)}. Back up your data immediately!",
+                        Icon = "✗",
+                        Color = "#F44336"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error checking drive health: {ex.Message}");
+                return new SecurityComponentStatus
+                {
+                    IsEnabled = false,
+                    Status = "Error",
+                    Message = "Could not check drive health status",
+                    Icon = "!",
+                    Color = "#FF9800"
+                };
+            }
+        }
+
+        public SecurityComponentStatus CheckSecureBoot()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\SecureBoot\State");
+
+                if (key == null)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "Not Supported",
+                        Message = "Your system uses legacy BIOS and does not support Secure Boot",
+                        Icon = "–",
+                        Color = "#9E9E9E"
+                    };
+                }
+
+                var value = key.GetValue("UEFISecureBootEnabled");
+                if (value == null)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "Unknown",
+                        Message = "Could not determine Secure Boot state",
+                        Icon = "?",
+                        Color = "#9E9E9E"
+                    };
+                }
+
+                bool isEnabled = Convert.ToInt32(value) == 1;
+
+                if (isEnabled)
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = true,
+                        Status = "Enabled",
+                        Message = "Secure Boot is active, protecting your PC from unauthorized software at startup",
+                        Icon = "✓",
+                        Color = "#4CAF50"
+                    };
+                }
+                else
+                {
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "Disabled",
+                        Message = "Secure Boot is off. Your PC may be vulnerable to bootkit malware. Enable it in your BIOS/UEFI settings.",
+                        Icon = "⚠",
+                        Color = "#FF9800"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error checking Secure Boot: {ex.Message}");
+                return new SecurityComponentStatus
+                {
+                    IsEnabled = false,
+                    Status = "Error",
+                    Message = "Could not check Secure Boot status",
+                    Icon = "!",
+                    Color = "#FF9800"
+                };
+            }
+        }
+
         public int CalculateSecurityScore(SecurityStatusInfo status)
         {
             int score = 0;
 
-            // Windows Defender (30 points)
+            // Windows Defender (25 points)
             if (status.WindowsDefenderStatus.IsEnabled && status.WindowsDefenderStatus.Status == "Protected")
-                score += 30;
-            else if (status.WindowsDefenderStatus.Status == "Error" || status.WindowsDefenderStatus.Status == "Unknown")
-                score += 15;
-
-            // Firewall (30 points)
-            if (status.FirewallStatus.IsEnabled && status.FirewallStatus.Status == "Active")
-                score += 30;
-            else if (status.FirewallStatus.Status == "Partial")
-                score += 20;
-
-            // Windows Update (25 points)
-            if (status.WindowsUpdateStatus.Status == "Up to Date")
                 score += 25;
-            else if (status.WindowsUpdateStatus.Status == "Check for Updates")
+            else if (status.WindowsDefenderStatus.Status == "Error" || status.WindowsDefenderStatus.Status == "Unknown")
+                score += 12;
+
+            // Firewall (25 points)
+            if (status.FirewallStatus.IsEnabled && status.FirewallStatus.Status == "Active")
+                score += 25;
+            else if (status.FirewallStatus.Status == "Partial")
                 score += 15;
 
-            // BitLocker (15 points) - less critical as not all systems support it
-            if (status.BitLockerStatus.Status == "Encrypted")
-                score += 15;
-            else if (status.BitLockerStatus.Status == "Partial")
+            // Windows Update (20 points)
+            if (status.WindowsUpdateStatus.Status == "Up to Date")
+                score += 20;
+            else if (status.WindowsUpdateStatus.Status == "Check for Updates")
                 score += 10;
-            else if (status.BitLockerStatus.Status == "Not Available")
-                score += 15; // Don't penalize if not available
+
+            // BitLocker (10 points) — less critical, not all systems support it
+            if (status.BitLockerStatus.Status == "Encrypted")
+                score += 10;
+            else if (status.BitLockerStatus.Status == "Partial")
+                score += 5;
+            else if (status.BitLockerStatus.Status == "Not Available" || status.BitLockerStatus.Status == "Not Supported")
+                score += 10; // don't penalize unsupported hardware
+
+            // Drive Health (10 points)
+            if (status.DriveHealthStatus.Status == "Healthy")
+                score += 10;
+            else if (status.DriveHealthStatus.Status == "Warning")
+                score += 5;
+            else if (status.DriveHealthStatus.Status == "Error" || status.DriveHealthStatus.Status == "No Drives Found")
+                score += 5; // don't fully penalize for check failures
+
+            // Secure Boot (10 points)
+            if (status.SecureBootStatus.Status == "Enabled")
+                score += 10;
+            else if (status.SecureBootStatus.Status == "Not Supported" || status.SecureBootStatus.Status == "Error" || status.SecureBootStatus.Status == "Unknown")
+                score += 10; // don't penalize legacy/unsupported systems
 
             return score;
         }
