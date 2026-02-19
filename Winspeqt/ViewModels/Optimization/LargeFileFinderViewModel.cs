@@ -40,6 +40,20 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _isLoading, value);
         }
 
+        private bool _hasError;
+        public bool HasError
+        {
+            get => _hasError;
+            set => SetProperty(ref _hasError, value);
+        }
+
+        private string _errorMessage = string.Empty;
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetProperty(ref _errorMessage, value);
+        }
+
         private string _selectedSortOption = "Default";
         public string SelectedSortOption
         {
@@ -66,10 +80,16 @@ namespace Winspeqt.ViewModels.Optimization
         public async Task LoadAsync()
         {
             IsLoading = true;
+            HasError = false;
+            ErrorMessage = string.Empty;
 
-            string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string initialFolder = "";//Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            if (initialFolder == null) {
+            if (string.IsNullOrWhiteSpace(initialFolder))
+            {
+                IsLoading = false;
+                HasError = true;
+                ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
                 return;
             }
 

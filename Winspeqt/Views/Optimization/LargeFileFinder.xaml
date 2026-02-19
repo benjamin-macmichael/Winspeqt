@@ -63,6 +63,15 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
+                <TextBlock
+                    Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                    FontSize="18"
+                    TextWrapping="WrapWholeWords"
+                    Foreground="{ThemeResource SystemErrorTextColor}"
+                    Margin="0,0,0,12"
+                    HorizontalAlignment="Center"
+                    />
                 <StackPanel 
                     Orientation="Horizontal"
                     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
