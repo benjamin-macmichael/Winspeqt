@@ -19,15 +19,14 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            if (Frame.CanGoBack) Frame.GoBack();
         }
+
+        // ── Info dialogs ──────────────────────────────────────────────────────
 
         private async void ShowDefenderInfo_Click(object sender, RoutedEventArgs e)
         {
-            ContentDialog dialog = new ContentDialog
+            await new ContentDialog
             {
                 Title = "🛡️ Windows Defender",
                 Content = "Windows Defender (also called Windows Security) is your computer's built-in antivirus protection.\n\n" +
@@ -40,13 +39,12 @@ namespace Winspeqt.Views.Security
                           "Keep it ON at all times for protection!",
                 CloseButtonText = "Got it!",
                 XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+            }.ShowAsync();
         }
 
         private async void ShowFirewallInfo_Click(object sender, RoutedEventArgs e)
         {
-            ContentDialog dialog = new ContentDialog
+            await new ContentDialog
             {
                 Title = "🔥 Windows Firewall",
                 Content = "Windows Firewall is like a security guard for your computer's internet connection.\n\n" +
@@ -59,13 +57,12 @@ namespace Winspeqt.Views.Security
                           "Keep it ON for all network types (Private and Public)!",
                 CloseButtonText = "Got it!",
                 XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+            }.ShowAsync();
         }
 
         private async void ShowUpdateInfo_Click(object sender, RoutedEventArgs e)
         {
-            ContentDialog dialog = new ContentDialog
+            await new ContentDialog
             {
                 Title = "🔄 Windows Update",
                 Content = "Windows Update keeps your computer secure and running smoothly.\n\n" +
@@ -78,13 +75,12 @@ namespace Winspeqt.Views.Security
                           "Check for updates at least once a month. Many updates install automatically, which is good!",
                 CloseButtonText = "Got it!",
                 XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+            }.ShowAsync();
         }
 
         private async void ShowBitLockerInfo_Click(object sender, RoutedEventArgs e)
         {
-            ContentDialog dialog = new ContentDialog
+            await new ContentDialog
             {
                 Title = "🔐 BitLocker/Device Encryption",
                 Content = "BitLocker (or Device Encryption) scrambles all the data on your hard drive.\n\n" +
@@ -97,89 +93,96 @@ namespace Winspeqt.Views.Security
                           "Important: Save your recovery key in a safe place (like your Microsoft account) in case you forget your password!",
                 CloseButtonText = "Got it!",
                 XamlRoot = this.XamlRoot
-            };
-            await dialog.ShowAsync();
+            }.ShowAsync();
         }
+
+        private async void ShowDriveHealthInfo_Click(object sender, RoutedEventArgs e)
+        {
+            await new ContentDialog
+            {
+                Title = "💾 Drive Health",
+                Content = "Drive Health monitors the status of your hard drives and SSDs using built-in diagnostic data reported by Windows.\n\n" +
+                          "What it checks:\n" +
+                          "• Whether Windows detects any drive errors or failures\n" +
+                          "• The reported health status of all connected drives\n\n" +
+                          "Why it's important:\n" +
+                          "Hard drives and SSDs can fail without warning. A failing drive can cause you to lose all your files, photos, and documents permanently.\n\n" +
+                          "If a drive shows a warning, back up your important files immediately and consider replacing the drive soon.",
+                CloseButtonText = "Got it!",
+                XamlRoot = this.XamlRoot
+            }.ShowAsync();
+        }
+
+        private async void ShowSecureBootInfo_Click(object sender, RoutedEventArgs e)
+        {
+            await new ContentDialog
+            {
+                Title = "🔒 Secure Boot",
+                Content = "Secure Boot is a feature built into modern PCs that ensures your computer only starts up using trusted software.\n\n" +
+                          "What it does:\n" +
+                          "• Verifies that your operating system hasn't been tampered with\n" +
+                          "• Blocks malicious software that tries to load before Windows starts\n" +
+                          "• Protects against a type of malware called 'bootkits'\n\n" +
+                          "Why it's important:\n" +
+                          "Bootkits are especially dangerous because they load before your antivirus software can catch them. Secure Boot closes this attack vector entirely.\n\n" +
+                          "If Secure Boot is disabled, you can enable it in your PC's BIOS/UEFI settings — usually accessed by pressing F2 or DEL at startup.",
+                CloseButtonText = "Got it!",
+                XamlRoot = this.XamlRoot
+            }.ShowAsync();
+        }
+
+        // ── Action buttons ────────────────────────────────────────────────────
 
         private void OpenDefenderSettings_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Security app
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "windowsdefender:",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening Windows Security: {ex.Message}");
-            }
+            TryLaunch("windowsdefender:");
         }
 
         private void OpenFirewallSettings_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Firewall settings
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "firewall.cpl",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening firewall settings: {ex.Message}");
-            }
+            TryLaunch("firewall.cpl");
         }
 
         private void OpenWindowsUpdate_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // Open Windows Update settings
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "ms-settings:windowsupdate",
-                    UseShellExecute = true
-                });
-            }
-            catch (System.Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error opening Windows Update: {ex.Message}");
-            }
+            TryLaunch("ms-settings:windowsupdate");
         }
 
         private void OpenBitLockerSettings_Click(object sender, RoutedEventArgs e)
         {
+            if (!TryLaunch("ms-settings:deviceencryption"))
+                TryLaunch("control", "/name Microsoft.BitLockerDriveEncryption");
+        }
+
+        private void OpenDiskManagement_Click(object sender, RoutedEventArgs e)
+        {
+            TryLaunch("diskmgmt.msc");
+        }
+
+        private void OpenUEFISettings_Click(object sender, RoutedEventArgs e)
+        {
+            // Opens System Information which shows Secure Boot State on the main screen
+            TryLaunch("msinfo32.exe");
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+
+        private bool TryLaunch(string fileName, string args = null)
+        {
             try
             {
-                // Open BitLocker/Device Encryption settings
-                // Try Device Encryption first (Windows 11/Home), fall back to BitLocker control panel
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = "ms-settings:deviceencryption",
+                    FileName = fileName,
+                    Arguments = args ?? string.Empty,
                     UseShellExecute = true
                 });
+                return true;
             }
-            catch
+            catch (Exception ex)
             {
-                try
-                {
-                    // Fallback to BitLocker control panel (Pro/Enterprise)
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "control",
-                        Arguments = "/name Microsoft.BitLockerDriveEncryption",
-                        UseShellExecute = true
-                    });
-                }
-                catch (System.Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error opening BitLocker settings: {ex.Message}");
-                }
+                System.Diagnostics.Debug.WriteLine($"Error launching {fileName}: {ex.Message}");
+                return false;
             }
         }
     }
