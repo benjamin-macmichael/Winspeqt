@@ -37,8 +37,16 @@ namespace Winspeqt.ViewModels.Optimization
         public bool IsLoading
         {
             get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            set
+            {
+                if (SetProperty(ref _isLoading, value))
+                {
+                    OnPropertyChanged(nameof(FolderItemOpacity));
+                }
+            }
         }
+
+        public double FolderItemOpacity => IsLoading ? 0.5 : 1.0;
 
         private bool _hasError;
         public bool HasError

@@ -154,7 +154,7 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="/" FontSize="24" />
+                                <TextBlock Text="/" FontSize="24" Opacity="{Binding ElementName=RootPage, Path=ViewModel.FolderItemOpacity}" />
                                 <Button
                                     Click="BreadCrumb_Click"
                                     Background="Transparent"
@@ -185,6 +185,7 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Padding="12,8"
+                                    Opacity="{Binding ElementName=RootPage, Path=ViewModel.FolderItemOpacity}"
                                     IsEnabled="{Binding ElementName=RootPage, Path=ViewModel.IsLoading, Converter={StaticResource BoolInverter}}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
