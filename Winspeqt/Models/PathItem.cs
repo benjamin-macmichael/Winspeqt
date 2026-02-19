@@ -14,7 +14,8 @@ namespace Winspeqt.Models
         public PathItem(string path, int index) 
         {
             Path = path;
-            Name = System.IO.Path.GetFileName(path);
+            string temp = System.IO.Path.GetFileName(path);
+            Name = temp != "" ? temp : path[..^1];
             Index = index;
         }
     }

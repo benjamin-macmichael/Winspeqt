@@ -1,12 +1,14 @@
-﻿using Microsoft.UI.Xaml.Shapes;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Shapes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 using static Winspeqt.Models.Enums;
@@ -66,6 +68,26 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = true;
 
             string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (initialFolder == null) {
+                return;
+            }
+
+            DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
+            List<DirectoryInfo> systemDirectories = new List<DirectoryInfo>();
+
+            while (parentDirectory != null)
+            {
+                systemDirectories.Add(parentDirectory);
+                parentDirectory = Directory.GetParent(parentDirectory.FullName);
+                
+            }
+
+            for (int i = systemDirectories.Count - 1; i >= 0; i--)
+            {
+                PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
+            }
+
 
             await RetrieveFolderItems(initialFolder);
         }
