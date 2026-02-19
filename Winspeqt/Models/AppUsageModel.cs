@@ -13,6 +13,16 @@ namespace Winspeqt.Models
         public double UsagePercentage { get; set; }
         public bool IsRunning { get; set; }
 
+        public string FormattedUsagePercentage
+        {
+            get
+            {
+                if (UsagePercentage < 1)
+                    return UsagePercentage.ToString("F2");
+                return ((int)UsagePercentage).ToString();
+            }
+        }
+
         public string FormattedUsageTime
         {
             get
@@ -102,10 +112,9 @@ namespace Winspeqt.Models
         {
             get
             {
-                // If not tracked at all, don't mark as unused (we don't know)
                 if (!LastUsed.HasValue) return false;
                 var daysSinceUse = (DateTime.Now - LastUsed.Value).TotalDays;
-                return daysSinceUse > 90; // Not used in 90+ days
+                return daysSinceUse > 90;
             }
         }
     }
