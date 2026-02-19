@@ -308,7 +308,7 @@
                                                    FontSize="18" 
                                                    FontWeight="Bold"
                                                    HorizontalAlignment="Center">
-                                            <Run Text="{Binding UsagePercentage}"/>
+                                            <Run Text="{Binding FormattedUsagePercentage}"/>
                                             <Run Text="%"/>
                                         </TextBlock>
                                         <ProgressBar Value="{Binding UsagePercentage}" 
@@ -398,55 +398,20 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- App Info -->
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Spacing="10">
-                                            <TextBlock Text="{Binding AppName}" 
-                                                       Foreground="White" 
-                                                       FontSize="14" 
-                                                       FontWeight="SemiBold"/>
-                                            <Border Background="#E74856" 
-                                                    CornerRadius="10" 
-                                                    Padding="8,2"
-                                                    Visibility="{Binding IsUnused, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <TextBlock Text="UNUSED" 
-                                                           Foreground="White" 
-                                                           FontSize="9"
-                                                           FontWeight="Bold"/>
-                                            </Border>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,4,0,0">
-                                            <TextBlock Foreground="#A0A0A0" FontSize="11" Text="Publisher:"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="11" Text="{Binding Publisher}"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="11" Text="•"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="11" Text="Version:"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="11" Text="{Binding Version}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <!-- Install Date -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0">
-                                        <TextBlock Text="Installed" Foreground="#A0A0A0" FontSize="10"/>
-                                        <TextBlock Text="{Binding FormattedInstallDate}" Foreground="White" FontSize="12"/>
+                                        <TextBlock Text="{Binding AppName}" 
+                                                   Foreground="White" 
+                                                   FontSize="14" 
+                                                   FontWeight="SemiBold"/>
                                     </StackPanel>
 
                                     <!-- Last Used -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="20,0">
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
                                         <TextBlock Text="Last Used" Foreground="#A0A0A0" FontSize="10"/>
                                         <TextBlock Text="{Binding FormattedLastUsed}" Foreground="White" FontSize="12"/>
-                                    </StackPanel>
-
-                                    <!-- Size -->
-                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="20,0,0,0">
-                                        <TextBlock Text="Size" Foreground="#A0A0A0" FontSize="10"/>
-                                        <TextBlock Text="{Binding FormattedSize}" 
-                                                   Foreground="White" 
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
