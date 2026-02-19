@@ -83,7 +83,7 @@ namespace Winspeqt.ViewModels.Optimization
             HasError = false;
             ErrorMessage = string.Empty;
 
-            string initialFolder = "";//Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             if (string.IsNullOrWhiteSpace(initialFolder))
             {

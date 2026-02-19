@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="Winspeqt.Views.Optimization.LargeFileFinder"
+    x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Winspeqt.Views.Optimization"
@@ -15,6 +16,7 @@
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:DataSizeToBrushConverter x:Key="DataSizeToBrushConverter"/>
+        <helpers:BoolInverter x:Key="BoolInverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -110,13 +112,15 @@
                             HorizontalAlignment="Left"
                             MinWidth="150"
                             FontSize="15"
+                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}"
                             />
                     </StackPanel>
                     <Button 
                         Content="View Folder in File Explorer" 
                         Grid.Column="1" 
                         HorizontalAlignment="Right" 
-                        Click="ViewFileExplorer_Click"/>
+                        Click="ViewFileExplorer_Click"
+                        IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}"/>
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="2">
@@ -156,7 +160,8 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Padding="0"
-                                    CommandParameter="{Binding Index}">
+                                    CommandParameter="{Binding Index}"
+                                    IsEnabled="{Binding ElementName=RootPage, Path=ViewModel.IsLoading, Converter={StaticResource BoolInverter}}">
                                     <TextBlock Text="{Binding Name}" FontSize="24" />
                                 </Button>
                             </StackPanel>
@@ -179,7 +184,8 @@
                                     HorizontalContentAlignment="Stretch"
                                     Background="Transparent"
                                     BorderThickness="0"
-                                    Padding="12,8">
+                                    Padding="12,8"
+                                    IsEnabled="{Binding ElementName=RootPage, Path=ViewModel.IsLoading, Converter={StaticResource BoolInverter}}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
