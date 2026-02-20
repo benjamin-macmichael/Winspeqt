@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Winspeqt.Models
+﻿namespace Winspeqt.Models
 {
     /// <summary>
     /// Represents a breadcrumb segment for the Large File Finder view.
@@ -26,7 +20,7 @@ namespace Winspeqt.Models
         /// <summary>
         /// Creates a new breadcrumb item and derives a friendly name from the path.
         /// </summary>
-        public PathItem(string path, int index) 
+        public PathItem(string path, int index)
         {
             Path = path;
             string temp = System.IO.Path.GetFileName(path);

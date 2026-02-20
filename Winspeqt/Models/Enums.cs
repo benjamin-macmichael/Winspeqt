@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Winspeqt.Models
+﻿namespace Winspeqt.Models
 {
     /// <summary>
     /// Shared enums used across models and view models.

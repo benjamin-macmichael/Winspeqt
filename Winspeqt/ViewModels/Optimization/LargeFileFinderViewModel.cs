@@ -1,19 +1,13 @@
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Shapes;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
-using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.ViewModels.Optimization
 {
@@ -29,7 +23,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Current folder contents displayed in the list.
         /// </summary>
-        public ObservableCollection<FileSearchItem> FolderItems 
+        public ObservableCollection<FileSearchItem> FolderItems
         {
             get => _folderItems;
             set => SetProperty(ref _folderItems, value);
@@ -143,7 +137,7 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 systemDirectories.Add(parentDirectory);
                 parentDirectory = Directory.GetParent(parentDirectory.FullName);
-                
+
             }
 
             // Build breadcrumb from root to the user profile directory.
@@ -310,11 +304,11 @@ namespace Winspeqt.ViewModels.Optimization
             if (this.SelectedSortOption == "Name")
             {
                 listItems = listItems.OrderBy(item => item.Name);
-            } 
+            }
             else if (this.SelectedSortOption == "Size")
             {
                 listItems = listItems.OrderByDescending(item => item.Size).OrderByDescending(item => item.DataLabel);
-            } 
+            }
             else
             {
                 listItems = listItems.OrderBy(item => item.Name).OrderByDescending(item => item.Type);

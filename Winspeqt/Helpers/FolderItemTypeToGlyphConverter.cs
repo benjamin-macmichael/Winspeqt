@@ -1,6 +1,5 @@
 using Microsoft.UI.Xaml.Data;
 using System;
-using Windows.UI.Xaml.Data;
 
 namespace Winspeqt.Helpers
 {

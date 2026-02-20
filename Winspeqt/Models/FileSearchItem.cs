@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
 
@@ -14,7 +13,7 @@ namespace Winspeqt.Models
         /// Display name of the file or folder.
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
         /// Full file system path (folders only). Files may use an empty string.
         /// </summary>
@@ -47,10 +46,10 @@ namespace Winspeqt.Models
         /// <summary>
         /// Whether size calculation has finished (used to show/hide progress UI).
         /// </summary>
-        public bool Finished 
-        { 
-            get => _finished; 
-            private set => SetProperty(ref _finished, value); 
+        public bool Finished
+        {
+            get => _finished;
+            private set => SetProperty(ref _finished, value);
         }
 
         /// <summary>
