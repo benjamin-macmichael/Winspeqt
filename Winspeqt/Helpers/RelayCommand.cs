@@ -6,7 +6,7 @@ namespace Winspeqt.Helpers
     /// <summary>
     /// A basic command implementation for MVVM pattern
     /// </summary>
-    public class RelayCommand : ICommand
+    public partial class RelayCommand : ICommand
     {
         private readonly Action _execute;
         private readonly Func<bool> _canExecute;
@@ -17,7 +17,7 @@ namespace Winspeqt.Helpers
             _canExecute = canExecute;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
