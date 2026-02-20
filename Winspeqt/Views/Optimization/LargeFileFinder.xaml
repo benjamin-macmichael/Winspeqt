@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Page
+﻿<Page
     x:Class="Winspeqt.Views.Optimization.LargeFileFinder"
     x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -15,6 +14,7 @@
     <Page.Resources>
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
         <helpers:DataSizeToBrushConverter x:Key="DataSizeToBrushConverter"/>
         <helpers:BoolInverter x:Key="BoolInverter"/>
     </Page.Resources>
@@ -214,7 +214,21 @@
                                             Orientation="Horizontal"
                                             Spacing="10"
                                             VerticalAlignment="Center"
-                                            HorizontalAlignment="Right">
+                                            HorizontalAlignment="Right"
+                                            Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}">
+                                            <ProgressRing 
+                                                IsActive="True"
+                                                Width="10"
+                                                Height="10" />
+                                        </StackPanel>
+                                        
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="10"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right"
+                                            Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <TextBlock 
                                                 Text="{Binding Size}"
                                                 Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>

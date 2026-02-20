@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using System;
@@ -8,6 +8,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
@@ -77,7 +79,6 @@ namespace Winspeqt.ViewModels.Optimization
 
         public ObservableCollection<string> SortOptions { get; set; }
 
-
         public LargeFileFinderViewModel()
         {
             FolderItems = [];
@@ -116,7 +117,6 @@ namespace Winspeqt.ViewModels.Optimization
                 PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
             }
 
-
             await RetrieveFolderItems(initialFolder);
         }
 
@@ -126,85 +126,119 @@ namespace Winspeqt.ViewModels.Optimization
 
             PathItems.Add(new PathItem(folder, PathItems.Count));
 
-            var items = await Task.Run(() => BuildFolderItems(folder));
-
-            _dispatcher.TryEnqueue(() =>
+            FolderItems.Clear();
+            var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
+            await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
             {
-                FolderItems.Clear();
-                foreach (var item in items)
+                FolderItems.Add(item);
+            }
+
+            SortFiles();
+            IsLoading = false;
+
+            var sizeTaskArray = sizeTasks.ToArray();
+            if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
+            {
+                _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
                 {
-                    FolderItems.Add(item);
-                }
-
-                SortFiles();
-
-                IsLoading = false;
-            });
+                    _dispatcher.TryEnqueue(SortFiles);
+                }, TaskScheduler.Default);
+            }
         }
 
-        private List<FileSearchItem> BuildFolderItems(string folder)
+        private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(string folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
         {
-            List<FileSearchItem> temp = [];
+            var channel = Channel.CreateUnbounded<FileSearchItem>();
 
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    foreach (var dir in Directory.EnumerateDirectories(folder))
+                    {
+                        var name = System.IO.Path.GetFileName(dir);
+                        var item = new FileSearchItem(name, dir, "folder", 0, false);
+                        channel.Writer.TryWrite(item);
+                        sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
+                    }
+
+                    foreach (var file in Directory.EnumerateFiles(folder))
+                    {
+                        var name = System.IO.Path.GetFileName(file);
+                        var size = new System.IO.FileInfo(file).Length;
+                        channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, true));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Print("Error retrieving large files for path {0}: {1}", folder, ex.ToString());
+                }
+                finally
+                {
+                    channel.Writer.Complete();
+                }
+            });
+
+            await foreach (var item in channel.Reader.ReadAllAsync())
+            {
+                yield return item;
+            }
+        }
+
+        private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
+        {
             try
             {
-                PathToObject(temp, Directory.GetDirectories(folder), "folder");
-                PathToObject(temp, Directory.GetFiles(folder), "file");
+                var size = await Task.Run(() => GetDirectorySize(path));
+                _dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Print("Error retrieving large files for path {0}: {1}", folder, ex.ToString());
-            }
-
-            return temp;
-        }
-
-        void PathToObject(List<FileSearchItem> target, string[] paths, string type)
-        {
-            foreach (var path in paths)
-            {
-                string name = System.IO.Path.GetFileName(path);
-                long size = type == "file" ? new System.IO.FileInfo(path).Length : DirSize(new DirectoryInfo(path));
-                ObservableCollection<FileSearchItem>? subdirectories = null; //type == "folder" ? new ObservableCollection<FileSearchItem>(FindFilesForFolder(path)) : null;
-
-                target.Add(
-                    new FileSearchItem(
-                        name, 
-                        type == "folder" ? path : "", 
-                        type, 
-                        size,
-                        subdirectories
-                    )
-                );
+                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", path, ex.ToString());
             }
         }
 
-
-        // Source - https://stackoverflow.com/a/468131
-        // Posted by hao, modified by community. See post 'Timeline' for change history
-        // Retrieved 2026-02-07, License - CC BY-SA 3.0
-        public static long DirSize(DirectoryInfo d)
+        private static long GetDirectorySize(string folder)
         {
-            try
+            long size = 0;
+            var directories = new Stack<string>();
+            directories.Push(folder);
+
+            while (directories.Count > 0)
             {
-                long size = 0;
-                // Add file sizes.
-                FileInfo[] fis = d.GetFiles();
-                foreach (FileInfo fi in fis)
+                var current = directories.Pop();
+
+                try
                 {
-                    size += fi.Length;
+                    foreach (var file in Directory.EnumerateFiles(current))
+                    {
+                        try
+                        {
+                            size += new FileInfo(file).Length;
+                        }
+                        catch
+                        {
+                            System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
+                        }
+                    }
                 }
-                // Add subdirectory sizes.
-                DirectoryInfo[] dis = d.GetDirectories();
-                foreach (DirectoryInfo di in dis)
+                catch
                 {
-                    size += DirSize(di);
                 }
-                return size;
-            } catch
-            {
-                return 0;
+
+                try
+                {
+                    foreach (var dir in Directory.EnumerateDirectories(current))
+                    {
+                        directories.Push(dir);
+                    }
+                }
+                catch
+                {
+                }
             }
+
+            return size;
         }
 
         public void ResetBreadCrumb(int index)
@@ -234,3 +268,4 @@ namespace Winspeqt.ViewModels.Optimization
         }
     }
 }
+

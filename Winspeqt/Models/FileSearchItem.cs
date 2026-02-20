@@ -1,31 +1,55 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Reflection;
+using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.Models
 {
-    public class FileSearchItem
+    public class FileSearchItem : ObservableObject
     {
         public string Name { get; }
         
         public string FilePath { get; }
         public string Type { get; }
-        public int Size { get; }
-        public DataSize DataLabel { get; private set; }
+        private int _size;
+        public int Size
+        {
+            get => _size;
+            set => SetProperty(ref _size, value);
+        }
 
-        public ObservableCollection<FileSearchItem>? SubDirectories { get; set; }
+        private DataSize _dataLabel;
+        public DataSize DataLabel
+        {
+            get => _dataLabel;
+            private set => SetProperty(ref _dataLabel, value);
+        }
 
-        public FileSearchItem(string name, string path, string type, long size, ObservableCollection<FileSearchItem>? subdirectories)
+        private bool _finished;
+        public bool Finished 
+        { 
+            get => _finished; 
+            private set => SetProperty(ref _finished, value); 
+        }
+
+        public FileSearchItem(string name, string path, string type, long size, bool finished)
         {
             Name = name;
             FilePath = path;
             Type = type;
-            Size = ReduceSize(size);
-            SubDirectories = subdirectories;
+            UpdateSize(size);
+            Finished = finished;
         }
 
-        private int ReduceSize(long size)
+        public void UpdateSize(long size)
+        {
+            var result = ReduceSize(size);
+            Size = result.size;
+            DataLabel = result.label;
+            Finished = true;
+        }
+
+        private static (int size, DataSize label) ReduceSize(long size)
         {
             int iterations = 0;
             while (size >= 1024)
@@ -33,8 +57,7 @@ namespace Winspeqt.Models
                 size = size / 1024;
                 iterations++;
             }
-            DataLabel = (DataSize)iterations;
-            return Convert.ToInt32(size);
+            return (Convert.ToInt32(size), (DataSize)iterations);
         }
     }
 }
