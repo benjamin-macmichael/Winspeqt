@@ -81,6 +81,8 @@ namespace Winspeqt.ViewModels.Monitoring
             _startupEnumerator = new StartupEnumerator();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             _groupDefinitions = BuildGroupDefinitions();
+            _startupApp = new StartupApp();
+            _startupAppGroups = [];
 
             IsLoading = true;
             ShowAdvancedSettings = false;

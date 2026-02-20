@@ -115,7 +115,7 @@ namespace Winspeqt.Views.Monitoring
         /// <summary>
         /// Starts a process using shell execute and logs failures.
         /// </summary>
-        private static void TryStartProcess(string fileName, string arguments, string errorContext)
+        private static void TryStartProcess(string fileName, string? arguments, string errorContext)
         {
             try
             {
