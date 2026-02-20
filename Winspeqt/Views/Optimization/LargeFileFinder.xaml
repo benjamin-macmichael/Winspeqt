@@ -12,6 +12,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <!-- Converters for glyphs, visibility, and size-based coloring. -->
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
@@ -65,6 +66,7 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
+                <!-- Error and loading status -->
                 <TextBlock
                     Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -92,6 +94,7 @@
                         Width="20"
                         Height="20" />
                 </StackPanel>
+                <!-- Sorting and actions -->
                 <Grid MaxWidth="750" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -129,6 +132,7 @@
                     HorizontalAlignment="Stretch"
                     >
                 </StackPanel>
+                <!-- Breadcrumb navigation -->
                 <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
                           MaxWidth="750"
                           HorizontalAlignment="Stretch"
@@ -172,6 +176,7 @@
                    Width="750" 
                    Fill="Black" 
                    HorizontalAlignment="Center"/>
+                <!-- Folder and file results -->
                 <ItemsRepeater ItemsSource="{Binding FolderItems, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>

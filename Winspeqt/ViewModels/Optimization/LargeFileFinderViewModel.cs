@@ -17,11 +17,18 @@ using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.ViewModels.Optimization
 {
+    /// <summary>
+    /// View model for the Large File Finder page, including folder navigation and size calculation.
+    /// </summary>
     public class LargeFileFinderViewModel : ObservableObject
     {
+        // Dispatcher captured for UI-thread updates (e.g., size calculation completion).
         private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
 
         private ObservableCollection<FileSearchItem> _folderItems = new();
+        /// <summary>
+        /// Current folder contents displayed in the list.
+        /// </summary>
         public ObservableCollection<FileSearchItem> FolderItems 
         {
             get => _folderItems;
@@ -29,6 +36,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         private ObservableCollection<PathItem> _pathItems = new();
+        /// <summary>
+        /// Breadcrumb path items from root to current folder.
+        /// </summary>
         public ObservableCollection<PathItem> PathItems
         {
             get => _pathItems;
@@ -36,6 +46,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         private bool _isLoading;
+        /// <summary>
+        /// Indicates whether the view is loading or recalculating folder sizes.
+        /// </summary>
         public bool IsLoading
         {
             get => _isLoading;
@@ -48,9 +61,15 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// Opacity for list items while loading, to signal background work.
+        /// </summary>
         public double FolderItemOpacity => IsLoading ? 0.5 : 1.0;
 
         private bool _hasError;
+        /// <summary>
+        /// True when the view model encountered an error.
+        /// </summary>
         public bool HasError
         {
             get => _hasError;
@@ -58,6 +77,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         private string _errorMessage = string.Empty;
+        /// <summary>
+        /// User-facing error message shown when <see cref="HasError"/> is true.
+        /// </summary>
         public string ErrorMessage
         {
             get => _errorMessage;
@@ -65,6 +87,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         private string _selectedSortOption = "Default";
+        /// <summary>
+        /// Current sort option ("Default", "Name", or "Size").
+        /// </summary>
         public string SelectedSortOption
         {
             get => _selectedSortOption;
@@ -77,8 +102,14 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// List of available sort options for the UI.
+        /// </summary>
         public ObservableCollection<string> SortOptions { get; set; }
 
+        /// <summary>
+        /// Initializes a new view model with default collections and sort options.
+        /// </summary>
         public LargeFileFinderViewModel()
         {
             FolderItems = [];
@@ -86,6 +117,9 @@ namespace Winspeqt.ViewModels.Optimization
             SortOptions = new ObservableCollection<string> { "Default", "Name", "Size" };
         }
 
+        /// <summary>
+        /// Loads the initial folder (user profile) and builds the breadcrumb path.
+        /// </summary>
         public async Task LoadAsync()
         {
             IsLoading = true;
@@ -112,6 +146,7 @@ namespace Winspeqt.ViewModels.Optimization
                 
             }
 
+            // Build breadcrumb from root to the user profile directory.
             for (int i = systemDirectories.Count - 1; i >= 0; i--)
             {
                 PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
@@ -120,6 +155,9 @@ namespace Winspeqt.ViewModels.Optimization
             await RetrieveFolderItems(initialFolder);
         }
 
+        /// <summary>
+        /// Retrieves and displays the contents of <paramref name="folder"/>.
+        /// </summary>
         public async Task RetrieveFolderItems(string folder)
         {
             IsLoading = true;
@@ -139,6 +177,7 @@ namespace Winspeqt.ViewModels.Optimization
             var sizeTaskArray = sizeTasks.ToArray();
             if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
             {
+                // Re-sort once background folder size calculations complete.
                 _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
                 {
                     _dispatcher.TryEnqueue(SortFiles);
@@ -146,6 +185,9 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// Enumerates files and directories asynchronously while starting folder size calculations.
+        /// </summary>
         private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(string folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
         {
             var channel = Channel.CreateUnbounded<FileSearchItem>();
@@ -185,6 +227,9 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// Calculates folder size in the background and updates the item on the UI thread.
+        /// </summary>
         private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
         {
             try
@@ -198,6 +243,9 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// Computes total size of all files under <paramref name="folder"/>, ignoring access failures.
+        /// </summary>
         private static long GetDirectorySize(string folder)
         {
             long size = 0;
@@ -224,6 +272,7 @@ namespace Winspeqt.ViewModels.Optimization
                 }
                 catch
                 {
+                    // Access denied or transient IO error; skip files in this directory.
                 }
 
                 try
@@ -235,18 +284,25 @@ namespace Winspeqt.ViewModels.Optimization
                 }
                 catch
                 {
+                    // Access denied or transient IO error; skip subdirectories.
                 }
             }
 
             return size;
         }
 
+        /// <summary>
+        /// Truncates breadcrumb items to the specified index.
+        /// </summary>
         public void ResetBreadCrumb(int index)
         {
             IEnumerable<PathItem> test = PathItems.Take(index + 1);
             PathItems = new ObservableCollection<PathItem>(test);
         }
 
+        /// <summary>
+        /// Sorts <see cref="FolderItems"/> based on <see cref="SelectedSortOption"/>.
+        /// </summary>
         public void SortFiles()
         {
             IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
