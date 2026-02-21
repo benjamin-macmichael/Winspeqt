@@ -1,30 +1,38 @@
-﻿using Microsoft.UI.Xaml.Shapes;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
-using static Winspeqt.Models.Enums;
 
 namespace Winspeqt.ViewModels.Optimization
 {
+    /// <summary>
+    /// View model for the Large File Finder page, including folder navigation and size calculation.
+    /// </summary>
     public class LargeFileFinderViewModel : ObservableObject
     {
+        // Dispatcher captured for UI-thread updates (e.g., size calculation completion).
         private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
 
         private ObservableCollection<FileSearchItem> _folderItems = new();
-        public ObservableCollection<FileSearchItem> FolderItems 
+        /// <summary>
+        /// Current folder contents displayed in the list.
+        /// </summary>
+        public ObservableCollection<FileSearchItem> FolderItems
         {
             get => _folderItems;
             set => SetProperty(ref _folderItems, value);
         }
 
         private ObservableCollection<PathItem> _pathItems = new();
+        /// <summary>
+        /// Breadcrumb path items from root to current folder.
+        /// </summary>
         public ObservableCollection<PathItem> PathItems
         {
             get => _pathItems;
@@ -32,13 +40,50 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         private bool _isLoading;
+        /// <summary>
+        /// Indicates whether the view is loading or recalculating folder sizes.
+        /// </summary>
         public bool IsLoading
         {
             get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            set
+            {
+                if (SetProperty(ref _isLoading, value))
+                {
+                    OnPropertyChanged(nameof(FolderItemOpacity));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Opacity for list items while loading, to signal background work.
+        /// </summary>
+        public double FolderItemOpacity => IsLoading ? 0.5 : 1.0;
+
+        private bool _hasError;
+        /// <summary>
+        /// True when the view model encountered an error.
+        /// </summary>
+        public bool HasError
+        {
+            get => _hasError;
+            set => SetProperty(ref _hasError, value);
+        }
+
+        private string _errorMessage = string.Empty;
+        /// <summary>
+        /// User-facing error message shown when <see cref="HasError"/> is true.
+        /// </summary>
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetProperty(ref _errorMessage, value);
         }
 
         private string _selectedSortOption = "Default";
+        /// <summary>
+        /// Current sort option ("Default", "Name", or "Size").
+        /// </summary>
         public string SelectedSortOption
         {
             get => _selectedSortOption;
@@ -51,9 +96,14 @@ namespace Winspeqt.ViewModels.Optimization
             }
         }
 
+        /// <summary>
+        /// List of available sort options for the UI.
+        /// </summary>
         public ObservableCollection<string> SortOptions { get; set; }
 
-
+        /// <summary>
+        /// Initializes a new view model with default collections and sort options.
+        /// </summary>
         public LargeFileFinderViewModel()
         {
             FolderItems = [];
@@ -61,108 +111,192 @@ namespace Winspeqt.ViewModels.Optimization
             SortOptions = new ObservableCollection<string> { "Default", "Name", "Size" };
         }
 
+        /// <summary>
+        /// Loads the initial folder (user profile) and builds the breadcrumb path.
+        /// </summary>
         public async Task LoadAsync()
         {
             IsLoading = true;
+            HasError = false;
+            ErrorMessage = string.Empty;
 
             string initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (string.IsNullOrWhiteSpace(initialFolder))
+            {
+                IsLoading = false;
+                HasError = true;
+                ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
+                return;
+            }
+
+            DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
+            List<DirectoryInfo> systemDirectories = new List<DirectoryInfo>();
+
+            while (parentDirectory != null)
+            {
+                systemDirectories.Add(parentDirectory);
+                parentDirectory = Directory.GetParent(parentDirectory.FullName);
+
+            }
+
+            // Build breadcrumb from root to the user profile directory.
+            for (int i = systemDirectories.Count - 1; i >= 0; i--)
+            {
+                PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
+            }
 
             await RetrieveFolderItems(initialFolder);
         }
 
+        /// <summary>
+        /// Retrieves and displays the contents of <paramref name="folder"/>.
+        /// </summary>
         public async Task RetrieveFolderItems(string folder)
         {
             IsLoading = true;
 
             PathItems.Add(new PathItem(folder, PathItems.Count));
 
-            var items = await Task.Run(() => BuildFolderItems(folder));
-
-            _dispatcher.TryEnqueue(() =>
+            FolderItems.Clear();
+            var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
+            await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
             {
-                FolderItems.Clear();
-                foreach (var item in items)
+                FolderItems.Add(item);
+            }
+
+            SortFiles();
+            IsLoading = false;
+
+            var sizeTaskArray = sizeTasks.ToArray();
+            if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
+            {
+                // Re-sort once background folder size calculations complete.
+                _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
                 {
-                    FolderItems.Add(item);
-                }
-
-                SortFiles();
-
-                IsLoading = false;
-            });
+                    _dispatcher.TryEnqueue(SortFiles);
+                }, TaskScheduler.Default);
+            }
         }
 
-        private List<FileSearchItem> BuildFolderItems(string folder)
+        /// <summary>
+        /// Enumerates files and directories asynchronously while starting folder size calculations.
+        /// </summary>
+        private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(string folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
         {
-            List<FileSearchItem> temp = [];
+            var channel = Channel.CreateUnbounded<FileSearchItem>();
 
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    foreach (var dir in Directory.EnumerateDirectories(folder))
+                    {
+                        var name = System.IO.Path.GetFileName(dir);
+                        var item = new FileSearchItem(name, dir, "folder", 0, false);
+                        channel.Writer.TryWrite(item);
+                        sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
+                    }
+
+                    foreach (var file in Directory.EnumerateFiles(folder))
+                    {
+                        var name = System.IO.Path.GetFileName(file);
+                        var size = new System.IO.FileInfo(file).Length;
+                        channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, true));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Print("Error retrieving large files for path {0}: {1}", folder, ex.ToString());
+                }
+                finally
+                {
+                    channel.Writer.Complete();
+                }
+            });
+
+            await foreach (var item in channel.Reader.ReadAllAsync())
+            {
+                yield return item;
+            }
+        }
+
+        /// <summary>
+        /// Calculates folder size in the background and updates the item on the UI thread.
+        /// </summary>
+        private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
+        {
             try
             {
-                PathToObject(temp, Directory.GetDirectories(folder), "folder");
-                PathToObject(temp, Directory.GetFiles(folder), "file");
+                var size = await Task.Run(() => GetDirectorySize(path));
+                _dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Print("Error retrieving large files for path {0}: {1}", folder, ex.ToString());
+                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", path, ex.ToString());
             }
-
-            return temp;
         }
 
-        void PathToObject(List<FileSearchItem> target, string[] paths, string type)
+        /// <summary>
+        /// Computes total size of all files under <paramref name="folder"/>, ignoring access failures.
+        /// </summary>
+        private static long GetDirectorySize(string folder)
         {
-            foreach (var path in paths)
-            {
-                string name = System.IO.Path.GetFileName(path);
-                long size = type == "file" ? new System.IO.FileInfo(path).Length : DirSize(new DirectoryInfo(path));
-                ObservableCollection<FileSearchItem>? subdirectories = null; //type == "folder" ? new ObservableCollection<FileSearchItem>(FindFilesForFolder(path)) : null;
+            long size = 0;
+            var directories = new Stack<string>();
+            directories.Push(folder);
 
-                target.Add(
-                    new FileSearchItem(
-                        name, 
-                        type == "folder" ? path : "", 
-                        type, 
-                        size,
-                        subdirectories
-                    )
-                );
+            while (directories.Count > 0)
+            {
+                var current = directories.Pop();
+
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(current))
+                    {
+                        try
+                        {
+                            size += new FileInfo(file).Length;
+                        }
+                        catch
+                        {
+                            System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Access denied or transient IO error; skip files in this directory.
+                }
+
+                try
+                {
+                    foreach (var dir in Directory.EnumerateDirectories(current))
+                    {
+                        directories.Push(dir);
+                    }
+                }
+                catch
+                {
+                    // Access denied or transient IO error; skip subdirectories.
+                }
             }
+
+            return size;
         }
 
-
-        // Source - https://stackoverflow.com/a/468131
-        // Posted by hao, modified by community. See post 'Timeline' for change history
-        // Retrieved 2026-02-07, License - CC BY-SA 3.0
-        public static long DirSize(DirectoryInfo d)
-        {
-            try
-            {
-                long size = 0;
-                // Add file sizes.
-                FileInfo[] fis = d.GetFiles();
-                foreach (FileInfo fi in fis)
-                {
-                    size += fi.Length;
-                }
-                // Add subdirectory sizes.
-                DirectoryInfo[] dis = d.GetDirectories();
-                foreach (DirectoryInfo di in dis)
-                {
-                    size += DirSize(di);
-                }
-                return size;
-            } catch
-            {
-                return 0;
-            }
-        }
-
+        /// <summary>
+        /// Truncates breadcrumb items to the specified index.
+        /// </summary>
         public void ResetBreadCrumb(int index)
         {
             IEnumerable<PathItem> test = PathItems.Take(index + 1);
             PathItems = new ObservableCollection<PathItem>(test);
         }
 
+        /// <summary>
+        /// Sorts <see cref="FolderItems"/> based on <see cref="SelectedSortOption"/>.
+        /// </summary>
         public void SortFiles()
         {
             IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
@@ -170,11 +304,11 @@ namespace Winspeqt.ViewModels.Optimization
             if (this.SelectedSortOption == "Name")
             {
                 listItems = listItems.OrderBy(item => item.Name);
-            } 
+            }
             else if (this.SelectedSortOption == "Size")
             {
                 listItems = listItems.OrderByDescending(item => item.Size).OrderByDescending(item => item.DataLabel);
-            } 
+            }
             else
             {
                 listItems = listItems.OrderBy(item => item.Name).OrderByDescending(item => item.Type);
@@ -184,3 +318,4 @@ namespace Winspeqt.ViewModels.Optimization
         }
     }
 }
+

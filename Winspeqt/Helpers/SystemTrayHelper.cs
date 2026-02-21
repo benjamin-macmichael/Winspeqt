@@ -226,9 +226,9 @@ namespace Winspeqt.Helpers
             {
                 IntPtr hMenu = CreatePopupMenu();
 
-                InsertMenu(hMenu, 0, MF_STRING, (UIntPtr)IDM_OPEN, "Open Winspeqt");
+                InsertMenu(hMenu, 0, MF_STRING, IDM_OPEN, "Open Winspeqt");
                 InsertMenu(hMenu, 1, MF_SEPARATOR, UIntPtr.Zero, null);
-                InsertMenu(hMenu, 2, MF_STRING, (UIntPtr)IDM_EXIT, "Exit");
+                InsertMenu(hMenu, 2, MF_STRING, IDM_EXIT, "Exit");
 
                 POINT pt;
                 GetCursorPos(out pt);
