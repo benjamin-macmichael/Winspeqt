@@ -31,6 +31,7 @@
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
 	<None Remove="Views\Security\SettingRecommendationsPage.xaml" />
+	<None Remove="Views\SettingsPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="views\security\Networksecuritypage.xaml" />
@@ -81,6 +82,9 @@
     <None Update="Views\Security\NetworkSecurityPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <Page Update="Views\SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Folder Include="ViewModels\Optimization\NewFolder\" />
   </ItemGroup>
   <ItemGroup>
