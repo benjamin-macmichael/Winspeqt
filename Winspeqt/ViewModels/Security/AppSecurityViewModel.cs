@@ -17,7 +17,7 @@ namespace Winspeqt.ViewModels.Security
         private readonly AppSecurityService _securityService;
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly SemaphoreSlim _scanLock = new SemaphoreSlim(1, 1);
-        private Microsoft.UI.Xaml.XamlRoot _xamlRoot;
+        private Microsoft.UI.Xaml.XamlRoot? _xamlRoot;
         private static DateTime? _lastSourceUpdate = null;
         private static readonly TimeSpan SourceUpdateCooldown = TimeSpan.FromHours(6); // Only update every 6 hours
 
@@ -40,7 +40,7 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _hasScanned, value);
         }
 
-        private string _statusMessage;
+        private string _statusMessage = string.Empty;
         public string StatusMessage
         {
             get => _statusMessage;
@@ -108,7 +108,7 @@ namespace Winspeqt.ViewModels.Security
             }
         }
 
-        private AppSecurityInfo _selectedApp;
+        private AppSecurityInfo _selectedApp = new();
         public AppSecurityInfo SelectedApp
         {
             get => _selectedApp;
@@ -267,7 +267,7 @@ namespace Winspeqt.ViewModels.Security
                 }
                 else
                 {
-                    var timeSinceUpdate = DateTime.Now - _lastSourceUpdate.Value;
+                    var timeSinceUpdate = _lastSourceUpdate.HasValue ? (DateTime.Now - _lastSourceUpdate.Value) : System.TimeSpan.FromMinutes(0);
                     System.Diagnostics.Debug.WriteLine($"Skipping WinGet source update - last updated {timeSinceUpdate.TotalMinutes:F1} minutes ago");
 
                     await DispatchAsync(() =>
@@ -646,7 +646,7 @@ namespace Winspeqt.ViewModels.Security
             }
         }
 
-        private async Task<string> GetLocalWinGetVersionAsync()
+        private async Task<string?> GetLocalWinGetVersionAsync()
         {
             try
             {
@@ -678,7 +678,7 @@ namespace Winspeqt.ViewModels.Security
             return null;
         }
 
-        private async Task<string> GetLatestWinGetVersionAsync()
+        private async Task<string?> GetLatestWinGetVersionAsync()
         {
             try
             {
