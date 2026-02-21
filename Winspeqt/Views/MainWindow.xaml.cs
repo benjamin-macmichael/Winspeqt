@@ -81,5 +81,10 @@ namespace Winspeqt.Views
             _appUsageService?.Dispose();
             _systemTrayHelper?.Dispose();
         }
+
+        private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAN__rlZTTtUNVBIVU5GRDJaUVVJT0lFQVNRSkJJUVY5RC4u"));
+        }
     }
 }

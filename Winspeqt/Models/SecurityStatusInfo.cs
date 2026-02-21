@@ -2,10 +2,12 @@
 {
     public class SecurityStatusInfo
     {
-        public SecurityComponentStatus WindowsDefenderStatus { get; set; } = new SecurityComponentStatus();
-        public SecurityComponentStatus FirewallStatus { get; set; } = new SecurityComponentStatus();
-        public SecurityComponentStatus WindowsUpdateStatus { get; set; } = new SecurityComponentStatus();
-        public SecurityComponentStatus BitLockerStatus { get; set; } = new SecurityComponentStatus();
+        public SecurityComponentStatus WindowsDefenderStatus { get; set; }
+        public SecurityComponentStatus FirewallStatus { get; set; }
+        public SecurityComponentStatus WindowsUpdateStatus { get; set; }
+        public SecurityComponentStatus BitLockerStatus { get; set; }
+        public SecurityComponentStatus DriveHealthStatus { get; set; }
+        public SecurityComponentStatus SecureBootStatus { get; set; }
         public int OverallSecurityScore { get; set; }
         public string OverallStatus { get; set; } = "";
     }
