@@ -4,9 +4,9 @@ namespace Winspeqt.Models
 {
     public class AppUsageModel
     {
-        public string AppName { get; set; }
-        public string ProcessName { get; set; }
-        public string IconPath { get; set; }
+        public string AppName { get; set; } = string.Empty;
+        public string ProcessName { get; set; } = string.Empty;
+        public string IconPath { get; set; } = string.Empty;
         public TimeSpan TotalUsageTime { get; set; }
         public DateTime LastUsed { get; set; }
         public int LaunchCount { get; set; }
@@ -59,13 +59,13 @@ namespace Winspeqt.Models
 
     public class InstalledAppModel
     {
-        public string AppName { get; set; }
-        public string Publisher { get; set; }
-        public string Version { get; set; }
+        public string AppName { get; set; } = string.Empty;
+        public string Publisher { get; set; } = string.Empty;
+        public string Version { get; set; } = string.Empty;
         public DateTime? InstallDate { get; set; }
         public DateTime? LastUsed { get; set; }
         public long SizeInBytes { get; set; }
-        public string UninstallString { get; set; }
+        public string? UninstallString { get; set; }
 
         public string FormattedSize
         {
@@ -124,7 +124,7 @@ namespace Winspeqt.Models
         public TimeSpan TotalScreenTime { get; set; }
         public int TotalAppsUsed { get; set; }
         public int ActiveApps { get; set; }
-        public string MostUsedApp { get; set; }
+        public string MostUsedApp { get; set; } = string.Empty;
         public DateTime TrackingStartTime { get; set; }
     }
 }

@@ -16,12 +16,12 @@ namespace Winspeqt.ViewModels.Security
         private readonly DispatcherQueue _dispatcherQueue;
 
         private bool _isMonitoring;
-        private string _statusMessage;
+        private string _statusMessage = string.Empty;
         private int _totalConnections;
         private int _listeningPorts;
         private int _riskyConnections;
-        private string _totalTrafficSent;
-        private string _totalTrafficReceived;
+        private string _totalTrafficSent = string.Empty;
+        private string _totalTrafficReceived = string.Empty;
 
         public ObservableCollection<NetworkConnection> ActiveConnections { get; }
         public ObservableCollection<NetworkTrafficStats> TrafficStats { get; }
@@ -168,7 +168,7 @@ namespace Winspeqt.ViewModels.Security
             });
         }
 
-        private void OnConnectionsUpdated(object sender, System.Collections.Generic.List<NetworkConnection> connections)
+        private void OnConnectionsUpdated(object? sender, System.Collections.Generic.List<NetworkConnection> connections)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -184,7 +184,7 @@ namespace Winspeqt.ViewModels.Security
             });
         }
 
-        private void OnTrafficStatsUpdated(object sender, System.Collections.Generic.List<NetworkTrafficStats> stats)
+        private void OnTrafficStatsUpdated(object? sender, System.Collections.Generic.List<NetworkTrafficStats> stats)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -202,7 +202,7 @@ namespace Winspeqt.ViewModels.Security
             });
         }
 
-        private void OnOpenPortsDetected(object sender, System.Collections.Generic.List<PortScanResult> ports)
+        private void OnOpenPortsDetected(object? sender, System.Collections.Generic.List<PortScanResult> ports)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -214,7 +214,7 @@ namespace Winspeqt.ViewModels.Security
             });
         }
 
-        private void OnSecurityAlertRaised(object sender, string alert)
+        private void OnSecurityAlertRaised(object? sender, string alert)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
@@ -242,9 +242,9 @@ namespace Winspeqt.ViewModels.Security
             return $"{len:0.##} {sizes[order]}";
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -254,19 +254,19 @@ namespace Winspeqt.ViewModels.Security
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
+        private readonly Func<bool>? _canExecute;
 
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
 
-        public void Execute(object parameter) => _execute();
+        public void Execute(object? parameter) => _execute();
 
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }

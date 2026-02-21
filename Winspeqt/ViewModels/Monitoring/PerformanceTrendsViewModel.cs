@@ -21,7 +21,7 @@ namespace Winspeqt.ViewModels.Monitoring
     {
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
-        private System.Threading.Timer _refreshTimer;
+        private System.Threading.Timer? _refreshTimer;
 
         const int _secondsTracked = 60;
 
@@ -120,7 +120,7 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _isLoading, value);
         }
 
-        private string _cpuStatusMessage;
+        private string _cpuStatusMessage = string.Empty;
         public string CpuStatusMessage
         {
             get => _cpuStatusMessage;

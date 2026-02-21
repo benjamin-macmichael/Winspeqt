@@ -11,13 +11,13 @@ namespace Winspeqt.Models
 
         // Extended info for Task Manager view
         public int ProcessId { get; set; }
-        public string ProcessName { get; set; }
-        public string Description { get; set; }
+        public string ProcessName { get; set; } = "";
+        public string Description { get; set; } = "";
         public double CpuUsagePercent { get; set; }
         public long MemoryUsageMB { get; set; }
-        public string Status { get; set; }
-        public string FriendlyExplanation { get; set; }
-        public string Icon { get; set; }
+        public string Status { get; set; } = "";
+        public string FriendlyExplanation { get; set; } = "";
+        public string Icon { get; set; } = "";
 
         // Category for grouping processes
         public ProcessCategory Category { get; set; } = ProcessCategory.Other;
