@@ -18,6 +18,11 @@ namespace Winspeqt.Views
             ViewModel.NavigationRequested += OnNavigationRequested;
         }
 
+        private void StartupButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.LaunchAtStartup = !ViewModel.LaunchAtStartup;
+        }
+
         private void OnNavigationRequested(object sender, string destination)
         {
             if (destination == "Back" && Frame.CanGoBack)
@@ -29,6 +34,18 @@ namespace Winspeqt.Views
             if (Frame.CanGoBack)
                 Frame.GoBack();
         }
+    }
+
+    public class StartupButtonColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool enabled)
+                return new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    enabled ? Microsoft.UI.ColorHelper.FromArgb(255, 196, 43, 43) : Microsoft.UI.ColorHelper.FromArgb(255, 0, 122, 204));
+            return new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 0, 122, 204));
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
     }
 
     public class InverseBoolConverter : IValueConverter
