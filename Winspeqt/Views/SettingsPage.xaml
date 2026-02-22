@@ -10,6 +10,7 @@
 
     <Page.Resources>
         <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <local:StartupButtonColorConverter x:Key="StartupButtonColorConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -94,20 +95,21 @@
                                 FontWeight="SemiBold"
                                 Foreground="White"/>
                             <TextBlock
-                                Text="{Binding StartupStatusMessage}"
+                                Text="Winspeqt will run quietly at startup, ready to deliver its background features."
                                 FontSize="12"
                                 Foreground="#A0A0A0"
                                 TextWrapping="Wrap"
                                 Margin="0,4,0,0"/>
                         </StackPanel>
 
-                        <!-- Toggle -->
-                        <ToggleSwitch
+                        <Button
                             Grid.Column="2"
-                            IsOn="{Binding LaunchAtStartup, Mode=TwoWay}"
-                            IsEnabled="{Binding IsStartupToggleBusy, Converter={StaticResource InverseBoolConverter}}"
-                            OnContent=""
-                            OffContent=""
+                            Content="{Binding StartupButtonText}"
+                            Click="StartupButton_Click"
+                            Background="{Binding LaunchAtStartup, Converter={StaticResource StartupButtonColorConverter}}"
+                            Foreground="White"
+                            Padding="20,10"
+                            CornerRadius="6"
                             VerticalAlignment="Center"
                             Margin="16,0,0,0"/>
                     </Grid>
