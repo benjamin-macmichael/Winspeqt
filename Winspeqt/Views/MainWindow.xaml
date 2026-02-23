@@ -27,6 +27,7 @@
             VerticalAlignment="Bottom"
             Margin="16"
             Canvas.ZIndex="10"
-            Click="FeedbackButton_Click" />
+            Click="FeedbackButton_Click"
+            Foreground="WhiteSmoke"/>
     </Grid>
 </Window>
