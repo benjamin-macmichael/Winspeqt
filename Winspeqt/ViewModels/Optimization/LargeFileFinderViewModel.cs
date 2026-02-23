@@ -1,4 +1,5 @@
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 
@@ -19,14 +21,14 @@ namespace Winspeqt.ViewModels.Optimization
         // Dispatcher captured for UI-thread updates (e.g., size calculation completion).
         private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
 
-        private ObservableCollection<FileSearchItem> _folderItems = new();
+        private FileSearchTreeNode _activeNode;
         /// <summary>
         /// Current folder contents displayed in the list.
         /// </summary>
-        public ObservableCollection<FileSearchItem> FolderItems
+        public FileSearchTreeNode ActiveNode
         {
-            get => _folderItems;
-            set => SetProperty(ref _folderItems, value);
+            get => _activeNode;
+            set => SetProperty(ref _activeNode, value);
         }
 
         private ObservableCollection<PathItem> _pathItems = new();
@@ -106,7 +108,6 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         public LargeFileFinderViewModel()
         {
-            FolderItems = [];
             PathItems = [];
             SortOptions = new ObservableCollection<string> { "Default", "Name", "Size" };
         }
@@ -129,80 +130,67 @@ namespace Winspeqt.ViewModels.Optimization
                 ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
                 return;
             }
-
             DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
-            List<DirectoryInfo> systemDirectories = new List<DirectoryInfo>();
+            DirectoryInfo rootDirectory = new(initialFolder);
 
             while (parentDirectory != null)
             {
-                systemDirectories.Add(parentDirectory);
+                rootDirectory = parentDirectory;
                 parentDirectory = Directory.GetParent(parentDirectory.FullName);
 
             }
 
-            // Build breadcrumb from root to the user profile directory.
-            for (int i = systemDirectories.Count - 1; i >= 0; i--)
-            {
-                PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
-            }
+            string rootPath = rootDirectory.ToString();
+            string rootName = System.IO.Path.GetFileName(rootDirectory.ToString());
+            rootName = rootName != "" ? rootName : rootPath[..^2];
 
-            await RetrieveFolderItems(initialFolder);
+            FileSearchTreeNode rootNode = new(name: rootName, path: rootPath, type: "folder");
+
+            await RetrieveFolderItems(rootNode);
         }
 
         /// <summary>
         /// Retrieves and displays the contents of <paramref name="folder"/>.
         /// </summary>
-        public async Task RetrieveFolderItems(string folder)
+        public async Task RetrieveFolderItems(FileSearchTreeNode currentNode)
         {
             IsLoading = true;
 
-            PathItems.Add(new PathItem(folder, PathItems.Count));
+            ActiveNode = currentNode;
 
-            FolderItems.Clear();
-            var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
-            await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
+            PathItems.Add(new PathItem(currentNode.Name, PathItems.Count));
+            await foreach (var item in EnumerateFolderItemsAsync(currentNode))
             {
-                FolderItems.Add(item);
+                currentNode.AddChild(item);
             }
 
             SortFiles();
             IsLoading = false;
-
-            var sizeTaskArray = sizeTasks.ToArray();
-            if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
-            {
-                // Re-sort once background folder size calculations complete.
-                _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
-                {
-                    _dispatcher.TryEnqueue(SortFiles);
-                }, TaskScheduler.Default);
-            }
         }
 
         /// <summary>
         /// Enumerates files and directories asynchronously while starting folder size calculations.
         /// </summary>
-        private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(string folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
+        private async IAsyncEnumerable<FileSearchTreeNode> EnumerateFolderItemsAsync(FileSearchTreeNode folder)
         {
-            var channel = Channel.CreateUnbounded<FileSearchItem>();
+            var channel = Channel.CreateUnbounded<FileSearchTreeNode>();
 
             _ = Task.Run(() =>
             {
                 try
                 {
-                    foreach (var dir in Directory.EnumerateDirectories(folder))
+                    foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         var name = System.IO.Path.GetFileName(dir);
-                        var item = new FileSearchItem(name, dir, "folder", 0, false);
+                        var item = new FileSearchTreeNode(name, dir, "folder", folder);
                         channel.Writer.TryWrite(item);
-                        sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
                     }
 
-                    foreach (var file in Directory.EnumerateFiles(folder))
+                    foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                     {
                         var name = System.IO.Path.GetFileName(file);
                         var size = new System.IO.FileInfo(file).Length;
-                        channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, true));
+                        channel.Writer.TryWrite(new FileSearchTreeNode(name, "", "file", folder));
                     }
                 }
                 catch (Exception ex)
@@ -299,7 +287,11 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         public void SortFiles()
         {
-            IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
+            if (ActiveNode == null || ActiveNode.Children == null)
+            {
+                return;
+            }
+            IEnumerable<FileSearchTreeNode> listItems = ActiveNode.Children.Cast<FileSearchTreeNode>();
 
             if (this.SelectedSortOption == "Name")
             {
@@ -314,7 +306,7 @@ namespace Winspeqt.ViewModels.Optimization
                 listItems = listItems.OrderBy(item => item.Name).OrderByDescending(item => item.Type);
             }
 
-            FolderItems = new ObservableCollection<FileSearchItem>(listItems);
+            ActiveNode.Children = [.. listItems];
         }
     }
 }

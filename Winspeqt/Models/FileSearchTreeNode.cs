@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Winspeqt.Models
     /// <summary>
     /// Initializes a new item and derives the display size from the raw byte count.
     /// </summary>
-    public class FileSearchTreeNode(string name, string path, string type) : ObservableObject
+    public class FileSearchTreeNode(string name, string path, string type, FileSearchTreeNode? parent = null) : ObservableObject
     {
         /// <summary>
         /// Display name of the file or folder.
@@ -54,14 +55,14 @@ namespace Winspeqt.Models
             private set => SetProperty(ref _loaded, value);
         }
 
-        private List<FileSearchTreeNode>? _children;
-        public List<FileSearchTreeNode>? Children
+        private ObservableCollection<FileSearchTreeNode>? _children;
+        public ObservableCollection<FileSearchTreeNode>? Children
         {
             get => _children;
             set => SetProperty(ref _children, value);
         }
 
-        private FileSearchTreeNode? _parent;
+        private readonly FileSearchTreeNode? _parent = parent;
         public FileSearchTreeNode? Parent
         {
             get => _parent;
@@ -78,8 +79,13 @@ namespace Winspeqt.Models
 
         public void AddChild(FileSearchTreeNode child)
         {
-            if (Children != null && Type == "folder")
+            if (Type == "folder")
             {
+                if (Children == null)
+                {
+                    Children = [];
+                }
+
                 Children.Add(child);
                 Size += child.Size;
             }
