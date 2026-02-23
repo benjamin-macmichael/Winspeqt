@@ -3,9 +3,6 @@ using System.Windows.Input;
 
 namespace Winspeqt.Helpers
 {
-    /// <summary>
-    /// A basic command implementation for MVVM pattern
-    /// </summary>
     public partial class RelayCommand : ICommand
     {
         private readonly Action _execute;
@@ -35,9 +32,6 @@ namespace Winspeqt.Helpers
         }
     }
 
-    /// <summary>
-    /// A command implementation that accepts a parameter
-    /// </summary>
     public class RelayCommand<T> : ICommand
     {
         private readonly Action<T> _execute;
@@ -54,21 +48,15 @@ namespace Winspeqt.Helpers
         public bool CanExecute(object? parameter)
         {
             if (parameter != null)
-            {
                 return _canExecute == null || _canExecute((T)parameter);
-            }
-
             return false;
         }
 
         public void Execute(object? parameter)
         {
             if (parameter != null)
-            {
                 _execute((T)parameter);
-            }
-
-            throw new InvalidOperationException("Could not execute relayed command");
+            // if parameter is null, do nothing — no throw
         }
 
         public void RaiseCanExecuteChanged()

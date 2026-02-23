@@ -22,6 +22,9 @@ namespace Winspeqt
                 settingsService.SetSetting("StartupDefaultSet", true);
             }
 
+            // Start the background notification manager (rotating health score toasts)
+            NotificationManagerService.Instance.Start();
+
             _window = new Views.MainWindow();
             _window.Activate();
         }
