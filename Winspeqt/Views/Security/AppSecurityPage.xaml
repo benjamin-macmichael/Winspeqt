@@ -21,6 +21,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -31,49 +32,49 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button 
-                Grid.Column="0"
-                Content="← Back"
-                Click="BackButton_Click"
-                Background="Transparent"
-                BorderThickness="0"
-                FontSize="16"
-                Margin="0,0,20,0"
-                VerticalAlignment="Center"/>
+                <Button
+                    Grid.Column="0"
+                    Content="← Back"
+                    Click="BackButton_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Margin="0,0,20,0"
+                    VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
-                    <TextBlock 
-                    Text="App Update Checker" 
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    FontSize="32"
-                    FontWeight="SemiBold"/>
-                    <TextBlock 
-                    Text="Find out which apps need updates to stay secure and run smoothly"
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock
+                        Text="App Update Checker"
+                        Style="{StaticResource TitleTextBlockStyle}"
+                        FontSize="32"
+                        FontWeight="SemiBold"/>
+                    <TextBlock
+                        Text="Find out which apps need updates to stay secure and run smoothly"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
             </Grid>
 
             <!-- Info Banner -->
-            <Border 
-            Grid.Row="1"
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="6"
-            Padding="12"
-            Margin="0,0,0,24">
+            <Border
+                Grid.Row="1"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12"
+                Margin="0,0,0,24">
                 <StackPanel Spacing="4">
-                    <TextBlock 
-                    Text="💡 Tip"
-                    FontWeight="SemiBold"
-                    FontSize="13"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                    <TextBlock 
-                    Text="This scanner uses WinGet to find updates. If an app isn't found, it may not be available in WinGet's catalog. You can still update it manually from the app's official website."
-                    TextWrapping="Wrap"
-                    FontSize="13"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock
+                        Text="💡 Tip"
+                        FontWeight="SemiBold"
+                        FontSize="13"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock
+                        Text="This scanner uses WinGet to find updates. If an app isn't found, it may not be available in WinGet's catalog. You can still update it manually from the app's official website."
+                        TextWrapping="Wrap"
+                        FontSize="13"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
             </Border>
 
@@ -84,165 +85,216 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button 
-                x:Name="ScanButton"
-                Grid.Column="0"
-                Content="🔍 Check for Updates"
-                Command="{x:Bind ViewModel.ScanCommand}"
-                Style="{StaticResource AccentButtonStyle}"
-                Padding="24,12"
-                FontSize="16"
-                Margin="0,0,16,0"/>
+                <Button
+                    x:Name="ScanButton"
+                    Grid.Column="0"
+                    Content="🔍 Check for Updates"
+                    Command="{x:Bind ViewModel.ScanCommand}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Padding="24,12"
+                    FontSize="16"
+                    Margin="0,0,16,0"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="8">
-                    <ProgressRing 
-                    x:Name="ScanningProgress"
-                    Width="24" 
-                    Height="24"
-                    Visibility="Collapsed"/>
-                    <ProgressBar 
-                    x:Name="ScanProgressBar"
-                    Visibility="Collapsed"
-                    Height="4"
-                    Minimum="0"
-                    Maximum="100"
-                    Value="{x:Bind ViewModel.ScanProgress, Mode=OneWay}"/>
-                    <TextBlock 
-                    x:Name="StatusText"
-                    Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    VerticalAlignment="Center"/>
+                    <ProgressRing
+                        x:Name="ScanningProgress"
+                        Width="24"
+                        Height="24"
+                        Visibility="Collapsed"/>
+                    <ProgressBar
+                        x:Name="ScanProgressBar"
+                        Visibility="Collapsed"
+                        Height="4"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="{x:Bind ViewModel.ScanProgress, Mode=OneWay}"/>
+                    <TextBlock
+                        x:Name="StatusText"
+                        Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
 
+            <!-- ═══════════════════════════════════════════════════ -->
+            <!-- Health Score Card (NEW — visible only after scan)  -->
+            <!-- ═══════════════════════════════════════════════════ -->
+            <Border
+                x:Name="HealthScoreCard"
+                Grid.Row="3"
+                Margin="0,0,0,24"
+                Visibility="Collapsed"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Score circle -->
+                    <Grid Grid.Column="0" Width="96" Height="96" Margin="0,0,28,0">
+                        <!-- Track ring -->
+                        <Ellipse
+                            Width="96" Height="96"
+                            Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+                            StrokeThickness="8"
+                            Fill="Transparent"/>
+                        <!-- Filled arc (drawn in code-behind) -->
+                        <Path
+                            x:Name="ScoreArc"
+                            Stroke="#4CAF50"
+                            StrokeThickness="8"
+                            StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round"
+                            Fill="Transparent"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                        <!-- Score number -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                            <TextBlock
+                                x:Name="ScoreNumber"
+                                Text="{x:Bind ViewModel.HealthScore, Mode=OneWay}"
+                                FontSize="28"
+                                FontWeight="Bold"
+                                HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="/100"
+                                FontSize="11"
+                                Opacity="0.6"
+                                HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Score text -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                        <TextBlock
+                            Text="App Update Health"
+                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                            FontSize="13"
+                            Opacity="0.7"/>
+                        <TextBlock
+                            x:Name="HealthScoreLabelText"
+                            Text="{x:Bind ViewModel.HealthScoreLabel, Mode=OneWay}"
+                            FontSize="26"
+                            FontWeight="SemiBold"/>
+                        <TextBlock
+                            Text="{x:Bind ViewModel.HealthScoreSubtext, Mode=OneWay}"
+                            Style="{StaticResource BodyTextBlockStyle}"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            FontSize="14"
+                            TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <!-- Summary Card -->
             <Border
-            x:Name="SummaryCard"
-            Grid.Row="3" 
-            Margin="0,0,0,24"
-            Visibility="Collapsed"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
-            Padding="20">
+                x:Name="SummaryCard"
+                Grid.Row="4"
+                Margin="0,0,0,24"
+                Visibility="Collapsed"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Summary Message -->
-                    <TextBlock 
-                    Grid.Column="0"
-                    Text="{x:Bind ViewModel.SummaryMessage, Mode=OneWay}"
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    FontSize="16"
-                    TextWrapping="Wrap"
-                    VerticalAlignment="Center"/>
+                    <TextBlock
+                        Grid.Column="0"
+                        Text="{x:Bind ViewModel.SummaryMessage, Mode=OneWay}"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        FontSize="16"
+                        TextWrapping="Wrap"
+                        VerticalAlignment="Center"/>
 
-                    <!-- Stats -->
-                    <StackPanel 
-                    Grid.Column="1" 
-                    Orientation="Horizontal" 
-                    Spacing="24"
-                    Margin="20,0,0,0">
+                    <StackPanel
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="24"
+                        Margin="20,0,0,0">
 
-                        <!-- Critical -->
                         <StackPanel x:Name="CriticalStack" Spacing="4" Visibility="Collapsed">
-                            <TextBlock 
-                            Text="🔴"
-                            FontSize="24"
-                            HorizontalAlignment="Center"/>
-                            <TextBlock 
-                            Text="{x:Bind ViewModel.CriticalAppsCount, Mode=OneWay}"
-                            FontSize="20"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Center"/>
-                            <TextBlock 
-                            Text="Critical"
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"/>
+                            <TextBlock Text="🔴" FontSize="24" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="{x:Bind ViewModel.CriticalAppsCount, Mode=OneWay}"
+                                FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Critical" FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Outdated -->
                         <StackPanel x:Name="OutdatedStack" Spacing="4" Visibility="Collapsed">
-                            <TextBlock 
-                            Text="⚠️"
-                            FontSize="24"
-                            HorizontalAlignment="Center"/>
-                            <TextBlock 
-                            Text="{x:Bind ViewModel.OutdatedAppsCount, Mode=OneWay}"
-                            FontSize="20"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Center"/>
-                            <TextBlock 
-                            Text="Outdated"
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"/>
+                            <TextBlock Text="⚠️" FontSize="24" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="{x:Bind ViewModel.OutdatedAppsCount, Mode=OneWay}"
+                                FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Outdated" FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Up to Date -->
                         <StackPanel Spacing="4">
-                            <TextBlock 
-                            Text="✓"
-                            FontSize="24"
-                            HorizontalAlignment="Center"
-                            Foreground="#4CAF50"/>
-                            <TextBlock 
-                            Text="{x:Bind ViewModel.UpToDateAppsCount, Mode=OneWay}"
-                            FontSize="20"
-                            FontWeight="Bold"
-                            HorizontalAlignment="Center"/>
-                            <TextBlock 
-                            Text="Up to Date"
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="✓" FontSize="24"
+                                HorizontalAlignment="Center"
+                                Foreground="#4CAF50"/>
+                            <TextBlock
+                                Text="{x:Bind ViewModel.UpToDateAppsCount, Mode=OneWay}"
+                                FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock
+                                Text="Up to Date" FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Apps List -->
-            <Grid x:Name="AppsList" Grid.Row="4" Visibility="Collapsed">
+            <Grid x:Name="AppsList" Grid.Row="5" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Filter -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="16" Margin="0,0,0,16">
-                    <ComboBox 
-                    Header="Filter"
-                    ItemsSource="{x:Bind ViewModel.FilterOptions}"
-                    SelectedItem="{x:Bind ViewModel.FilterOption, Mode=TwoWay}"
-                    Width="200"
-                    FontSize="15"/>
-
+                    <ComboBox
+                        Header="Filter"
+                        ItemsSource="{x:Bind ViewModel.FilterOptions}"
+                        SelectedItem="{x:Bind ViewModel.FilterOption, Mode=TwoWay}"
+                        Width="200"
+                        FontSize="15"/>
                     <ToggleButton
-                    x:Name="ShowTechnicalToggle"
-                    Content="🔧 Show Technical Details"
-                    Padding="12,8"
-                    FontSize="14"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,0,2"/>
+                        x:Name="ShowTechnicalToggle"
+                        Content="🔧 Show Technical Details"
+                        Padding="12,8"
+                        FontSize="14"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,2"/>
                 </StackPanel>
 
-                <!-- List -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{x:Bind ViewModel.FilteredApps, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:AppSecurityInfo">
-                                <Border 
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="20"
-                                Margin="0,0,0,12">
+                                <Border
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="20"
+                                    Margin="0,0,0,12">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -250,130 +302,111 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Status Icon -->
-                                        <TextBlock 
-                                        Grid.Column="0"
-                                        Text="{x:Bind StatusIcon}"
-                                        FontSize="32"
-                                        VerticalAlignment="Center"
-                                        Margin="0,0,16,0"/>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Text="{x:Bind StatusIcon}"
+                                            FontSize="32"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,16,0"/>
 
-                                        <!-- App Info -->
                                         <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
-                                            <TextBlock 
-                                            Text="{x:Bind AppName}"
-                                            Style="{StaticResource BodyStrongTextBlockStyle}"
-                                            FontSize="17"/>
-
-                                            <!-- Simple status message -->
-                                            <TextBlock 
-                                            Text="{x:Bind StatusMessage}"
-                                            Style="{StaticResource BodyTextBlockStyle}"
-                                            FontSize="14"
-                                            TextWrapping="Wrap"/>
-
-                                            <!-- Version info - simplified -->
-                                            <TextBlock 
-                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            FontSize="13">
-                                            <Run Text="Your version:"/>
-                                            <Run Text="{x:Bind InstalledVersion}" FontWeight="SemiBold"/>
+                                            <TextBlock
+                                                Text="{x:Bind AppName}"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                FontSize="17"/>
+                                            <TextBlock
+                                                Text="{x:Bind StatusMessage}"
+                                                Style="{StaticResource BodyTextBlockStyle}"
+                                                FontSize="14"
+                                                TextWrapping="Wrap"/>
+                                            <TextBlock
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                FontSize="13">
+                                                <Run Text="Your version:"/>
+                                                <Run Text="{x:Bind InstalledVersion}" FontWeight="SemiBold"/>
                                             </TextBlock>
 
-                                            <!-- Technical Details (hidden by default) -->
-                                            <StackPanel 
-                                            Spacing="4" 
-                                            Margin="0,8,0,0"
-                                            Visibility="{Binding ElementName=ShowTechnicalToggle, Path=IsChecked}">
-
-                                                <Border 
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="4"
-                                                Padding="8">
+                                            <StackPanel
+                                                Spacing="4"
+                                                Margin="0,8,0,0"
+                                                Visibility="{Binding ElementName=ShowTechnicalToggle, Path=IsChecked}">
+                                                <Border
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Padding="8">
                                                     <StackPanel Spacing="4">
-                                                        <TextBlock 
-                                                        Text="Technical Information"
-                                                        FontSize="11"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-
+                                                        <TextBlock
+                                                            Text="Technical Information"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <Border 
-                                                            Background="{x:Bind ConfidenceColor}"
-                                                            CornerRadius="3"
-                                                            Padding="6,2">
-                                                                <TextBlock 
-                                                                FontSize="11"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="White">
-                                                                <Run Text="Confidence:"/>
-                                                                <Run Text="{x:Bind ConfidenceLevel}"/>
-                                                                <Run Text="("/>
-                                                                <Run Text="{x:Bind ConfidenceScore}"/>
-                                                                <Run Text="%)"/>
+                                                            <Border
+                                                                Background="{x:Bind ConfidenceColor}"
+                                                                CornerRadius="3"
+                                                                Padding="6,2">
+                                                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="White">
+                                                                    <Run Text="Confidence:"/>
+                                                                    <Run Text="{x:Bind ConfidenceLevel}"/>
+                                                                    <Run Text="("/>
+                                                                    <Run Text="{x:Bind ConfidenceScore}"/>
+                                                                    <Run Text="%)"/>
                                                                 </TextBlock>
                                                             </Border>
                                                         </StackPanel>
-
-                                                        <TextBlock 
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        FontSize="11"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                        <Run Text="Latest version:"/>
-                                                        <Run Text="{x:Bind LatestVersion}" FontWeight="SemiBold"/>
+                                                        <TextBlock
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            FontSize="11"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                            <Run Text="Latest version:"/>
+                                                            <Run Text="{x:Bind LatestVersion}" FontWeight="SemiBold"/>
                                                         </TextBlock>
-
-                                                        <TextBlock 
-                                                        Text="{x:Bind DataSource}"
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                        FontSize="10"/>
-
-                                                        <!-- Show matched package name -->
-                                                        <TextBlock 
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        FontSize="11"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        TextWrapping="Wrap"
-                                                        Margin="0,4,0,0">
-                                                        <Run Text="WinGet found:"/>
-                                                        <Run Text="{x:Bind WinGetPackageName}" FontWeight="SemiBold"/>
+                                                        <TextBlock
+                                                            Text="{x:Bind DataSource}"
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                            FontSize="10"/>
+                                                        <TextBlock
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            FontSize="11"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            TextWrapping="Wrap"
+                                                            Margin="0,4,0,0">
+                                                            <Run Text="WinGet found:"/>
+                                                            <Run Text="{x:Bind WinGetPackageName}" FontWeight="SemiBold"/>
                                                         </TextBlock>
-
-                                                        <TextBlock 
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        FontSize="11"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                        <Run Text="Publisher:"/>
-                                                        <Run Text="{x:Bind Publisher}"/>
+                                                        <TextBlock
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            FontSize="11"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                            <Run Text="Publisher:"/>
+                                                            <Run Text="{x:Bind Publisher}"/>
                                                         </TextBlock>
-
-                                                        <TextBlock 
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        FontSize="11"
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                        <Run Text="Installed:"/>
-                                                        <Run Text="{x:Bind FormattedInstallDate}"/>
+                                                        <TextBlock
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            FontSize="11"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                            <Run Text="Installed:"/>
+                                                            <Run Text="{x:Bind FormattedInstallDate}"/>
                                                         </TextBlock>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
                                         </StackPanel>
 
-                                        <!-- Update Button -->
-                                        <Button 
-                                        Grid.Column="2"
-                                        Content="Update"
-                                        Command="{Binding ElementName=PageRoot, Path=ViewModel.OpenUpdateInstructionsCommand}"
-                                        CommandParameter="{x:Bind}"
-                                        Visibility="{x:Bind IsOutdated, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                        Style="{StaticResource AccentButtonStyle}"
-                                        VerticalAlignment="Center"
-                                        Padding="20,10"
-                                        Margin="16,0,0,0"/>
+                                        <Button
+                                            Grid.Column="2"
+                                            Content="Update"
+                                            Command="{Binding ElementName=PageRoot, Path=ViewModel.OpenUpdateInstructionsCommand}"
+                                            CommandParameter="{x:Bind}"
+                                            Visibility="{x:Bind IsOutdated, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Style="{StaticResource AccentButtonStyle}"
+                                            VerticalAlignment="Center"
+                                            Padding="20,10"
+                                            Margin="16,0,0,0"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -383,27 +416,27 @@
             </Grid>
 
             <!-- Empty State -->
-            <StackPanel 
-            x:Name="EmptyState"
-            Grid.Row="4"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="16">
-                <TextBlock 
-                Text="📱"
-                FontSize="72"
+            <StackPanel
+                x:Name="EmptyState"
+                Grid.Row="5"
                 HorizontalAlignment="Center"
-                Opacity="0.5"/>
-                <TextBlock 
-                Text="Ready to check your apps"
-                Style="{StaticResource SubtitleTextBlockStyle}"
-                HorizontalAlignment="Center"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                <TextBlock 
-                Text="Click the button above to see which apps need updates"
-                Style="{StaticResource BodyTextBlockStyle}"
-                HorizontalAlignment="Center"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                VerticalAlignment="Center"
+                Spacing="16">
+                <TextBlock
+                    Text="📱"
+                    FontSize="72"
+                    HorizontalAlignment="Center"
+                    Opacity="0.5"/>
+                <TextBlock
+                    Text="Ready to check your apps"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    HorizontalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock
+                    Text="Click the button above to see which apps need updates"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    HorizontalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
         </Grid>
     </ScrollViewer>
