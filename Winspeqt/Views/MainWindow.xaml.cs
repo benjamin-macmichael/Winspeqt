@@ -5,6 +5,9 @@ using System;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
+using Winspeqt.Views.Security;
+using Winspeqt.Views.Monitoring;
+using Winspeqt.Views.Optimization;
 
 namespace Winspeqt.Views
 {
@@ -13,27 +16,22 @@ namespace Winspeqt.Views
         private SystemTrayHelper _systemTrayHelper;
         private static AppUsageService _appUsageService;
 
-        public MainWindow()
+        public MainWindow(string? initialFeature = null)
         {
             this.InitializeComponent();
-
-            // Set window title
             Title = "Winspeqt - Windows System Inspector";
-
-            // Set a nice default size
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
 
-            // Initialize the app usage service (singleton)
             if (_appUsageService == null)
-            {
                 _appUsageService = new AppUsageService();
-            }
 
-            // Initialize system tray
             _systemTrayHelper = new SystemTrayHelper(this, _appUsageService);
 
-            // Navigate to the dashboard
-            RootFrame.Navigate(typeof(DashboardPage));
+            // Navigate directly to the feature page if launched from a toast
+            if (initialFeature != null)
+                NavigateToFeature(initialFeature);
+            else
+                RootFrame.Navigate(typeof(DashboardPage));
 
             if (AppWindowTitleBar.IsCustomizationSupported() is true)
             {
@@ -43,38 +41,58 @@ namespace Winspeqt.Views
                 appWindow.SetIcon(@"Assets\QuantumLens.ico");
             }
 
-            // Handle window close to minimize to tray
             var hWnd2 = WindowNative.GetWindowHandle(this);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd2);
             var appWindow2 = AppWindow.GetFromWindowId(windowId);
-
             appWindow2.Closing += (s, e) =>
             {
-                // Prevent actual closing, hide window instead
                 e.Cancel = true;
-
-                // Actually hide/close the window visibility
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
-                    // In WinUI 3, we can't truly "hide" the window, but we can make it invisible
-                    // by setting AppWindow to not visible
                     var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
                     var wndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
                     var appWnd = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(wndId);
                     appWnd.Hide();
                 });
-
                 _systemTrayHelper.HideToTray();
             };
         }
 
-        // Provide the service to pages
-        public static AppUsageService GetAppUsageService()
+        public void NavigateToFeature(string feature)
         {
-            return _appUsageService;
+            // Make sure window is visible first
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                var hWnd = WindowNative.GetWindowHandle(this);
+                var wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                var appWnd = AppWindow.GetFromWindowId(wndId);
+                appWnd.Show();
+                this.Activate();
+
+                // Navigate to the right page based on feature key
+                switch (feature)
+                {
+                    case "AppUpdateChecker":
+                        RootFrame.Navigate(typeof(AppSecurityPage));
+                        break;
+                    case "SecurityStatus":
+                        RootFrame.Navigate(typeof(SecurityStatusPage));
+                        break;
+                    case "SystemOptimization":
+                        RootFrame.Navigate(typeof(OptimizationDashboardPage));
+                        break;
+                    case "SystemMonitoring":
+                        RootFrame.Navigate(typeof(MonitoringDashboardPage));
+                        break;
+                    default:
+                        RootFrame.Navigate(typeof(DashboardPage));
+                        break;
+                }
+            });
         }
 
-        // Call this when actually exiting the application
+        public static AppUsageService GetAppUsageService() => _appUsageService;
+
         public void CleanupAndExit()
         {
             _appUsageService?.SaveData();
