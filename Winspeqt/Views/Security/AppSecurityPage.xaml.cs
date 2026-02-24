@@ -24,7 +24,10 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack) Frame.GoBack();
+            if (Frame.CanGoBack)
+                Frame.GoBack();
+            else
+                Frame.Navigate(typeof(DashboardPage));
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -32,7 +35,7 @@ namespace Winspeqt.Views.Security
             if (e.PropertyName == nameof(ViewModel.IsScanning))
             {
                 ScanButton.IsEnabled = !ViewModel.IsScanning;
-                ScanningProgress.Visibility = Visibility.Collapsed; // kept collapsed, progress bar used instead
+                ScanningProgress.Visibility = Visibility.Collapsed;
                 ScanProgressBar.Visibility = ViewModel.IsScanning ? Visibility.Visible : Visibility.Collapsed;
                 StatusText.Visibility = Visibility.Visible;
             }
@@ -60,10 +63,6 @@ namespace Winspeqt.Views.Security
             }
         }
 
-        /// <summary>
-        /// Tints the score number and label text to match the health colour.
-        /// The colour itself comes from the ViewModel so it stays in sync.
-        /// </summary>
         private void UpdateHealthScoreVisuals()
         {
             var hex = ViewModel.HealthScoreColor.TrimStart('#');
@@ -78,18 +77,16 @@ namespace Winspeqt.Views.Security
             ScoreNumber.Foreground = brush;
             HealthScoreLabelText.Foreground = brush;
 
-            // Draw the arc
             DrawScoreArc(ViewModel.HealthScore, brush);
         }
 
         private void DrawScoreArc(int score, SolidColorBrush brush)
         {
-            const double radius = 40;   // (96 - strokeThickness 8) / 2 - a bit of margin
-            const double cx = 48;   // center x of the 96x96 grid
-            const double cy = 48;   // center y
-            const double startDeg = -90;  // start at top
+            const double radius = 40;
+            const double cx = 48;
+            const double cy = 48;
+            const double startDeg = -90;
 
-            // Clamp to 99.9 so a full circle doesn't collapse the arc
             double pct = Math.Min(score / 100.0, 0.999);
             double endDeg = startDeg + pct * 360.0;
 

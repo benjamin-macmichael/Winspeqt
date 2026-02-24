@@ -29,6 +29,8 @@ namespace Winspeqt.Services
         }
 
         // --- Config ---
+        //private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(15);   // How often we check if it's time
+        //private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(30);    // Min gap between ANY notification
         private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);   // How often we check if it's time
         private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(3);    // Min gap between ANY notification
 
@@ -118,7 +120,7 @@ namespace Winspeqt.Services
                 return (50, "You haven't checked your apps yet — open Winspeqt to see if any need updates.");
             });
 
-            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(30), CheckInterval);
+            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(5), CheckInterval);
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer started");
         }
 
