@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using System;
 using System.Diagnostics;
 using Winspeqt.ViewModels.Security;
@@ -15,11 +17,78 @@ namespace Winspeqt.Views.Security
             this.InitializeComponent();
             ViewModel = new SecurityStatusViewModel();
             this.DataContext = ViewModel;
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.OverallScore) ||
+                e.PropertyName == nameof(ViewModel.OverallScoreColor))
+            {
+                UpdateScoreVisuals();
+            }
+        }
+
+        private void UpdateScoreVisuals()
+        {
+            var hex = ViewModel.OverallScoreColor?.TrimStart('#');
+            if (hex == null || hex.Length != 6) return;
+
+            byte r = Convert.ToByte(hex[0..2], 16);
+            byte g = Convert.ToByte(hex[2..4], 16);
+            byte b = Convert.ToByte(hex[4..6], 16);
+            var color = Windows.UI.Color.FromArgb(255, r, g, b);
+            var brush = new SolidColorBrush(color);
+
+            ScoreNumber.Foreground = brush;
+            DrawScoreArc(ViewModel.OverallScore, brush);
+        }
+
+        private void DrawScoreArc(int score, SolidColorBrush brush)
+        {
+            const double radius = 40;
+            const double cx = 48;
+            const double cy = 48;
+            const double startDeg = -90;
+
+            double pct = Math.Min(score / 100.0, 0.999);
+            double endDeg = startDeg + pct * 360.0;
+
+            double startRad = startDeg * Math.PI / 180.0;
+            double endRad = endDeg * Math.PI / 180.0;
+
+            double x1 = cx + radius * Math.Cos(startRad);
+            double y1 = cy + radius * Math.Sin(startRad);
+            double x2 = cx + radius * Math.Cos(endRad);
+            double y2 = cy + radius * Math.Sin(endRad);
+
+            bool isLargeArc = pct > 0.5;
+
+            var figure = new PathFigure
+            {
+                StartPoint = new Windows.Foundation.Point(x1, y1),
+                IsClosed = false
+            };
+
+            figure.Segments.Add(new ArcSegment
+            {
+                Point = new Windows.Foundation.Point(x2, y2),
+                Size = new Windows.Foundation.Size(radius, radius),
+                SweepDirection = SweepDirection.Clockwise,
+                IsLargeArc = isLargeArc
+            });
+
+            var geometry = new PathGeometry();
+            geometry.Figures.Add(figure);
+
+            ScoreArc.Data = geometry;
+            ScoreArc.Stroke = brush;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (Frame.CanGoBack) Frame.GoBack();
+            else Frame.Navigate(typeof(DashboardPage));
         }
 
         // ── Info dialogs ──────────────────────────────────────────────────────
@@ -133,20 +202,9 @@ namespace Winspeqt.Views.Security
 
         // ── Action buttons ────────────────────────────────────────────────────
 
-        private void OpenDefenderSettings_Click(object sender, RoutedEventArgs e)
-        {
-            TryLaunch("windowsdefender:");
-        }
-
-        private void OpenFirewallSettings_Click(object sender, RoutedEventArgs e)
-        {
-            TryLaunch("firewall.cpl");
-        }
-
-        private void OpenWindowsUpdate_Click(object sender, RoutedEventArgs e)
-        {
-            TryLaunch("ms-settings:windowsupdate");
-        }
+        private void OpenDefenderSettings_Click(object sender, RoutedEventArgs e) => TryLaunch("windowsdefender:");
+        private void OpenFirewallSettings_Click(object sender, RoutedEventArgs e) => TryLaunch("firewall.cpl");
+        private void OpenWindowsUpdate_Click(object sender, RoutedEventArgs e) => TryLaunch("ms-settings:windowsupdate");
 
         private void OpenBitLockerSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -154,16 +212,8 @@ namespace Winspeqt.Views.Security
                 TryLaunch("control", "/name Microsoft.BitLockerDriveEncryption");
         }
 
-        private void OpenDiskManagement_Click(object sender, RoutedEventArgs e)
-        {
-            TryLaunch("diskmgmt.msc");
-        }
-
-        private void OpenUEFISettings_Click(object sender, RoutedEventArgs e)
-        {
-            // Opens System Information which shows Secure Boot State on the main screen
-            TryLaunch("msinfo32.exe");
-        }
+        private void OpenDiskManagement_Click(object sender, RoutedEventArgs e) => TryLaunch("diskmgmt.msc");
+        private void OpenUEFISettings_Click(object sender, RoutedEventArgs e) => TryLaunch("msinfo32.exe");
 
         // ── Helpers ───────────────────────────────────────────────────────────
 
