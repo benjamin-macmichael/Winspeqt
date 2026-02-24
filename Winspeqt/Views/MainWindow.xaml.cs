@@ -14,7 +14,7 @@ namespace Winspeqt.Views
     public sealed partial class MainWindow : Window
     {
         private SystemTrayHelper _systemTrayHelper;
-        private static AppUsageService _appUsageService;
+        private static AppUsageService? _appUsageService;
 
         public MainWindow(string? initialFeature = null)
         {
@@ -69,7 +69,6 @@ namespace Winspeqt.Views
                 appWnd.Show();
                 this.Activate();
 
-                // Navigate to the right page based on feature key
                 switch (feature)
                 {
                     case "AppUpdateChecker":
@@ -91,7 +90,8 @@ namespace Winspeqt.Views
             });
         }
 
-        public static AppUsageService GetAppUsageService() => _appUsageService;
+        // Provide the service to pages
+        public static AppUsageService? GetAppUsageService() => _appUsageService;
 
         public void CleanupAndExit()
         {
@@ -102,7 +102,7 @@ namespace Winspeqt.Views
 
         private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
         {
-            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAN__rlZTTtUNVBIVU5GRDJaUVVJT0lFQVNRSkJJUVY5RC4u"));
+            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
         }
     }
 }
