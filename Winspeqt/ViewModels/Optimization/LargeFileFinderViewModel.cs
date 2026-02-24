@@ -144,28 +144,28 @@ namespace Winspeqt.ViewModels.Optimization
             string rootName = System.IO.Path.GetFileName(rootDirectory.ToString());
             rootName = rootName != "" ? rootName : rootPath[..^2];
 
-            FileSearchTreeNode rootNode = new(name: rootName, path: rootPath, type: "folder");
+            FileSearchTreeNode rootNode = new(name: rootName, path: rootPath, size: 0, type: "folder");
 
-            await RetrieveFolderItems(rootNode);
-        }
-
-        /// <summary>
-        /// Retrieves and displays the contents of <paramref name="folder"/>.
-        /// </summary>
-        public async Task RetrieveFolderItems(FileSearchTreeNode currentNode)
-        {
             IsLoading = true;
 
-            ActiveNode = currentNode;
+            ActiveNode = rootNode;
 
-            PathItems.Add(new PathItem(currentNode.Name, PathItems.Count));
-            await foreach (var item in EnumerateFolderItemsAsync(currentNode))
-            {
-                currentNode.AddChild(item);
-            }
+            PathItems.Add(new PathItem(rootNode.Name, PathItems.Count));
+            await RetrieveFolderItems(rootNode);
 
             SortFiles();
             IsLoading = false;
+        }
+
+        public async Task RetrieveFolderItems(FileSearchTreeNode searchNode)
+        {
+            await foreach (var item in EnumerateFolderItemsAsync(searchNode))
+            {
+                searchNode.Finished = false;
+                searchNode.AddChild(item);
+                searchNode.Finished = true;
+            }
+            searchNode.Finished = true;
         }
 
         /// <summary>
@@ -182,7 +182,8 @@ namespace Winspeqt.ViewModels.Optimization
                     foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         var name = System.IO.Path.GetFileName(dir);
-                        var item = new FileSearchTreeNode(name, dir, "folder", folder);
+                        var item = new FileSearchTreeNode(name, dir, "folder", 0, folder);
+                        _ = RetrieveFolderItems(item);
                         channel.Writer.TryWrite(item);
                     }
 
@@ -190,7 +191,7 @@ namespace Winspeqt.ViewModels.Optimization
                     {
                         var name = System.IO.Path.GetFileName(file);
                         var size = new System.IO.FileInfo(file).Length;
-                        channel.Writer.TryWrite(new FileSearchTreeNode(name, "", "file", folder));
+                        channel.Writer.TryWrite(new FileSearchTreeNode(name, "", "file", size, folder));
                     }
                 }
                 catch (Exception ex)
@@ -278,8 +279,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         public void ResetBreadCrumb(int index)
         {
-            IEnumerable<PathItem> test = PathItems.Take(index + 1);
-            PathItems = new ObservableCollection<PathItem>(test);
+            IEnumerable<PathItem> temp = PathItems.Take(index + 1);
+            PathItems = new ObservableCollection<PathItem>(temp);
         }
 
         /// <summary>

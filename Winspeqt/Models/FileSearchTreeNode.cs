@@ -12,7 +12,7 @@ namespace Winspeqt.Models
     /// <summary>
     /// Initializes a new item and derives the display size from the raw byte count.
     /// </summary>
-    public class FileSearchTreeNode(string name, string path, string type, FileSearchTreeNode? parent = null) : ObservableObject
+    public class FileSearchTreeNode(string name, string path, string type, long size, FileSearchTreeNode? parent = null) : ObservableObject
     {
         /// <summary>
         /// Display name of the file or folder.
@@ -28,13 +28,13 @@ namespace Winspeqt.Models
         /// </summary>
         public string Type { get; } = type;
 
-        private int _size;
+        private long _size = size;
         /// <summary>
         /// Size value normalized to the associated <see cref="DataLabel"/>.
         /// </summary>
-        public int Size
+        public long Size
         {
-            get => 0;
+            get => ReduceSize(_size).size;
             set => SetProperty(ref _size, value);
         }
         /// <summary>
@@ -42,17 +42,17 @@ namespace Winspeqt.Models
         /// </summary>
         public DataSize DataLabel
         {
-            get => DataSize.B;
+            get => ReduceSize(_size).label;
         }
 
-        private bool _loaded;
+        private bool _finished = type == "file";
         /// <summary>
         /// Whether size calculation has finished (used to show/hide progress UI).
         /// </summary>
         public bool Finished
         {
-            get => _loaded;
-            private set => SetProperty(ref _loaded, value);
+            get => _finished;
+            set => SetProperty(ref _finished, value);
         }
 
         private ObservableCollection<FileSearchTreeNode>? _children;
@@ -66,15 +66,6 @@ namespace Winspeqt.Models
         public FileSearchTreeNode? Parent
         {
             get => _parent;
-        }
-
-        /// <summary>
-        /// Updates the size and marks the item as finished.
-        /// </summary>
-        public void UpdateSize(long size)
-        {
-            var result = ReduceSize();
-            Finished = true;
         }
 
         public void AddChild(FileSearchTreeNode child)
@@ -94,9 +85,8 @@ namespace Winspeqt.Models
         /// <summary>
         /// Reduces a byte count into a (value, unit) pair for display.
         /// </summary>
-        private (int size, DataSize label) ReduceSize()
+        private (int size, DataSize label) ReduceSize(long size)
         {
-            long size = _size;
             int iterations = 0;
             while (size >= 1024)
             {

@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using Winspeqt.Models;
 using Winspeqt.ViewModels.Optimization;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -54,10 +56,12 @@ namespace Winspeqt.Views.Optimization
         /// </summary>
         private void Folder_Click(object sender, RoutedEventArgs e)
         {
-            //if (sender is Button button && button.CommandParameter is string path && path != "")
-            //{
-            //    _ = ViewModel.RetrieveFolderItems(path);
-            //}
+            if (sender is Button button && button.CommandParameter is string path && path != "")
+            {
+                if (ViewModel.ActiveNode.Children == null) return;
+                FileSearchTreeNode newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
+                ViewModel.ActiveNode = newNode;
+            }
         }
 
         /// <summary>
@@ -65,11 +69,14 @@ namespace Winspeqt.Views.Optimization
         /// </summary>
         private void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
-            //if (sender is Button button && button.CommandParameter is int index)
-            //{
-            //    _ = ViewModel.RetrieveFolderItems(ViewModel.PathItems[index].Path);
-            //    ViewModel.ResetBreadCrumb(index);
-            //}
+            if (sender is Button button && button.CommandParameter is int index)
+            {
+                string path = ViewModel.PathItems[index].Path;
+                if (ViewModel.ActiveNode.Children == null) return;
+                FileSearchTreeNode newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
+                ViewModel.ActiveNode = newNode;
+                ViewModel.ResetBreadCrumb(index);
+            }
         }
 
         /// <summary>
