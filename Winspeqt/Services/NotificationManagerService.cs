@@ -29,10 +29,10 @@ namespace Winspeqt.Services
         }
 
         // --- Config ---
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(15);   // How often we check if it's time
-        private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(30);    // Min gap between ANY notification
-      //private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);   // How often we check if it's time
-      //private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(3);    // Min gap between ANY notification
+        //private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(15);   // How often we check if it's time
+        //private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(30);    // Min gap between ANY notification
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);   // How often we check if it's time
+        private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(3);    // Min gap between ANY notification
 
         private readonly string _stateFilePath;
         private readonly Dictionary<string, Func<Task<(int score, string message)>>> _features = new();
