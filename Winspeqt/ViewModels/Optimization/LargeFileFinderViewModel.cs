@@ -31,11 +31,11 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _activeNode, value);
         }
 
-        private ObservableCollection<PathItem> _pathItems = new();
+        private ObservableCollection<FileSearchTreeNode> _pathItems = new();
         /// <summary>
         /// Breadcrumb path items from root to current folder.
         /// </summary>
-        public ObservableCollection<PathItem> PathItems
+        public ObservableCollection<FileSearchTreeNode> PathItems
         {
             get => _pathItems;
             set => SetProperty(ref _pathItems, value);
@@ -150,11 +150,21 @@ namespace Winspeqt.ViewModels.Optimization
 
             ActiveNode = rootNode;
 
-            PathItems.Add(new PathItem(rootNode.Name, PathItems.Count));
+            PathItems.Add(rootNode);
             await RetrieveFolderItems(rootNode);
 
             SortFiles();
             IsLoading = false;
+        }
+
+        /// <summary>
+        /// Retrieves and displays the contents of <paramref name="folder"/>.
+        /// </summary>
+        public void ChangeActiveNode(FileSearchTreeNode currentNode)
+        {
+            ActiveNode = currentNode;
+            SortFiles();
+            PathItems.Add(currentNode);
         }
 
         public async Task RetrieveFolderItems(FileSearchTreeNode searchNode)
@@ -277,10 +287,15 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Truncates breadcrumb items to the specified index.
         /// </summary>
-        public void ResetBreadCrumb(int index)
+        public void ResetBreadCrumb(FileSearchTreeNode newNode)
         {
-            IEnumerable<PathItem> temp = PathItems.Take(index + 1);
-            PathItems = new ObservableCollection<PathItem>(temp);
+            PathItems.Clear();
+            FileSearchTreeNode? parent = newNode;
+
+            while (parent != null) {
+                PathItems.Insert(0, parent);
+                parent = parent.Parent;
+            }
         }
 
         /// <summary>

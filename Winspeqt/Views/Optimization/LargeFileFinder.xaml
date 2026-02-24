@@ -164,7 +164,7 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Padding="0"
-                                    CommandParameter="{Binding Index}"
+                                    CommandParameter="{Binding FilePath}"
                                     IsEnabled="{Binding ElementName=RootPage, Path=ViewModel.IsLoading, Converter={StaticResource BoolInverter}}">
                                     <TextBlock Text="{Binding Name}" FontSize="24" />
                                 </Button>

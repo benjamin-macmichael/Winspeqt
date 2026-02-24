@@ -60,7 +60,7 @@ namespace Winspeqt.Views.Optimization
             {
                 if (ViewModel.ActiveNode.Children == null) return;
                 FileSearchTreeNode newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
-                ViewModel.ActiveNode = newNode;
+                ViewModel.ChangeActiveNode(newNode);
             }
         }
 
@@ -69,13 +69,12 @@ namespace Winspeqt.Views.Optimization
         /// </summary>
         private void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.CommandParameter is int index)
+            if (sender is Button button && button.CommandParameter is string path && path != "")
             {
-                string path = ViewModel.PathItems[index].Path;
                 if (ViewModel.ActiveNode.Children == null) return;
-                FileSearchTreeNode newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
+                FileSearchTreeNode newNode = ViewModel.PathItems.First(c => c.FilePath == path);
                 ViewModel.ActiveNode = newNode;
-                ViewModel.ResetBreadCrumb(index);
+                ViewModel.ResetBreadCrumb(newNode);
             }
         }
 
@@ -89,13 +88,13 @@ namespace Winspeqt.Views.Optimization
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
-                    Arguments = ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path ?? string.Empty,
+                    Arguments = ViewModel.PathItems[ViewModel.PathItems.Count - 1].FilePath ?? string.Empty,
                     UseShellExecute = true
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error opening File Explorer for path {ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path}: {ex.Message}");
+                Debug.WriteLine($"Error opening File Explorer for path {ViewModel.PathItems[ViewModel.PathItems.Count - 1].FilePath}: {ex.Message}");
             }
         }
     }
