@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -22,6 +24,10 @@ namespace Winspeqt.ViewModels.Security
         private static readonly TimeSpan SourceUpdateCooldown = TimeSpan.FromHours(6);
         private List<AppSecurityInfo> _allApps = new();
         private DateTime? _lastScanTime;
+
+        private static readonly string _cacheFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Winspeqt", "app_scan_cache.json");
 
         public void SetXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
@@ -128,6 +134,13 @@ namespace Winspeqt.ViewModels.Security
             }
         }
 
+        private string _lastScanLabel = string.Empty;
+        public string LastScanLabel
+        {
+            get => _lastScanLabel;
+            set => SetProperty(ref _lastScanLabel, value);
+        }
+
         public bool HasIssues => CriticalAppsCount > 0 || OutdatedAppsCount > 0;
 
         public string SummaryMessage
@@ -213,18 +226,6 @@ namespace Winspeqt.ViewModels.Security
             _securityService = new AppSecurityService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-            // Restore last scan time across sessions
-            try
-            {
-                var container = Windows.Storage.ApplicationData.Current.LocalSettings;
-                if (container.Values.ContainsKey("AppUpdateChecker_LastScanTime"))
-                {
-                    var ticks = (long)container.Values["AppUpdateChecker_LastScanTime"];
-                    _lastScanTime = new DateTime(ticks, DateTimeKind.Local);
-                }
-            }
-            catch { }
-
             ScannedApps = new ObservableCollection<AppSecurityInfo>();
             FilteredApps = new ObservableCollection<AppSecurityInfo>();
             FilterOptions = new ObservableCollection<string>
@@ -240,6 +241,79 @@ namespace Winspeqt.ViewModels.Security
             OpenUpdateInstructionsCommand = new RelayCommand<AppSecurityInfo>(async app => await ShowUpdateInstructionsAsync(app));
 
             StatusMessage = "Ready to scan your installed applications.";
+
+            // Restore last scan from cache
+            _ = RestoreCachedScanAsync();
+        }
+
+        // -----------------------------------------------------------------------
+        // Cache save / restore
+        // -----------------------------------------------------------------------
+
+        private async Task RestoreCachedScanAsync()
+        {
+            try
+            {
+                if (!File.Exists(_cacheFilePath)) return;
+
+                var json = await File.ReadAllTextAsync(_cacheFilePath);
+                var cache = JsonSerializer.Deserialize<ScanCache>(json);
+                if (cache == null || cache.Apps == null || cache.Apps.Count == 0) return;
+
+                _lastScanTime = cache.ScanTime;
+                _allApps = cache.Apps;
+
+                var outdated = _allApps.Count(a => a.Status == SecurityStatus.Outdated);
+                var critical = _allApps.Count(a => a.Status == SecurityStatus.Critical);
+                var upToDate = _allApps.Count(a => a.Status == SecurityStatus.UpToDate);
+                var total = _allApps.Count;
+
+                await DispatchAsync(() =>
+                {
+                    foreach (var app in _allApps)
+                        ScannedApps.Add(app);
+
+                    TotalAppsScanned = total;
+                    OutdatedAppsCount = outdated;
+                    CriticalAppsCount = critical;
+                    UpToDateAppsCount = upToDate;
+
+                    ApplyFilter();
+                    UpdateHealthScore();
+
+                    HasScanned = true;
+                    LastScanLabel = FormatLastScanLabel(cache.ScanTime);
+                    StatusMessage = $"Showing results from last scan. {total} apps checked.";
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppSecurityViewModel] Failed to restore cache: {ex.Message}");
+            }
+        }
+
+        private async Task SaveCacheAsync(List<AppSecurityInfo> apps, DateTime scanTime)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_cacheFilePath)!);
+                var cache = new ScanCache { Apps = apps, ScanTime = scanTime };
+                var json = JsonSerializer.Serialize(cache, new JsonSerializerOptions { WriteIndented = false });
+                await File.WriteAllTextAsync(_cacheFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[AppSecurityViewModel] Failed to save cache: {ex.Message}");
+            }
+        }
+
+        private static string FormatLastScanLabel(DateTime scanTime)
+        {
+            var diff = DateTime.Now - scanTime;
+            if (diff.TotalMinutes < 1) return "Last scanned just now";
+            if (diff.TotalMinutes < 60) return $"Last scanned {(int)diff.TotalMinutes} minute{((int)diff.TotalMinutes == 1 ? "" : "s")} ago";
+            if (diff.TotalHours < 24) return $"Last scanned {(int)diff.TotalHours} hour{((int)diff.TotalHours == 1 ? "" : "s")} ago";
+            return $"Last scanned {(int)diff.TotalDays} day{((int)diff.TotalDays == 1 ? "" : "s")} ago";
         }
 
         // -----------------------------------------------------------------------
@@ -401,6 +475,7 @@ namespace Winspeqt.ViewModels.Security
                 var outdated = _allApps.Count(a => a.Status == SecurityStatus.Outdated);
                 var critical = _allApps.Count(a => a.Status == SecurityStatus.Critical);
                 var upToDate = _allApps.Count(a => a.Status == SecurityStatus.UpToDate);
+                var scanTime = DateTime.Now;
 
                 await DispatchAsync(() =>
                 {
@@ -415,10 +490,12 @@ namespace Winspeqt.ViewModels.Security
                     ApplyFilter();
                     UpdateHealthScore();
 
-                    // Save last scan time and score for persistence across sessions
-                    _lastScanTime = DateTime.Now;
+                    _lastScanTime = scanTime;
+                    LastScanLabel = FormatLastScanLabel(scanTime);
+
+                    // Save to LocalSettings for notification manager
                     var container = Windows.Storage.ApplicationData.Current.LocalSettings;
-                    container.Values["AppUpdateChecker_LastScanTime"] = DateTime.Now.Ticks;
+                    container.Values["AppUpdateChecker_LastScanTime"] = scanTime.Ticks;
                     container.Values["AppUpdateChecker_HealthScore"] = HealthScore;
                     container.Values["AppUpdateChecker_TotalApps"] = totalApps;
                     container.Values["AppUpdateChecker_OutdatedApps"] = outdated;
@@ -430,6 +507,9 @@ namespace Winspeqt.ViewModels.Security
                     ScanProgress = 100;
                     StatusMessage = $"Scan complete! Found {totalApps} applications.";
                 });
+
+                // Save full app list to JSON cache
+                await SaveCacheAsync(_allApps, scanTime);
 
                 _ = NotificationManagerService.Instance.TriggerCheckAsync();
             }
@@ -751,6 +831,16 @@ namespace Winspeqt.ViewModels.Security
         {
             _securityService?.Dispose();
             _scanLock?.Dispose();
+        }
+
+        // -----------------------------------------------------------------------
+        // Cache model
+        // -----------------------------------------------------------------------
+
+        private class ScanCache
+        {
+            public DateTime ScanTime { get; set; }
+            public List<AppSecurityInfo> Apps { get; set; } = new();
         }
     }
 }
