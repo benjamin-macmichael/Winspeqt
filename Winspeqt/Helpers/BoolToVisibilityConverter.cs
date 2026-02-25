@@ -4,7 +4,7 @@ using System;
 
 namespace Winspeqt.Helpers
 {
-    public class BoolToVisibilityConverter : IValueConverter
+    public partial class BoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

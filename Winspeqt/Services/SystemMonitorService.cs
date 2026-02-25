@@ -13,9 +13,9 @@ namespace Winspeqt.Services
         private PerformanceCounter _availableMemoryCounter;
         private PerformanceCounter _cpuCounter;
         private Dictionary<int, (DateTime timestamp, TimeSpan processorTime)> _cpuUsageCache;
-        private PerformanceCounter _diskTimeCounter;
-        private List<PerformanceCounter> _networkSentCounters;
-        private List<PerformanceCounter> _networkReceivedCounters;
+        private PerformanceCounter? _diskTimeCounter = new();
+        private List<PerformanceCounter> _networkSentCounters = [];
+        private List<PerformanceCounter> _networkReceivedCounters = [];
 
         public SystemMonitorService()
         {
@@ -316,8 +316,8 @@ namespace Winspeqt.Services
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("Getting network throughput...");
-                    if ((_networkSentCounters == null || _networkSentCounters.Count == 0) &&
-                        (_networkReceivedCounters == null || _networkReceivedCounters.Count == 0))
+                    if ((_networkSentCounters.Count == 0) &&
+                        (_networkReceivedCounters.Count == 0))
                         return (0, 0);
 
                     double sentBytesPerSec = 0;

@@ -16,9 +16,8 @@ namespace Winspeqt.ViewModels.Monitoring
     {
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
-        private System.Threading.Timer _refreshTimer;
-        private Microsoft.UI.Xaml.XamlRoot _xamlRoot;
-        private bool _isRefreshing;
+        private System.Threading.Timer? _refreshTimer;
+        private Microsoft.UI.Xaml.XamlRoot? _xamlRoot;
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1, 1);
 
         public void SetXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
@@ -54,14 +53,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _totalMemoryMB, value);
         }
 
-        private string _cpuStatusMessage;
+        private string _cpuStatusMessage = string.Empty;
         public string CpuStatusMessage
         {
             get => _cpuStatusMessage;
             set => SetProperty(ref _cpuStatusMessage, value);
         }
 
-        private string _memoryStatusMessage;
+        private string _memoryStatusMessage = string.Empty;
         public string MemoryStatusMessage
         {
             get => _memoryStatusMessage;
@@ -75,7 +74,7 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _networkUsage, value);
         }
 
-        private string _networkStatusMessage;
+        private string _networkStatusMessage = string.Empty;
         public string NetworkStatusMessage
         {
             get => _networkStatusMessage;
@@ -89,7 +88,7 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _diskUsage, value);
         }
 
-        private string _diskStatusMessage;
+        private string _diskStatusMessage = string.Empty;
         public string DiskStatusMessage
         {
             get => _diskStatusMessage;
@@ -509,7 +508,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     if (!shouldContinue) return;
                 }
 
-                string executablePath = null;
+                string? executablePath = null;
 
                 try
                 {
@@ -574,7 +573,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    string executablePath = process.MainModule?.FileName?.ToLower();
+                    string? executablePath = process.MainModule?.FileName?.ToLower();
                     if (!string.IsNullOrEmpty(executablePath))
                     {
                         if ((executablePath.Contains(@"\system32\") || executablePath.Contains(@"\syswow64\")) &&

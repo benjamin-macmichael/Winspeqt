@@ -13,12 +13,12 @@ namespace Winspeqt.Services
 {
     public class AppUsageService
     {
-        private Dictionary<string, AppUsageData> _usageData;
-        private Timer _trackingTimer;
-        private Timer _saveTimer;
-        private string _currentActiveProcess;
+        private Dictionary<string, AppUsageData> _usageData = new Dictionary<string, AppUsageData>();
+        private Timer _trackingTimer = new();
+        private Timer _saveTimer = new();
+        private string? _currentActiveProcess;
         private DateTime _lastCheckTime;
-        private readonly string _dataFilePath;
+        private readonly string _dataFilePath = "";
         private bool _isTracking;
 
         [DllImport("user32.dll")]
@@ -100,7 +100,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private string GetActiveProcessName()
+        private string? GetActiveProcessName()
         {
             try
             {
@@ -328,7 +328,7 @@ namespace Winspeqt.Services
 
     internal class AppUsageData
     {
-        public string ProcessName { get; set; }
+        public string ProcessName { get; set; } = "";
         public TimeSpan TotalUsageTime { get; set; }
         public DateTime LastUsed { get; set; }
         public int LaunchCount { get; set; }
@@ -338,6 +338,6 @@ namespace Winspeqt.Services
     internal class PersistedUsageData
     {
         public DateTime LastSaved { get; set; }
-        public List<AppUsageData> UsageData { get; set; }
+        public List<AppUsageData> UsageData { get; set; } = new List<AppUsageData>();
     }
 }

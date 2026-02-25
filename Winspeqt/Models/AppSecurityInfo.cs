@@ -4,15 +4,15 @@ namespace Winspeqt.Models
 {
     public class AppSecurityInfo
     {
-        public string AppName { get; set; }
-        public string InstalledVersion { get; set; }
-        public string LatestVersion { get; set; }
-        public string Publisher { get; set; }
-        public string InstallLocation { get; set; }
+        public string AppName { get; set; } = string.Empty;
+        public string InstalledVersion { get; set; } = string.Empty;
+        public string LatestVersion { get; set; } = string.Empty;
+        public string Publisher { get; set; } = string.Empty;
+        public string InstallLocation { get; set; } = string.Empty;
         public DateTime? InstallDate { get; set; }
         public SecurityStatus Status { get; set; }
-        public string StatusMessage { get; set; }
-        public string UpdateInstructions { get; set; }
+        public string StatusMessage { get; set; } = string.Empty;
+        public string UpdateInstructions { get; set; } = string.Empty;
 
         // Confidence scoring
         public int ConfidenceScore { get; set; } // 0-100
@@ -30,13 +30,13 @@ namespace Winspeqt.Models
             >= 50 => "#F44336",
             _ => "#9E9E9E"
         };
-        public string DataSource { get; set; } // "Direct Match", "Search Result", etc.
+        public string DataSource { get; set; } = string.Empty; // "Direct Match", "Search Result", etc.
 
         // Package manager ID
-        public string WinGetId { get; set; }
+        public string WinGetId { get; set; } = string.Empty;
 
         // Package name as found by the API (for display)
-        public string WinGetPackageName { get; set; }
+        public string WinGetPackageName { get; set; } = string.Empty;
 
         public bool IsOutdated => Status == SecurityStatus.Outdated || Status == SecurityStatus.Critical;
         public bool IsUnknown => Status == SecurityStatus.Unknown;

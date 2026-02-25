@@ -6,7 +6,7 @@ using Winspeqt.Services;
 
 namespace Winspeqt.Helpers
 {
-    public class SystemTrayHelper : IDisposable
+    public partial class SystemTrayHelper : IDisposable
     {
         private AppUsageService _appUsageService;
         private Window _mainWindow;
@@ -29,13 +29,13 @@ namespace Winspeqt.Helpers
         private static extern IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
+        private static extern IntPtr GetModuleHandle(string? lpModuleName);
 
         [DllImport("user32.dll")]
         private static extern IntPtr CreatePopupMenu();
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern bool InsertMenu(IntPtr hMenu, uint uPosition, uint uFlags, UIntPtr uIDNewItem, string lpNewItem);
+        private static extern bool InsertMenu(IntPtr hMenu, uint uPosition, uint uFlags, UIntPtr uIDNewItem, string? lpNewItem);
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -80,7 +80,7 @@ namespace Winspeqt.Helpers
             public int Y;
         }
 
-        private Microsoft.UI.Dispatching.DispatcherQueueTimer _messageTimer;
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer? _messageTimer;
 
         public SystemTrayHelper(Window mainWindow, AppUsageService appUsageService)
         {
@@ -149,7 +149,7 @@ namespace Winspeqt.Helpers
             HookWindowProc();
         }
 
-        private WndProcDelegate _wndProcDelegate;
+        private WndProcDelegate? _wndProcDelegate;
         private IntPtr _oldWndProc;
 
         private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
@@ -226,9 +226,9 @@ namespace Winspeqt.Helpers
             {
                 IntPtr hMenu = CreatePopupMenu();
 
-                InsertMenu(hMenu, 0, MF_STRING, (UIntPtr)IDM_OPEN, "Open Winspeqt");
+                InsertMenu(hMenu, 0, MF_STRING, IDM_OPEN, "Open Winspeqt");
                 InsertMenu(hMenu, 1, MF_SEPARATOR, UIntPtr.Zero, null);
-                InsertMenu(hMenu, 2, MF_STRING, (UIntPtr)IDM_EXIT, "Exit");
+                InsertMenu(hMenu, 2, MF_STRING, IDM_EXIT, "Exit");
 
                 POINT pt;
                 GetCursorPos(out pt);

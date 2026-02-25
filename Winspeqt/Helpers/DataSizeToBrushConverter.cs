@@ -6,8 +6,14 @@ using Winspeqt.Models;
 
 namespace Winspeqt.Helpers
 {
+    /// <summary>
+    /// Maps a <see cref="Enums.DataSize"/> value to a color used in the UI.
+    /// </summary>
     public sealed class DataSizeToBrushConverter : IValueConverter
     {
+        /// <summary>
+        /// Converts a <see cref="Enums.DataSize"/> (or a parsable string) to a <see cref="SolidColorBrush"/>.
+        /// </summary>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var size = value is Enums.DataSize dataSize
@@ -16,6 +22,7 @@ namespace Winspeqt.Helpers
                     ? parsed
                     : Enums.DataSize.B;
 
+            // Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
             return size switch
             {
                 Enums.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
@@ -27,6 +34,9 @@ namespace Winspeqt.Helpers
             };
         }
 
+        /// <summary>
+        /// Reverse conversion is not supported.
+        /// </summary>
         public object ConvertBack(object value, Type targetType, object parameter, string language)
             => throw new NotSupportedException();
     }

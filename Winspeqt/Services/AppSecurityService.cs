@@ -63,10 +63,10 @@ namespace Winspeqt.Services
 
         public async Task CheckSingleAppVersionAsync(AppSecurityInfo app)
         {
-            string wingetVersion = null;
-            string wingetId = null;
+            string? wingetVersion = null;
+            string? wingetId = null;
             int wingetScore = 0;
-            string wingetPackageName = null;
+            string? wingetPackageName = null;
 
             // Try direct mapping first (WinGet)
             wingetId = TryGetWinGetId(app.AppName);
@@ -95,8 +95,8 @@ namespace Winspeqt.Services
             }
 
             // Store the ID and package name
-            app.WinGetId = wingetId;
-            app.WinGetPackageName = wingetPackageName;
+            app.WinGetId = wingetId ?? string.Empty;
+            app.WinGetPackageName = wingetPackageName ?? string.Empty;
 
             // Set version and confidence based on WinGet result
             if (!string.IsNullOrEmpty(wingetVersion))
@@ -117,7 +117,7 @@ namespace Winspeqt.Services
             CompareAndSetStatus(app);
         }
 
-        private async Task<string> GetLatestVersionFromWinGetAsync(string wingetId)
+        private async Task<string?> GetLatestVersionFromWinGetAsync(string wingetId)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace Winspeqt.Services
             return null;
         }
 
-        private async Task<SearchResult> SearchWinGetAsync(string appName, string publisher)
+        private async Task<SearchResult?> SearchWinGetAsync(string appName, string publisher)
         {
             try
             {
@@ -224,7 +224,7 @@ namespace Winspeqt.Services
                     {
                         var bestMatch = ParseWinGetSearchOutput(output, appName, publisher);
 
-                        if (bestMatch != null)
+                        if (bestMatch != null && !string.IsNullOrEmpty(bestMatch.WinGetId))
                         {
                             var version = await GetLatestVersionFromWinGetAsync(bestMatch.WinGetId);
                             if (!string.IsNullOrEmpty(version))
@@ -262,7 +262,7 @@ namespace Winspeqt.Services
             return null;
         }
 
-        private SearchResult ParseWinGetSearchOutput(string output, string appName, string publisher)
+        private SearchResult? ParseWinGetSearchOutput(string output, string appName, string publisher)
         {
             try
             {
@@ -275,7 +275,7 @@ namespace Winspeqt.Services
                 // Discord           Discord.Discord   1.0.9223 winget
 
                 var lines = output.Split('\n');
-                SearchResult bestMatch = null;
+                SearchResult? bestMatch = null;
                 int bestScore = 0;
                 bool inResults = false;
 
@@ -363,12 +363,12 @@ namespace Winspeqt.Services
             return cleaned;
         }
 
-        private SearchResult FindBestMatch(JsonElement packages, string appName, string publisher)
+        private SearchResult? FindBestMatch(JsonElement packages, string appName, string publisher)
         {
             var appNameLower = appName.ToLower();
             var publisherLower = publisher.ToLower();
 
-            SearchResult bestMatch = null;
+            SearchResult? bestMatch = null;
             int bestScore = 0;
 
             for (int i = 0; i < packages.GetArrayLength(); i++)
@@ -389,13 +389,13 @@ namespace Winspeqt.Services
                 if (latestProp.TryGetProperty("Publisher", out var pubProp))
                     packagePublisher = pubProp.GetString()?.ToLower() ?? "";
 
-                string version = null;
+                string? version = null;
                 if (package.TryGetProperty("Versions", out var versions) && versions.GetArrayLength() > 0)
                 {
                     version = versions[0].GetString();
                 }
 
-                if (string.IsNullOrEmpty(version))
+                if (string.IsNullOrEmpty(version) || string.IsNullOrEmpty(packageId))
                     continue;
 
                 int score = 0;
@@ -436,7 +436,7 @@ namespace Winspeqt.Services
             return bestMatch;
         }
 
-        private async Task<SearchResult> SearchChocolateyAsync(string appName, string publisher)
+        private async Task<SearchResult?> SearchChocolateyAsync(string appName, string publisher)
         {
             try
             {
@@ -502,7 +502,7 @@ namespace Winspeqt.Services
             return null;
         }
 
-        private SearchResult ParseChocolateyResponse(string xmlContent, string appName, string publisher)
+        private SearchResult? ParseChocolateyResponse(string xmlContent, string appName, string publisher)
         {
             try
             {
@@ -512,7 +512,7 @@ namespace Winspeqt.Services
                 // Simple XML parsing - look for entry elements
                 var entries = xmlContent.Split(new[] { "<entry>" }, StringSplitOptions.RemoveEmptyEntries);
 
-                SearchResult bestMatch = null;
+                SearchResult? bestMatch = null;
                 int bestScore = 0;
 
                 foreach (var entry in entries.Skip(1)) // Skip first split (before first entry)
@@ -571,7 +571,7 @@ namespace Winspeqt.Services
             }
         }
 
-        private string TryGetWinGetId(string appName)
+        private string? TryGetWinGetId(string appName)
         {
             var knownMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -984,10 +984,10 @@ namespace Winspeqt.Services
 
         private class SearchResult
         {
-            public string LatestVersion { get; set; }
-            public string WinGetId { get; set; }
+            public string LatestVersion { get; set; } = string.Empty;
+            public string WinGetId { get; set; } = string.Empty;
             public int MatchScore { get; set; }
-            public string PackageName { get; set; } // The display name from the API
+            public string PackageName { get; set; } = string.Empty; // The display name from the API
         }
     }
 }

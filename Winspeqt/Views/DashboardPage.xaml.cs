@@ -31,6 +31,9 @@ namespace Winspeqt.Views
                 case "Monitoring":
                     Frame.Navigate(typeof(Monitoring.MonitoringDashboardPage));
                     break;
+                case "Settings":
+                    Frame.Navigate(typeof(SettingsPage));
+                    break;
             }
         }
     }
