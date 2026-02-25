@@ -1,4 +1,3 @@
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Winspeqt.ViewModels;
 
@@ -31,6 +30,9 @@ namespace Winspeqt.Views
                     break;
                 case "Monitoring":
                     Frame.Navigate(typeof(Monitoring.MonitoringDashboardPage));
+                    break;
+                case "Settings":
+                    Frame.Navigate(typeof(SettingsPage));
                     break;
             }
         }

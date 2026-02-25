@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 using Winspeqt.Services;
@@ -62,6 +61,20 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _isBitLockerLoading, value);
         }
 
+        private bool _isDriveHealthLoading = true;
+        public bool IsDriveHealthLoading
+        {
+            get => _isDriveHealthLoading;
+            set => SetProperty(ref _isDriveHealthLoading, value);
+        }
+
+        private bool _isSecureBootLoading = true;
+        public bool IsSecureBootLoading
+        {
+            get => _isSecureBootLoading;
+            set => SetProperty(ref _isSecureBootLoading, value);
+        }
+
         private SecurityComponentStatus _defenderStatus;
         public SecurityComponentStatus DefenderStatus
         {
@@ -90,6 +103,20 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _bitlockerStatus, value);
         }
 
+        private SecurityComponentStatus _driveHealthStatus;
+        public SecurityComponentStatus DriveHealthStatus
+        {
+            get => _driveHealthStatus;
+            set => SetProperty(ref _driveHealthStatus, value);
+        }
+
+        private SecurityComponentStatus _secureBootStatus;
+        public SecurityComponentStatus SecureBootStatus
+        {
+            get => _secureBootStatus;
+            set => SetProperty(ref _secureBootStatus, value);
+        }
+
         private int _overallScore;
         public int OverallScore
         {
@@ -111,26 +138,22 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _overallScoreColor, value);
         }
 
-        public ICommand RefreshCommand { get; }
-
         public SecurityStatusViewModel()
         {
             _securityService = new SecurityService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-            RefreshCommand = new RelayCommand(async () => await LoadSecurityStatusAsync());
-
-            // Set initial "Checking..." status for all cards
             DefenderStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
             FirewallStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
             UpdateStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
             BitLockerStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            DriveHealthStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            SecureBootStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
 
             OverallStatus = "Checking security status...";
             OverallScore = 0;
             OverallScoreColor = "#9E9E9E";
 
-            // Initial load - no blocking
             _ = LoadSecurityStatusAsync();
         }
 
@@ -138,16 +161,16 @@ namespace Winspeqt.ViewModels.Security
         {
             try
             {
-                // Set all cards to loading
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     IsDefenderLoading = true;
                     IsFirewallLoading = true;
                     IsUpdateLoading = true;
                     IsBitLockerLoading = true;
+                    IsDriveHealthLoading = true;
+                    IsSecureBootLoading = true;
                 });
 
-                // Check all in parallel - each updates independently as it completes
                 var defenderTask = Task.Run(async () =>
                 {
                     var result = _securityService.CheckWindowsDefender();
@@ -188,16 +211,36 @@ namespace Winspeqt.ViewModels.Security
                     });
                 });
 
-                // Wait for all to complete
-                await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask);
+                var driveHealthTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckDriveHealth();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        DriveHealthStatus = result;
+                        IsDriveHealthLoading = false;
+                    });
+                });
 
-                // Calculate overall score once everything is done
+                var secureBootTask = Task.Run(async () =>
+                {
+                    var result = _securityService.CheckSecureBoot();
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        SecureBootStatus = result;
+                        IsSecureBootLoading = false;
+                    });
+                });
+
+                await Task.WhenAll(defenderTask, firewallTask, updateTask, bitlockerTask, driveHealthTask, secureBootTask);
+
                 var status = new SecurityStatusInfo
                 {
                     WindowsDefenderStatus = DefenderStatus,
                     FirewallStatus = FirewallStatus,
                     WindowsUpdateStatus = UpdateStatus,
-                    BitLockerStatus = BitLockerStatus
+                    BitLockerStatus = BitLockerStatus,
+                    DriveHealthStatus = DriveHealthStatus,
+                    SecureBootStatus = SecureBootStatus
                 };
 
                 var score = _securityService.CalculateSecurityScore(status);
@@ -209,28 +252,37 @@ namespace Winspeqt.ViewModels.Security
                     OverallStatus = overallStatus;
                     OverallScoreColor = GetScoreColor(score);
                 });
+
+                // Save score to LocalSettings so NotificationManagerService can read it
+                try
+                {
+                    var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+                    c["SecurityStatus_HealthScore"] = score;
+                    c["SecurityStatus_LastScanTime"] = DateTime.Now.Ticks;
+                    System.Diagnostics.Debug.WriteLine($"[SecurityStatusViewModel] Saved score={score} to LocalSettings");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SecurityStatusViewModel] Failed to save to LocalSettings: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading security status: {ex.Message}");
-
-                _dispatcherQueue.TryEnqueue(() =>
-                {
-                    OverallStatus = "Error loading security status";
-                });
+                _dispatcherQueue.TryEnqueue(() => { OverallStatus = "Error loading security status"; });
             }
         }
 
         private string GetScoreColor(int score)
         {
             if (score >= 85)
-                return "#4CAF50"; // Green
+                return "#4CAF50";
             else if (score >= 70)
-                return "#8BC34A"; // Light Green
+                return "#8BC34A";
             else if (score >= 50)
-                return "#FF9800"; // Orange
+                return "#FF9800";
             else
-                return "#F44336"; // Red
+                return "#F44336";
         }
     }
 }

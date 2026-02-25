@@ -14,25 +14,41 @@
         </Grid.RowDefinitions>
 
         <!-- Header Section -->
-        <StackPanel Grid.Row="0" Padding="60,60,60,40" HorizontalAlignment="Center">
-            <TextBlock 
-                Text="Winspeqt" 
-                FontSize="48" 
-                FontWeight="Bold"
-                Margin="0,0,0,12"
-                TextAlignment="Center"/>
-            <TextBlock 
-                Text="Your Windows System Inspector and Optimizer" 
-                FontSize="20" 
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Margin="0,0,0,8"
-                TextAlignment="Center"/>
-            <TextBlock 
-                Text="Choose a category to get started" 
-                FontSize="18" 
-                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                TextAlignment="Center"/>
-        </StackPanel>
+        <Grid Grid.Row="0" Padding="60,60,60,40">
+            <!-- Gear icon top-right -->
+            <Button
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        Background="Transparent"
+        BorderThickness="0"
+        Padding="8"
+        CornerRadius="6"
+        Command="{Binding SettingsCommand}"
+        ToolTipService.ToolTip="Settings">
+                <FontIcon Glyph="&#xE713;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Button>
+
+            <!-- Existing centered header text (unchanged) -->
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock
+            Text="Winspeqt"
+            FontSize="48"
+            FontWeight="Bold"
+            Margin="0,0,0,12"
+            TextAlignment="Center"/>
+                <TextBlock
+            Text="Your Windows System Inspector and Optimizer"
+            FontSize="20"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Margin="0,0,0,8"
+            TextAlignment="Center"/>
+                <TextBlock
+            Text="Choose a category to get started"
+            FontSize="18"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            TextAlignment="Center"/>
+            </StackPanel>
+        </Grid>
 
         <!-- Main Content Grid -->
         <Grid Grid.Row="1" Padding="60,0,60,60" MaxWidth="1400">

@@ -1,51 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Winspeqt.Views;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+﻿using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using System;
+using Winspeqt.Services;
 
 namespace Winspeqt
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         private Window? _window;
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
         public App()
         {
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            _window = new Views.MainWindow();
+            var mainInstance = AppInstance.FindOrRegisterForKey("main");
+
+            // If there's already a running instance, redirect and exit
+            if (!mainInstance.IsCurrent)
+            {
+                var activatedArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+                mainInstance.RedirectActivationToAsync(activatedArgs).AsTask().Wait();
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+                return;
+            }
+
+            // This IS the main instance — register for future redirected activations
+            mainInstance.Activated += OnInstanceActivated;
+
+            // On first ever launch, default startup to enabled
+            var settingsService = new SettingsService();
+            if (!settingsService.GetSetting("StartupDefaultSet", false))
+            {
+                settingsService.SetStartupRegistry(true);
+                settingsService.SetSetting("StartupDefaultSet", true);
+            }
+
+            // Start the background notification manager
+            NotificationManagerService.Instance.Start();
+
+            // Check if launched from a toast notification
+            string? toastFeature = null;
+            var currentArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+            if (currentArgs.Kind == ExtendedActivationKind.ToastNotification)
+            {
+                var toastArgs = currentArgs.Data as Windows.ApplicationModel.Activation.IToastNotificationActivatedEventArgs;
+                if (toastArgs != null)
+                    toastFeature = ParseFeature(toastArgs.Argument);
+            }
+
+            _window = new Views.MainWindow(toastFeature);
             _window.Activate();
+        }
+
+        // Called when a second instance tries to launch (e.g. toast click while app is running)
+        private void OnInstanceActivated(object? sender, AppActivationArguments args)
+        {
+            string? feature = null;
+            if (args.Kind == ExtendedActivationKind.ToastNotification)
+            {
+                var toastArgs = args.Data as Windows.ApplicationModel.Activation.IToastNotificationActivatedEventArgs;
+                if (toastArgs != null)
+                    feature = ParseFeature(toastArgs.Argument);
+            }
+
+            // Marshal back to UI thread
+            if (_window is Views.MainWindow mainWindow)
+            {
+                mainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    mainWindow.NavigateToFeature(feature ?? "Dashboard");
+                });
+            }
+        }
+
+        private static string? ParseFeature(string argument)
+        {
+            if (string.IsNullOrEmpty(argument)) return null;
+            foreach (var part in argument.Split('&'))
+            {
+                var kv = part.Split('=');
+                if (kv.Length == 2 && kv[0] == "feature")
+                    return kv[1];
+            }
+            return null;
         }
     }
 }

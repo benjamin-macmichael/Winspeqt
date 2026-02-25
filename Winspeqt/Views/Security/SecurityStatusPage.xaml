@@ -49,12 +49,7 @@
                         Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <Button 
-                    Grid.Column="2"
-                    Content="🔄 Refresh"
-                    Command="{Binding RefreshCommand}"
-                    FontSize="16"
-                    Padding="16,8"/>
+
             </Grid>
 
             <!-- Overall Security Score -->
@@ -73,23 +68,33 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Score Circle -->
-                    <Grid Grid.Column="0" Width="120" Height="120" Margin="0,0,40,0">
-                        <Ellipse 
-                            Fill="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                            Stroke="{Binding OverallScoreColor, Mode=OneWay}"
-                            StrokeThickness="8"/>
+                    <Grid Grid.Column="0" Width="96" Height="96" Margin="0,0,40,0">
+                        <!-- Background track -->
+                        <Ellipse
+        Width="96" Height="96"
+        Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+        StrokeThickness="8"
+        Fill="Transparent"/>
+                        <!-- Foreground arc (drawn in code-behind) -->
+                        <Path
+        x:Name="ScoreArc"
+        StrokeThickness="8"
+        StrokeStartLineCap="Round"
+        StrokeEndLineCap="Round"
+        Fill="Transparent"/>
+                        <!-- Score text -->
                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock 
-                                Text="{Binding OverallScore, Mode=OneWay}" 
-                                FontSize="42" 
-                                FontWeight="Bold"
-                                HorizontalAlignment="Center"
-                                Foreground="{Binding OverallScoreColor, Mode=OneWay}"/>
-                            <TextBlock 
-                                Text="/ 100" 
-                                FontSize="18"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                HorizontalAlignment="Center"/>
+                            <TextBlock
+            x:Name="ScoreNumber"
+            Text="{Binding OverallScore, Mode=OneWay}"
+            FontSize="28"
+            FontWeight="Bold"
+            HorizontalAlignment="Center"/>
+                            <TextBlock
+            Text="/ 100"
+            FontSize="12"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
 
@@ -112,8 +117,9 @@
             <!-- Security Components Grid -->
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -254,7 +260,7 @@
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="0,12,12,0">
+                    Margin="0,0,12,12">
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <StackPanel Orientation="Horizontal">
@@ -317,7 +323,7 @@
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="12,12,0,0">
+                    Margin="12,0,0,12">
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <StackPanel Orientation="Horizontal">
@@ -371,6 +377,133 @@
                             Margin="0,8,0,0"/>
                     </StackPanel>
                 </Border>
+
+                <!-- Drive Health Card -->
+                <Border 
+                    Grid.Row="2" Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="0,12,12,0">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="💾" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="Drive Health" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowDriveHealthInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock 
+                                Text="{Binding DriveHealthStatus.Icon, Mode=OneWay}" 
+                                FontSize="32"
+                                Foreground="{Binding DriveHealthStatus.Color, Mode=OneWay}"
+                                Margin="0,0,12,0"/>
+                            <TextBlock 
+                                Text="{Binding DriveHealthStatus.Status, Mode=OneWay}" 
+                                FontSize="24" 
+                                FontWeight="SemiBold"
+                                Foreground="{Binding DriveHealthStatus.Color, Mode=OneWay}"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock 
+                            Text="{Binding DriveHealthStatus.Message, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"
+                            Margin="0,0,0,12"/>
+
+                        <Button 
+                            Content="🔧 Open Disk Management"
+                            Click="OpenDiskManagement_Click"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Secure Boot Card -->
+                <Border 
+                    Grid.Row="2" Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="28"
+                    Margin="12,12,0,0">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Text="🔒" 
+                                    FontSize="28"
+                                    Margin="0,0,12,0"/>
+                                <TextBlock 
+                                    Text="Secure Boot" 
+                                    FontSize="22" 
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button 
+                                Content="ℹ️"
+                                Click="ShowSecureBootInfo_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontSize="20"
+                                Padding="8"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"/>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock 
+                                Text="{Binding SecureBootStatus.Icon, Mode=OneWay}" 
+                                FontSize="32"
+                                Foreground="{Binding SecureBootStatus.Color, Mode=OneWay}"
+                                Margin="0,0,12,0"/>
+                            <TextBlock 
+                                Text="{Binding SecureBootStatus.Status, Mode=OneWay}" 
+                                FontSize="24" 
+                                FontWeight="SemiBold"
+                                Foreground="{Binding SecureBootStatus.Color, Mode=OneWay}"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock 
+                            Text="{Binding SecureBootStatus.Message, Mode=OneWay}" 
+                            FontSize="15"
+                            TextWrapping="Wrap"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            LineHeight="22"
+                            Margin="0,0,0,12"/>
+
+                        <Button 
+                            Content="🔧 View System Information"
+                            Click="OpenUEFISettings_Click"
+                            HorizontalAlignment="Stretch"
+                            Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
             </Grid>
 
             <!-- Loading Overlay -->
@@ -380,6 +513,7 @@
                 Background="#CC000000"
                 Visibility="Collapsed">
             </Border>
+
         </Grid>
     </ScrollViewer>
 </Page>

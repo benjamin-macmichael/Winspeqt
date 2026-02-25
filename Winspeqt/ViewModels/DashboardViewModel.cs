@@ -9,8 +9,8 @@ namespace Winspeqt.ViewModels
         public ICommand SecurityCommand { get; }
         public ICommand OptimizationCommand { get; }
         public ICommand MonitoringCommand { get; }
+        public ICommand SettingsCommand { get; }
 
-        // Events that the View can subscribe to
         public event EventHandler<string> NavigationRequested;
 
         public DashboardViewModel()
@@ -18,22 +18,12 @@ namespace Winspeqt.ViewModels
             SecurityCommand = new RelayCommand(OnSecurityClicked);
             OptimizationCommand = new RelayCommand(OnOptimizationClicked);
             MonitoringCommand = new RelayCommand(OnMonitoringClicked);
+            SettingsCommand = new RelayCommand(OnSettingsClicked);
         }
 
-        private void OnSecurityClicked()
-        {
-            // Raise event that View will handle
-            NavigationRequested?.Invoke(this, "Security");
-        }
-
-        private void OnOptimizationClicked()
-        {
-            NavigationRequested?.Invoke(this, "Optimization");
-        }
-
-        private void OnMonitoringClicked()
-        {
-            NavigationRequested?.Invoke(this, "Monitoring");
-        }
+        private void OnSecurityClicked() => NavigationRequested?.Invoke(this, "Security");
+        private void OnOptimizationClicked() => NavigationRequested?.Invoke(this, "Optimization");
+        private void OnMonitoringClicked() => NavigationRequested?.Invoke(this, "Monitoring");
+        private void OnSettingsClicked() => NavigationRequested?.Invoke(this, "Settings");
     }
 }

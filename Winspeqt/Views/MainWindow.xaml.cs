@@ -3,23 +3,35 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using WinRT.Interop;
+using Winspeqt.Helpers;
+using Winspeqt.Services;
+using Winspeqt.Views.Security;
+using Winspeqt.Views.Monitoring;
+using Winspeqt.Views.Optimization;
 
 namespace Winspeqt.Views
 {
     public sealed partial class MainWindow : Window
     {
-        public MainWindow()
+        private SystemTrayHelper _systemTrayHelper;
+        private static AppUsageService? _appUsageService;
+
+        public MainWindow(string? initialFeature = null)
         {
             this.InitializeComponent();
-
-            // Set window title
             Title = "Winspeqt - Windows System Inspector";
-
-            // Set a nice default size
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
 
-            // Navigate to the dashboard
-            RootFrame.Navigate(typeof(DashboardPage));
+            if (_appUsageService == null)
+                _appUsageService = new AppUsageService();
+
+            _systemTrayHelper = new SystemTrayHelper(this, _appUsageService);
+
+            // Navigate directly to the feature page if launched from a toast
+            if (initialFeature != null)
+                NavigateToFeature(initialFeature);
+            else
+                RootFrame.Navigate(typeof(DashboardPage));
 
             if (AppWindowTitleBar.IsCustomizationSupported() is true)
             {
@@ -28,6 +40,69 @@ namespace Winspeqt.Views
                 AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
                 appWindow.SetIcon(@"Assets\QuantumLens.ico");
             }
+
+            var hWnd2 = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd2);
+            var appWindow2 = AppWindow.GetFromWindowId(windowId);
+            appWindow2.Closing += (s, e) =>
+            {
+                e.Cancel = true;
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                    var wndId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+                    var appWnd = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(wndId);
+                    appWnd.Hide();
+                });
+                _systemTrayHelper.HideToTray();
+            };
+        }
+
+        public void NavigateToFeature(string feature)
+        {
+            // Make sure window is visible first
+            this.DispatcherQueue.TryEnqueue(() =>
+            {
+                var hWnd = WindowNative.GetWindowHandle(this);
+                var wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+                var appWnd = AppWindow.GetFromWindowId(wndId);
+                appWnd.Show();
+                this.Activate();
+
+                switch (feature)
+                {
+                    case "AppUpdateChecker":
+                        RootFrame.Navigate(typeof(AppSecurityPage));
+                        break;
+                    case "SecurityStatus":
+                        RootFrame.Navigate(typeof(SecurityStatusPage));
+                        break;
+                    case "SystemOptimization":
+                        RootFrame.Navigate(typeof(OptimizationDashboardPage));
+                        break;
+                    case "SystemMonitoring":
+                        RootFrame.Navigate(typeof(MonitoringDashboardPage));
+                        break;
+                    default:
+                        RootFrame.Navigate(typeof(DashboardPage));
+                        break;
+                }
+            });
+        }
+
+        // Provide the service to pages
+        public static AppUsageService? GetAppUsageService() => _appUsageService;
+
+        public void CleanupAndExit()
+        {
+            _appUsageService?.SaveData();
+            _appUsageService?.Dispose();
+            _systemTrayHelper?.Dispose();
+        }
+
+        private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
         }
     }
 }
