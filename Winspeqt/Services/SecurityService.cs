@@ -204,7 +204,7 @@ namespace Winspeqt.Services
                         Color = "#9E9E9E"
                     };
                 }
-                else if (daysSinceUpdate <= 30)
+                else if (daysSinceUpdate <= 7)
                 {
                     return new SecurityComponentStatus
                     {
@@ -215,7 +215,7 @@ namespace Winspeqt.Services
                         Color = "#4CAF50"
                     };
                 }
-                else if (daysSinceUpdate <= 60)
+                else if (daysSinceUpdate <= 30)
                 {
                     return new SecurityComponentStatus
                     {

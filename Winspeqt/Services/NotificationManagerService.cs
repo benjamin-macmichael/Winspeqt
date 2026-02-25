@@ -120,6 +120,38 @@ namespace Winspeqt.Services
                 return (50, "You haven't checked your apps yet — open Winspeqt to see if any need updates.");
             });
 
+            RegisterFeature("SecurityStatus", async () =>
+            {
+                System.Diagnostics.Debug.WriteLine("[NotificationManager] SecurityStatus delegate called");
+                try
+                {
+                    var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+
+                    if (c.ContainsKey("SecurityStatus_HealthScore"))
+                    {
+                        var score = (int)c["SecurityStatus_HealthScore"];
+                        System.Diagnostics.Debug.WriteLine($"[NotificationManager] SecurityStatus Score={score}");
+
+                        string msg = score switch
+                        {
+                            100 => "Your security is perfect! Have you checked your app updates lately?",
+                            >= 90 => $"Your security score is {score}/100 — almost perfect! Open Winspeqt to see what's holding you back.",
+                            >= 70 => $"Your security score is {score}/100. A few things could be improved — open Winspeqt to see what needs attention.",
+                            >= 50 => $"Your security score is {score}/100. Some issues need your attention — open Winspeqt for details.",
+                            _ => $"Your security score is {score}/100 — your PC needs attention. Open Winspeqt to see what's at risk."
+                        };
+
+                        return (score, msg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[NotificationManager] Error reading SecurityStatus storage: {ex.Message}");
+                }
+
+                return (50, "You haven't checked your security status yet — open Winspeqt to run a scan.");
+            });
+
             _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(5), CheckInterval);
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer started");
         }
@@ -177,20 +209,13 @@ namespace Winspeqt.Services
                 var (score, message) = await provider();
                 System.Diagnostics.Debug.WriteLine($"[NotificationManager] Provider returned score={score}, message={message}");
 
-                if (score < 100)
+                SendNotification(featureToNotify, score, message);
+                lock (_lock)
                 {
-                    SendNotification(featureToNotify, score, message);
-                    lock (_lock)
-                    {
-                        _state.LastNotified[featureToNotify] = DateTime.Now;
-                        _state.LastNotificationSent = DateTime.Now;
-                    }
-                    SaveState();
+                    _state.LastNotified[featureToNotify] = DateTime.Now;
+                    _state.LastNotificationSent = DateTime.Now;
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("[NotificationManager] Score is 100, not sending notification");
-                }
+                SaveState();
             }
             catch (Exception ex)
             {
