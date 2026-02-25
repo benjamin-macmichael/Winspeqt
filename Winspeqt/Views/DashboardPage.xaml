@@ -95,7 +95,7 @@
                             HorizontalAlignment="Center"
                             Margin="0,0,0,16"/>
                         <TextBlock 
-                            Text="Check your system's security status, find vulnerabilities, and get recommendations to protect your PC"
+                            Text="Stay protected with tools that cover status, apps, network, and settings"
                             FontSize="16"
                             TextWrapping="Wrap"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

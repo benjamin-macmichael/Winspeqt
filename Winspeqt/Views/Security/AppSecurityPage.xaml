@@ -108,11 +108,17 @@
                         Minimum="0"
                         Maximum="100"
                         Value="{x:Bind ViewModel.ScanProgress, Mode=OneWay}"/>
-                    <TextBlock
+                     <TextBlock
                         x:Name="StatusText"
                         Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                         Style="{StaticResource BodyTextBlockStyle}"
                         VerticalAlignment="Center"/>
+                     <TextBlock
+                        Text="{x:Bind ViewModel.LastScanLabel, Mode=OneWay}"
+                        FontSize="12"
+                        Opacity="0.6"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="{x:Bind ViewModel.HasScanned, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </StackPanel>
             </Grid>
 
