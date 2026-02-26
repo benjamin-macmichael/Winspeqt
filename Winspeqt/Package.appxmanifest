@@ -10,7 +10,7 @@
 	<Identity
 	  Name="Winspeqt.Winspeqt"
       Publisher="CN=D02096B2-BA50-477B-BBFB-966C72C6E148"
-	  Version="0.1.10.0" />
+	  Version="0.1.13.0" />
 
 	<mp:PhoneIdentity PhoneProductId="1775ee26-3289-4fdd-8955-7b7dfec1fbe8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
