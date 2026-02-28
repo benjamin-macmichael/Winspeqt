@@ -55,10 +55,10 @@ namespace Winspeqt.Models
 
         private ObservableCollection<FileSearchItem> _children = [];
 
-        public ObservableCollection<FileSearchItem> Children 
-        {  
-            get => _children; 
-            set => SetProperty(ref _children, value); 
+        public ObservableCollection<FileSearchItem> Children
+        {
+            get => _children;
+            set => SetProperty(ref _children, value);
         }
 
         private FileSearchItem? _parent;

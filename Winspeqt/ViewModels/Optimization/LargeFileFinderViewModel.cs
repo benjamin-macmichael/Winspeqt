@@ -1,5 +1,4 @@
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,7 +19,7 @@ namespace Winspeqt.ViewModels.Optimization
         // Dispatcher captured for UI-thread updates (e.g., size calculation completion).
         private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
 
-        private FileSearchItem _activeNode;
+        private FileSearchItem _activeNode = new("", "", "", 0, null, true);
         /// <summary>
         /// Current folder contents displayed in the list.
         /// </summary>
@@ -100,7 +99,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// List of available sort options for the UI.
         /// </summary>
-        public ObservableCollection<string> SortOptions { get; set; }
+        public ObservableCollection<string> SortOptions { get; set; } = ["Default", "Name", "Size"];
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
@@ -117,7 +116,6 @@ namespace Winspeqt.ViewModels.Optimization
             }
 
             PathItems = [];
-            SortOptions = ["Default", "Name", "Size"];
         }
 
         /// <summary>
@@ -159,7 +157,8 @@ namespace Winspeqt.ViewModels.Optimization
                 if (ancestrialFolders.Count > 0)
                 {
                     daddy = ancestrialFolders[ancestrialFolders.Count - 1];
-                } else
+                }
+                else
                 {
                     daddy = null;
                 }
@@ -190,7 +189,7 @@ namespace Winspeqt.ViewModels.Optimization
 
             PathItems.Add(new PathItem(folder.FilePath, PathItems.Count));
 
-            if (folder.Children.Count > 0) 
+            if (folder.Children.Count > 0)
             {
                 return;
             }

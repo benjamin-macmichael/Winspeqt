@@ -1,11 +1,8 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
 using Winspeqt.ViewModels.Security;
-using Microsoft.UI.Xaml.Shapes;
-using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Winspeqt.Views.Security
 {
