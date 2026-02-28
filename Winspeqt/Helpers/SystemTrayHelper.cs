@@ -111,7 +111,7 @@ namespace Winspeqt.Helpers
 
             string[] possiblePaths = new[]
             {
-                System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "QuantumLens.ico"),
+                System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Quantum Lens Transparent (Icon).ico"),
             };
 
             foreach (var iconPath in possiblePaths)

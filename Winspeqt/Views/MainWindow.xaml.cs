@@ -38,7 +38,7 @@ namespace Winspeqt.Views
                 IntPtr hWnd = WindowNative.GetWindowHandle(this);
                 WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
-                appWindow.SetIcon(@"Assets\QuantumLens.ico");
+                appWindow.SetIcon(@"Assets\Quantum Lens Transparent (Icon).ico");
             }
 
             var hWnd2 = WindowNative.GetWindowHandle(this);
