@@ -19,17 +19,17 @@ namespace Winspeqt.ViewModels.Optimization
         // Dispatcher captured for UI-thread updates (e.g., size calculation completion).
         private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
 
-        private ObservableCollection<FileSearchItem> _folderItems = new();
+        private FileSearchItem _activeNode = new("", "", "", 0, null, true);
         /// <summary>
-        /// Current folder contents displayed in the list.
+        /// Current folder node being viewed; its <see cref="FileSearchItem.Children"/> are displayed in the list.
         /// </summary>
-        public ObservableCollection<FileSearchItem> FolderItems
+        public FileSearchItem ActiveNode
         {
-            get => _folderItems;
-            set => SetProperty(ref _folderItems, value);
+            get => _activeNode;
+            set => SetProperty(ref _activeNode, value);
         }
 
-        private ObservableCollection<PathItem> _pathItems = new();
+        private ObservableCollection<PathItem> _pathItems = [];
         /// <summary>
         /// Breadcrumb path items from root to current folder.
         /// </summary>
@@ -99,16 +99,23 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// List of available sort options for the UI.
         /// </summary>
-        public ObservableCollection<string> SortOptions { get; set; }
+        public ObservableCollection<string> SortOptions { get; set; } = ["Default", "Name", "Size"];
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
         /// </summary>
         public LargeFileFinderViewModel()
         {
-            FolderItems = [];
+            string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrWhiteSpace(userFolder))
+            {
+                IsLoading = false;
+                HasError = true;
+                ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
+                return;
+            }
+
             PathItems = [];
-            SortOptions = new ObservableCollection<string> { "Default", "Name", "Size" };
         }
 
         /// <summary>
@@ -130,39 +137,72 @@ namespace Winspeqt.ViewModels.Optimization
                 return;
             }
 
+            ActiveNode = new(System.IO.Path.GetFileName(initialFolder), initialFolder, "folder", 0, null, false);
+
             DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
-            List<DirectoryInfo> systemDirectories = new List<DirectoryInfo>();
+            List<DirectoryInfo> systemDirectories = [];
+            List<FileSearchItem> ancestrialFolders = [];
 
             while (parentDirectory != null)
             {
                 systemDirectories.Add(parentDirectory);
                 parentDirectory = Directory.GetParent(parentDirectory.FullName);
-
             }
 
             // Build breadcrumb from root to the user profile directory.
             for (int i = systemDirectories.Count - 1; i >= 0; i--)
             {
-                PathItems.Add(new PathItem(systemDirectories[i].ToString(), PathItems.Count));
+                string path = systemDirectories[i].ToString();
+                FileSearchItem? daddy;
+                if (ancestrialFolders.Count > 0)
+                {
+                    daddy = ancestrialFolders[ancestrialFolders.Count - 1];
+                }
+                else
+                {
+                    daddy = null;
+                }
+
+                var name = System.IO.Path.GetFileName(path);
+                var item = new FileSearchItem(name, path, "folder", 0, daddy, false);
+                ancestrialFolders.Add(item);
+                PathItems.Add(new PathItem(path, PathItems.Count));
             }
 
-            await RetrieveFolderItems(initialFolder);
+            ActiveNode.Parent = ancestrialFolders[ancestrialFolders.Count - 1];
+            await RetrieveFolderItems(ActiveNode);
         }
 
         /// <summary>
-        /// Retrieves and displays the contents of <paramref name="folder"/>.
+        /// Changes the active folder and loads its contents.
         /// </summary>
-        public async Task RetrieveFolderItems(string folder)
+        /// <param name="newNode">The folder node to make active.</param>
+        public async Task ChangeActiveNode(FileSearchItem newNode)
+        {
+            ActiveNode = newNode;
+            await RetrieveFolderItems(ActiveNode);
+            IsLoading = false;
+        }
+
+        /// <summary>
+        /// Adds <paramref name="folder"/> to the breadcrumb path and loads its children when they are not already cached.
+        /// </summary>
+        /// <param name="folder">Folder node whose children should be loaded.</param>
+        public async Task RetrieveFolderItems(FileSearchItem folder)
         {
             IsLoading = true;
 
-            PathItems.Add(new PathItem(folder, PathItems.Count));
+            PathItems.Add(new PathItem(folder.FilePath, PathItems.Count));
 
-            FolderItems.Clear();
+            if (folder.Children.Count > 0)
+            {
+                return;
+            }
+
             var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
             await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
             {
-                FolderItems.Add(item);
+                folder.Children.Add(item);
             }
 
             SortFiles();
@@ -182,7 +222,10 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Enumerates files and directories asynchronously while starting folder size calculations.
         /// </summary>
-        private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(string folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
+        /// <param name="folder">Folder to enumerate.</param>
+        /// <param name="sizeTasks">Collection that tracks spawned folder-size background tasks.</param>
+        /// <returns>An async stream of discovered file and directory items.</returns>
+        private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(FileSearchItem folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
         {
             var channel = Channel.CreateUnbounded<FileSearchItem>();
 
@@ -190,19 +233,19 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 try
                 {
-                    foreach (var dir in Directory.EnumerateDirectories(folder))
+                    foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         var name = System.IO.Path.GetFileName(dir);
-                        var item = new FileSearchItem(name, dir, "folder", 0, false);
+                        var item = new FileSearchItem(name, dir, "folder", 0, folder, false);
                         channel.Writer.TryWrite(item);
                         sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
                     }
 
-                    foreach (var file in Directory.EnumerateFiles(folder))
+                    foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                     {
                         var name = System.IO.Path.GetFileName(file);
                         var size = new System.IO.FileInfo(file).Length;
-                        channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, true));
+                        channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, folder, true));
                     }
                 }
                 catch (Exception ex)
@@ -224,6 +267,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Calculates folder size in the background and updates the item on the UI thread.
         /// </summary>
+        /// <param name="item">Folder item to update.</param>
+        /// <param name="path">Physical directory path for size calculation.</param>
         private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
         {
             try
@@ -240,6 +285,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Computes total size of all files under <paramref name="folder"/>, ignoring access failures.
         /// </summary>
+        /// <param name="folder">Root folder path to measure.</param>
+        /// <returns>Total file size in bytes.</returns>
         private static long GetDirectorySize(string folder)
         {
             long size = 0;
@@ -288,6 +335,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Truncates breadcrumb items to the specified index.
         /// </summary>
+        /// <param name="index">Zero-based breadcrumb index to keep as the last item.</param>
         public void ResetBreadCrumb(int index)
         {
             IEnumerable<PathItem> test = PathItems.Take(index + 1);
@@ -295,11 +343,11 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Sorts <see cref="FolderItems"/> based on <see cref="SelectedSortOption"/>.
+        /// Sorts <see cref="ActiveNode"/> children based on <see cref="SelectedSortOption"/>.
         /// </summary>
         public void SortFiles()
         {
-            IEnumerable<FileSearchItem> listItems = FolderItems.Cast<FileSearchItem>();
+            IEnumerable<FileSearchItem> listItems = ActiveNode.Children.Cast<FileSearchItem>();
 
             if (this.SelectedSortOption == "Name")
             {
@@ -314,7 +362,7 @@ namespace Winspeqt.ViewModels.Optimization
                 listItems = listItems.OrderBy(item => item.Name).OrderByDescending(item => item.Type);
             }
 
-            FolderItems = new ObservableCollection<FileSearchItem>(listItems);
+            ActiveNode.Children = new ObservableCollection<FileSearchItem>(listItems);
         }
     }
 }
