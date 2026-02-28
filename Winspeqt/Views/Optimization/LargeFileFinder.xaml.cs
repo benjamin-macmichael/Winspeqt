@@ -34,6 +34,7 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Loads the initial folder contents when the page is navigated to.
         /// </summary>
+        /// <param name="e">Navigation event data supplied by the frame.</param>
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -43,6 +44,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Navigates back to the previous page when possible.
         /// </summary>
+        /// <param name="sender">The back button control.</param>
+        /// <param name="e">Routed event data.</param>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (Frame.CanGoBack)
@@ -54,6 +57,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Navigates into a folder item when clicked.
         /// </summary>
+        /// <param name="sender">The folder button that carries the folder path as its command parameter.</param>
+        /// <param name="e">Routed event data.</param>
         private async void Folder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is string path && path != "")
@@ -67,6 +72,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Resets the breadcrumb to a given index and loads that folder.
         /// </summary>
+        /// <param name="sender">The breadcrumb button whose command parameter is the target index.</param>
+        /// <param name="e">Routed event data.</param>
         private async void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int index)
@@ -85,6 +92,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Opens File Explorer at the current breadcrumb path.
         /// </summary>
+        /// <param name="sender">The button that triggers the action.</param>
+        /// <param name="e">Routed event data.</param>
         private void ViewFileExplorer_Click(object sender, RoutedEventArgs e)
         {
             try

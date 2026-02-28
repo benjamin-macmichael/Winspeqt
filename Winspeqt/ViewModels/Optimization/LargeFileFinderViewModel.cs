@@ -173,6 +173,10 @@ namespace Winspeqt.ViewModels.Optimization
             await RetrieveFolderItems(ActiveNode);
         }
 
+        /// <summary>
+        /// Changes the active folder and loads its contents.
+        /// </summary>
+        /// <param name="newNode">The folder node to make active.</param>
         public async Task ChangeActiveNode(FileSearchItem newNode)
         {
             ActiveNode = newNode;
@@ -183,6 +187,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Retrieves and displays the contents of <paramref name="folder"/>.
         /// </summary>
+        /// <param name="folder">Folder node whose children should be loaded.</param>
         public async Task RetrieveFolderItems(FileSearchItem folder)
         {
             IsLoading = true;
@@ -217,6 +222,9 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Enumerates files and directories asynchronously while starting folder size calculations.
         /// </summary>
+        /// <param name="folder">Folder to enumerate.</param>
+        /// <param name="sizeTasks">Collection that tracks spawned folder-size background tasks.</param>
+        /// <returns>An async stream of discovered file and directory items.</returns>
         private async IAsyncEnumerable<FileSearchItem> EnumerateFolderItemsAsync(FileSearchItem folder, System.Collections.Concurrent.ConcurrentBag<Task> sizeTasks)
         {
             var channel = Channel.CreateUnbounded<FileSearchItem>();
@@ -259,6 +267,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Calculates folder size in the background and updates the item on the UI thread.
         /// </summary>
+        /// <param name="item">Folder item to update.</param>
+        /// <param name="path">Physical directory path for size calculation.</param>
         private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
         {
             try
@@ -275,6 +285,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Computes total size of all files under <paramref name="folder"/>, ignoring access failures.
         /// </summary>
+        /// <param name="folder">Root folder path to measure.</param>
+        /// <returns>Total file size in bytes.</returns>
         private static long GetDirectorySize(string folder)
         {
             long size = 0;
@@ -323,6 +335,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// Truncates breadcrumb items to the specified index.
         /// </summary>
+        /// <param name="index">Zero-based breadcrumb index to keep as the last item.</param>
         public void ResetBreadCrumb(int index)
         {
             IEnumerable<PathItem> test = PathItems.Take(index + 1);
@@ -330,7 +343,7 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Sorts <see cref="FolderItems"/> based on <see cref="SelectedSortOption"/>.
+        /// Sorts <see cref="ActiveNode"/> children based on <see cref="SelectedSortOption"/>.
         /// </summary>
         public void SortFiles()
         {
