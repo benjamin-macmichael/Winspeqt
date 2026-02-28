@@ -27,6 +27,7 @@
 
     <None Remove="Views\Optimization\OptimizationDashboardPage.xaml" />
 	<None Remove="Views\Optimization\AppUsagePage.xaml" />
+	<None Remove="Views\Optimization\OptimizationPage.xaml" />
 	<None Remove="Views\Security\AppSecurityPage.xaml" />
     <None Remove="Views\Security\SecurityDashboardPage.xaml" />
     <None Remove="Views\Security\SecurityStatusPage.xaml" />
@@ -78,6 +79,9 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Optimization\AppUsagePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\Optimization\OptimizationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <None Update="Views\Security\NetworkSecurityPage.xaml">
