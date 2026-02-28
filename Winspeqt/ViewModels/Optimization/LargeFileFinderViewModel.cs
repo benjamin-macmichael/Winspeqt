@@ -21,7 +21,7 @@ namespace Winspeqt.ViewModels.Optimization
 
         private FileSearchItem _activeNode = new("", "", "", 0, null, true);
         /// <summary>
-        /// Current folder contents displayed in the list.
+        /// Current folder node being viewed; its <see cref="FileSearchItem.Children"/> are displayed in the list.
         /// </summary>
         public FileSearchItem ActiveNode
         {
@@ -185,7 +185,7 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Retrieves and displays the contents of <paramref name="folder"/>.
+        /// Adds <paramref name="folder"/> to the breadcrumb path and loads its children when they are not already cached.
         /// </summary>
         /// <param name="folder">Folder node whose children should be loaded.</param>
         public async Task RetrieveFolderItems(FileSearchItem folder)

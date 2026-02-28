@@ -16,7 +16,7 @@ namespace Winspeqt.Models
         public string Name { get; }
 
         /// <summary>
-        /// Full file system path (folders only). Files may use an empty string.
+        /// File system path for this item. Current callers store folder paths and may leave file paths empty.
         /// </summary>
         public string FilePath { get; }
         /// <summary>
@@ -79,7 +79,7 @@ namespace Winspeqt.Models
         /// Initializes a new item and derives the display size from the raw byte count.
         /// </summary>
         /// <param name="name">Display name shown in the list.</param>
-        /// <param name="path">File system path used for navigation or lookup.</param>
+        /// <param name="path">File system path for the item (currently used primarily for folders).</param>
         /// <param name="type">UI type discriminator such as "file" or "folder".</param>
         /// <param name="size">Initial raw size in bytes.</param>
         /// <param name="parent">Parent folder node, or <see langword="null"/> for roots.</param>
