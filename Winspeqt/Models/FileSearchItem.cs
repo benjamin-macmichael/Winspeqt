@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
 
@@ -52,15 +53,32 @@ namespace Winspeqt.Models
             private set => SetProperty(ref _finished, value);
         }
 
+        private ObservableCollection<FileSearchItem> _children = [];
+
+        public ObservableCollection<FileSearchItem> Children 
+        {  
+            get => _children; 
+            set => SetProperty(ref _children, value); 
+        }
+
+        private FileSearchItem? _parent;
+
+        public FileSearchItem? Parent
+        {
+            get => _parent;
+            set => SetProperty(ref _parent, value);
+        }
+
         /// <summary>
         /// Initializes a new item and derives the display size from the raw byte count.
         /// </summary>
-        public FileSearchItem(string name, string path, string type, long size, bool finished)
+        public FileSearchItem(string name, string path, string type, long size, FileSearchItem? parent, bool finished)
         {
             Name = name;
             FilePath = path;
             Type = type;
             UpdateSize(size);
+            Parent = parent;
             Finished = finished;
         }
 

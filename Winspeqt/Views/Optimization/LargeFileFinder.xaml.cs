@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using Winspeqt.Models;
 using Winspeqt.ViewModels.Optimization;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -52,22 +54,30 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Navigates into a folder item when clicked.
         /// </summary>
-        private void Folder_Click(object sender, RoutedEventArgs e)
+        private async void Folder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is string path && path != "")
             {
-                _ = ViewModel.RetrieveFolderItems(path);
+                if (ViewModel.ActiveNode.Children == null) return;
+                FileSearchItem newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
+                await ViewModel.ChangeActiveNode(newNode);
             }
         }
 
         /// <summary>
         /// Resets the breadcrumb to a given index and loads that folder.
         /// </summary>
-        private void BreadCrumb_Click(object sender, RoutedEventArgs e)
+        private async void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int index)
             {
-                _ = ViewModel.RetrieveFolderItems(ViewModel.PathItems[index].Path);
+                FileSearchItem newNode = ViewModel.ActiveNode;
+
+                for (int progenitor = ViewModel.PathItems.Count - index - 1; progenitor > 0; progenitor--)
+                {
+                    newNode = newNode.Parent;
+                }
+                await ViewModel.ChangeActiveNode(newNode);
                 ViewModel.ResetBreadCrumb(index);
             }
         }
