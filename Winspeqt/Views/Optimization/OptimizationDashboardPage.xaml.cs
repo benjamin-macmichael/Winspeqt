@@ -59,8 +59,7 @@ namespace Winspeqt.Views.Optimization
         /// </summary>
         private async void OneClickOptimizationCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to One-Click Optimization page
-            await ShowComingSoonDialog("One-Click Optimization");
+            Frame.Navigate(typeof(OptimizationPage));
         }
 
         /// <summary>
