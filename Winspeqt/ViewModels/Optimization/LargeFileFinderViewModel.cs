@@ -99,7 +99,34 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// List of available sort options for the UI.
         /// </summary>
-        public ObservableCollection<string> SortOptions { get; set; } = ["Default", "Name", "Size"];
+        public ObservableCollection<string> SortOptions { get; } = ["Default", "Name", "Size"];
+
+
+        private long _totalHardDrive;
+        public long TotalHardDrive { 
+            get => DataSizeConverter.ReduceSize(_totalHardDrive).size; 
+            set => SetProperty(ref _totalHardDrive, value);
+        }
+        public Enums.DataSize TotalDriveLabel { get => DataSizeConverter.ReduceSize(_totalHardDrive).label; }
+
+        private long _availableHardDrive;
+
+        public long AvailableHardDrive
+        {
+            get => DataSizeConverter.ReduceSize(_availableHardDrive).size;
+            set => SetProperty(ref _availableHardDrive, value);
+        }
+        public Enums.DataSize AvailableDriveLabel { get => DataSizeConverter.ReduceSize(_availableHardDrive).label; }
+
+        public long UsedHardDrive
+        {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).size;
+        }
+
+        public Enums.DataSize UsedDriveLabel
+        {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).label;
+        }
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
@@ -114,6 +141,9 @@ namespace Winspeqt.ViewModels.Optimization
                 ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
                 return;
             }
+
+            (long totalSize, long availableSize) driveSizeInfo = GetDriveSize();
+            TotalHardDrive = driveSizeInfo.totalSize;
 
             PathItems = [];
         }
@@ -363,6 +393,26 @@ namespace Winspeqt.ViewModels.Optimization
             }
 
             ActiveNode.Children = new ObservableCollection<FileSearchItem>(listItems);
+        }
+
+        private static (long totalSize, long availableSize) GetDriveSize()
+        {
+            string? initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrEmpty(initialFolder)) {
+                System.Diagnostics.Debug.Print("could not find initial folder to get drive size. Will not display drive size");
+                return (0, 0);
+            }
+            string? driveName = Path.GetPathRoot(initialFolder);
+            if (string.IsNullOrEmpty(driveName))
+            {
+                System.Diagnostics.Debug.Print("could not find initial folder to get drive size. Will not display drive size");
+                return (0, 0);
+            }
+            DriveInfo driveInfo = new(driveName);
+
+            // I chose to use TotalFreeSpace over AvailableFreeSpace because this will better reflect what is left after 
+            // apps have taken their space
+            return (driveInfo.TotalSize, driveInfo.TotalFreeSpace);
         }
     }
 }

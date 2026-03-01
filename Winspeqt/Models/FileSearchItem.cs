@@ -100,27 +100,10 @@ namespace Winspeqt.Models
         /// <param name="size">Raw size in bytes.</param>
         public void UpdateSize(long size)
         {
-            var result = ReduceSize(size);
+            var result = DataSizeConverter.ReduceSize(size);
             Size = result.size;
             DataLabel = result.label;
             Finished = true;
-        }
-
-        /// <summary>
-        /// Reduces a byte count into a (value, unit) pair for display.
-        /// </summary>
-        /// <param name="size">Raw byte value.</param>
-        /// <returns>Tuple containing the normalized numeric value and its unit label.</returns>
-        private static (int size, DataSize label) ReduceSize(long size)
-        {
-            int iterations = 0;
-            while (size >= 1024)
-            {
-                // Integer division intentionally truncates to keep the UI compact.
-                size = size / 1024;
-                iterations++;
-            }
-            return (Convert.ToInt32(size), (DataSize)iterations);
         }
     }
 }
