@@ -53,16 +53,26 @@
                             Foreground="#F44336"
                             Margin="0,0,10,10"/>
                         <TextBlock 
-                             Text="Large File Finder" 
-                             FontSize="36" 
-                             FontWeight="Bold"/>
+                            Text="Large File Finder" 
+                            FontSize="36" 
+                            FontWeight="Bold"
+                            TextWrapping="WrapWholeWords" />
                     </StackPanel>
-                    
-                    <TextBlock 
-                        Text="Scan your folders to find the largest files taking up space on your PC" 
-                        FontSize="18" 
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,8,0,0"/>
+
+                    <StackPanel>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.DriveUsageText, Mode=OneWay}" 
+                            FontSize="18" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,8,0,0"
+                            TextWrapping="WrapWholeWords"/>
+                        <TextBlock 
+                            Text="Scan your folders to find the largest files taking up space on your PC" 
+                            FontSize="18" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,8,0,0"
+                            TextWrapping="WrapWholeWords"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
@@ -177,7 +187,7 @@
                    Fill="Black" 
                    HorizontalAlignment="Center"/>
                 <!-- Folder and file results -->
-                <ItemsRepeater ItemsSource="{Binding FolderItems, Mode=OneWay}">
+                <ItemsRepeater ItemsSource="{Binding ActiveNode.Children, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>

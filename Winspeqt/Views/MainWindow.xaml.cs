@@ -5,9 +5,9 @@ using System;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
-using Winspeqt.Views.Security;
 using Winspeqt.Views.Monitoring;
 using Winspeqt.Views.Optimization;
+using Winspeqt.Views.Security;
 
 namespace Winspeqt.Views
 {
