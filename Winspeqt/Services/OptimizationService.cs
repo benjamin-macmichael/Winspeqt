@@ -49,14 +49,11 @@ namespace Winspeqt.Services
                 long freed = 0;
                 try
                 {
-                    foreach (var drive in DriveInfo.GetDrives())
-                    {
-                        if (!drive.IsReady) continue;
-                        var recyclePath = Path.Combine(drive.RootDirectory.FullName, "$Recycle.Bin");
-                        freed += GetDirectorySize(recyclePath);
-                    }
+                    // Get size before emptying using Shell API
+                    var info = new NativeMethods.SHQUERYRBINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(NativeMethods.SHQUERYRBINFO)) };
+                    NativeMethods.SHQueryRecycleBin(null, ref info);
+                    freed = info.i64Size;
 
-                    // Use Shell API to empty recycle bin properly
                     NativeMethods.SHEmptyRecycleBin(IntPtr.Zero, null,
                         NativeMethods.SHERB_NOCONFIRMATION |
                         NativeMethods.SHERB_NOPROGRESSUI |
@@ -402,6 +399,17 @@ namespace Winspeqt.Services
         public const uint SHERB_NOCONFIRMATION = 0x00000001;
         public const uint SHERB_NOPROGRESSUI = 0x00000002;
         public const uint SHERB_NOSOUND = 0x00000004;
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        public struct SHQUERYRBINFO
+        {
+            public int cbSize;
+            public long i64Size;
+            public long i64NumItems;
+        }
+
+        [System.Runtime.InteropServices.DllImport("Shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        public static extern uint SHQueryRecycleBin(string? pszRootPath, ref SHQUERYRBINFO pSHQueryRBInfo);
 
         [System.Runtime.InteropServices.DllImport("Shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
         public static extern uint SHEmptyRecycleBin(IntPtr hwnd, string? pszRootPath, uint dwFlags);
