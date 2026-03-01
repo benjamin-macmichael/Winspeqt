@@ -57,12 +57,21 @@
                              FontSize="36" 
                              FontWeight="Bold"/>
                     </StackPanel>
-                    
-                    <TextBlock 
-                        Text="Scan your folders to find the largest files taking up space on your PC" 
-                        FontSize="18" 
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,8,0,0"/>
+
+                    <StackPanel>
+                        <TextBlock 
+                            Text="{x:Bind ViewModel.DriveUsageText, Mode=OneWay}" 
+                            FontSize="18" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,8,0,0"
+                            TextWrapping="WrapWholeWords"/>
+                        <TextBlock 
+                            Text="Scan your folders to find the largest files taking up space on your PC" 
+                            FontSize="18" 
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,8,0,0"
+                            TextWrapping="WrapWholeWords"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
@@ -93,18 +102,6 @@
                         IsActive="True"
                         Width="20"
                         Height="20" />
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock
-                        Text="{x:Bind ViewModel.UsedHardDrive}" />
-                    <TextBlock
-                        Text="{x:Bind ViewModel.UsedDriveLabel}" />
-                    <TextBlock
-                        Text="/" />
-                    <TextBlock
-                        Text="{x:Bind ViewModel.TotalHardDrive}" />
-                    <TextBlock
-                        Text="{x:Bind ViewModel.TotalDriveLabel}" />
                 </StackPanel>
                 <!-- Sorting and actions -->
                 <Grid MaxWidth="750" HorizontalAlignment="Stretch">

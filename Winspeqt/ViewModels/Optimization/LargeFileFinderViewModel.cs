@@ -103,9 +103,18 @@ namespace Winspeqt.ViewModels.Optimization
 
 
         private long _totalHardDrive;
-        public long TotalHardDrive { 
-            get => DataSizeConverter.ReduceSize(_totalHardDrive).size; 
-            set => SetProperty(ref _totalHardDrive, value);
+        public long TotalHardDrive {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive).size;
+            set
+            {
+                if (SetProperty(ref _totalHardDrive, value))
+                {
+                    OnPropertyChanged(nameof(TotalDriveLabel));
+                    OnPropertyChanged(nameof(UsedHardDrive));
+                    OnPropertyChanged(nameof(UsedDriveLabel));
+                    OnPropertyChanged(nameof(DriveUsageText));
+                }
+            }
         }
         public Enums.DataSize TotalDriveLabel { get => DataSizeConverter.ReduceSize(_totalHardDrive).label; }
 
@@ -114,7 +123,16 @@ namespace Winspeqt.ViewModels.Optimization
         public long AvailableHardDrive
         {
             get => DataSizeConverter.ReduceSize(_availableHardDrive).size;
-            set => SetProperty(ref _availableHardDrive, value);
+            set
+            {
+                if (SetProperty(ref _availableHardDrive, value))
+                {
+                    OnPropertyChanged(nameof(AvailableDriveLabel));
+                    OnPropertyChanged(nameof(UsedHardDrive));
+                    OnPropertyChanged(nameof(UsedDriveLabel));
+                    OnPropertyChanged(nameof(DriveUsageText));
+                }
+            }
         }
         public Enums.DataSize AvailableDriveLabel { get => DataSizeConverter.ReduceSize(_availableHardDrive).label; }
 
@@ -127,6 +145,9 @@ namespace Winspeqt.ViewModels.Optimization
         {
             get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).label;
         }
+
+        public string DriveUsageText =>
+            $"You are using {UsedHardDrive} {UsedDriveLabel} of {TotalHardDrive} {TotalDriveLabel} on this drive";
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
