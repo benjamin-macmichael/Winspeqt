@@ -64,8 +64,32 @@
                 Margin="0,0,0,24">
                 <StackPanel>
 
-                    <!-- Idle State -->
-                    <StackPanel Visibility="{Binding HasCompleted, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                    <!-- Running State -->
+                    <StackPanel
+                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
+                        HorizontalAlignment="Center"
+                        Margin="0,8,0,32">
+                        <ProgressRing
+                            IsActive="{Binding IsRunning}"
+                            Width="64"
+                            Height="64"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,20"/>
+                        <TextBlock
+                            Text="{Binding CurrentTaskLabel}"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,8"/>
+                        <TextBlock
+                            Text="Please wait, do not close the app..."
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Idle/Ready State (always visible unless running) -->
+                    <StackPanel Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                         <StackPanel HorizontalAlignment="Center" Margin="0,0,0,32">
                             <TextBlock
                                 Text="🧹"
@@ -79,7 +103,7 @@
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,8"/>
                             <TextBlock
-                                Text="Winspeqt will safely clean up 7 types of junk files from your PC."
+                                Text="Winspeqt will safely clean up junk files from your PC."
                                 FontSize="15"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 HorizontalAlignment="Center"
@@ -88,7 +112,7 @@
                                 MaxWidth="480"/>
                         </StackPanel>
 
-                        <!-- What will be cleaned checklist -->
+                        <!-- Checklist -->
                         <Border
                             Background="{ThemeResource SubtleFillColorSecondaryBrush}"
                             CornerRadius="12"
@@ -109,12 +133,12 @@
                                         <CheckBox IsChecked="{Binding Options.CleanRecycleBin, Mode=TwoWay}" Content="🗑️  Recycle Bin"/>
                                         <CheckBox IsChecked="{Binding Options.CleanTempFiles, Mode=TwoWay}" Content="📁  Temp Files"/>
                                         <CheckBox IsChecked="{Binding Options.CleanThumbnailCache, Mode=TwoWay}" Content="🖼️  Thumbnail Cache"/>
-                                        <CheckBox IsChecked="{Binding Options.FlushDnsCache, Mode=TwoWay}" Content="🌐  DNS Cache"/>
+                                        <CheckBox IsChecked="{Binding Options.CleanCrashDumps, Mode=TwoWay}" Content="💥  Crash Dumps"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="10">
+                                        <CheckBox IsChecked="{Binding Options.FlushDnsCache, Mode=TwoWay}" Content="🌐  DNS Cache"/>
                                         <CheckBox IsChecked="{Binding Options.CleanPrefetch, Mode=TwoWay}" Content="⚡  Prefetch Files"/>
                                         <CheckBox IsChecked="{Binding Options.CleanWindowsErrorReports, Mode=TwoWay}" Content="📋  Error Reports"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanCrashDumps, Mode=TwoWay}" Content="💥  Crash Dumps"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -129,156 +153,123 @@
                             FontSize="18"
                             FontWeight="SemiBold"
                             Padding="48,16"
-                            CornerRadius="12"
-                            IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBoolConverter}}"/>
-                    </StackPanel>
+                            CornerRadius="12"/>
 
-                    <!-- Running State -->
-                    <StackPanel
-                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}"
-                        HorizontalAlignment="Center"
-                        Margin="0,8,0,8">
-                        <ProgressRing
-                            IsActive="{Binding IsRunning}"
-                            Width="64"
-                            Height="64"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,20"/>
-                        <TextBlock
-                            Text="{Binding CurrentTaskLabel}"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,8"/>
-                        <TextBlock
-                            Text="Please wait, do not close the app..."
-                            FontSize="14"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"/>
-                    </StackPanel>
+                        <!-- Results Summary (shown after a run) -->
+                        <StackPanel
+                            Visibility="{Binding HasCompleted, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="0,32,0,0">
 
-                    <!-- Completed State -->
-                    <StackPanel Visibility="{Binding HasCompleted, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock
-                            Text="✅  Optimization Complete!"
-                            FontSize="26"
-                            FontWeight="SemiBold"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,24"/>
+                            <TextBlock
+                                Text="✅  Last Optimization Results"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
 
-                        <!-- Summary Stats -->
-                        <Grid Margin="0,0,0,24">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Border
-                                Grid.Column="0"
-                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                CornerRadius="12"
-                                Padding="20"
-                                Margin="0,0,8,0">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock
-                                        Text="{Binding Result.FormattedBytesFreed}"
-                                        FontSize="28"
-                                        FontWeight="Bold"
-                                        HorizontalAlignment="Center"
-                                        Foreground="#4CAF50"/>
-                                    <TextBlock
-                                        Text="Space Freed"
-                                        FontSize="13"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+                                <Border
+                                    Grid.Column="0"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    CornerRadius="12"
+                                    Padding="20"
+                                    Margin="0,0,8,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock
+                                            Text="{Binding Result.FormattedBytesFreed}"
+                                            FontSize="28"
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Center"
+                                            Foreground="#4CAF50"/>
+                                        <TextBlock
+                                            Text="Space Freed"
+                                            FontSize="13"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
 
-                            <Border
-                                Grid.Column="1"
-                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                CornerRadius="12"
-                                Padding="20"
-                                Margin="8,0,8,0">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock
-                                        Text="{Binding Result.TasksCompleted}"
-                                        FontSize="28"
-                                        FontWeight="Bold"
-                                        HorizontalAlignment="Center"
-                                        Foreground="#4CAF50"/>
-                                    <TextBlock
-                                        Text="Tasks Done"
-                                        FontSize="13"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+                                <Border
+                                    Grid.Column="1"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    CornerRadius="12"
+                                    Padding="20"
+                                    Margin="8,0,8,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock
+                                            Text="{Binding Result.TasksCompleted}"
+                                            FontSize="28"
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Center"
+                                            Foreground="#4CAF50"/>
+                                        <TextBlock
+                                            Text="Tasks Done"
+                                            FontSize="13"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
 
-                            <Border
-                                Grid.Column="2"
-                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                CornerRadius="12"
-                                Padding="20"
-                                Margin="8,0,0,0">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock
-                                        Text="{Binding Result.TasksFailed}"
-                                        FontSize="28"
-                                        FontWeight="Bold"
-                                        HorizontalAlignment="Center"
-                                        Foreground="#FF9800"/>
-                                    <TextBlock
-                                        Text="Skipped"
-                                        FontSize="13"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                                <Border
+                                    Grid.Column="2"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    CornerRadius="12"
+                                    Padding="20"
+                                    Margin="8,0,0,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock
+                                            Text="{Binding Result.TasksFailed}"
+                                            FontSize="28"
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Center"
+                                            Foreground="#FF9800"/>
+                                        <TextBlock
+                                            Text="Skipped"
+                                            FontSize="13"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
 
-                        <!-- Per-task results list -->
-                        <ItemsControl ItemsSource="{Binding Result.TaskResults}" Margin="0,0,0,24">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:OptimizationTaskResult">
-                                    <Border
-                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                        CornerRadius="8"
-                                        Padding="16,10"
-                                        Margin="0,0,0,6">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind TaskName}" FontSize="14" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{x:Bind StatusMessage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            </StackPanel>
-                                            <TextBlock
-                                                Grid.Column="2"
-                                                Text="{x:Bind FormattedBytesFreed}"
-                                                FontSize="13"
-                                                FontWeight="SemiBold"
-                                                Foreground="#4CAF50"
-                                                VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Result.TaskResults}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:OptimizationTaskResult">
+                                        <Border
+                                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                            CornerRadius="8"
+                                            Padding="16,10"
+                                            Margin="0,0,0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{x:Bind TaskName}" FontSize="14" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{x:Bind StatusMessage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Grid.Column="2"
+                                                    Text="{x:Bind FormattedBytesFreed}"
+                                                    FontSize="13"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="#4CAF50"
+                                                    VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
 
-                        <!-- Run Again Button -->
-                        <Button
-                            Content="🔁  Run Again"
-                            Click="RunAgain_Click"
-                            HorizontalAlignment="Center"
-                            FontSize="16"
-                            Padding="36,12"
-                            CornerRadius="10"/>
                     </StackPanel>
 
                 </StackPanel>
