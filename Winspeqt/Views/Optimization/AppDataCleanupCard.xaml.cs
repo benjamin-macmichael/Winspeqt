@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using Winspeqt.ViewModels.Optimization;
@@ -17,11 +17,20 @@ namespace Winspeqt.Views.Optimization
         {
             InitializeComponent();
 
+            // Wire the list to the ViewModel's observable collection
+            OrphanList.ItemsSource = ViewModel.Entries;
+
             // Keep UI panels in sync with ViewModel state changes
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
 
         // ── Event handlers ────────────────────────────────────────────────────
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+                Frame.GoBack();
+        }
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
@@ -66,15 +75,19 @@ namespace Winspeqt.Views.Optimization
                 case nameof(AppDataCleanupViewModel.HasResults):
                 case nameof(AppDataCleanupViewModel.ScanRan):
                 case nameof(AppDataCleanupViewModel.SelectAllState):
+                case nameof(AppDataCleanupViewModel.HasSelection):
+                case nameof(AppDataCleanupViewModel.InfoVisible):
+                case nameof(AppDataCleanupViewModel.InfoMessage):
+                case nameof(AppDataCleanupViewModel.InfoSeverity):
+                case nameof(AppDataCleanupViewModel.StatusText):
+                case nameof(AppDataCleanupViewModel.DeleteProgress):
+                case nameof(AppDataCleanupViewModel.SelectionSummary):
+                case nameof(AppDataCleanupViewModel.SpaceReclaimText):
                     DispatcherQueue.TryEnqueue(SyncPanelVisibility);
                     break;
             }
         }
 
-        /// <summary>
-        /// Drives Visibility imperatively because WinUI 3 x:Bind doesn't ship
-        /// an inverse-bool converter without a custom class.
-        /// </summary>
         private void SyncPanelVisibility()
         {
             bool scanning = ViewModel.IsScanning;
@@ -82,25 +95,38 @@ namespace Winspeqt.Views.Optimization
             bool hasResult = ViewModel.HasResults;
             bool scanRan = ViewModel.ScanRan;
 
+            // State panels
             ScanningPanel.Visibility = scanning ? Visibility.Visible : Visibility.Collapsed;
             DeletingPanel.Visibility = deleting ? Visibility.Visible : Visibility.Collapsed;
-
             PreScanState.Visibility = (!scanRan && !scanning) ? Visibility.Visible : Visibility.Collapsed;
             CleanState.Visibility = (scanRan && !hasResult && !scanning) ? Visibility.Visible : Visibility.Collapsed;
             ResultsPanel.Visibility = hasResult ? Visibility.Visible : Visibility.Collapsed;
-
             FooterBar.Visibility = hasResult ? Visibility.Visible : Visibility.Collapsed;
 
+            // Status text
+            ScanStatusText.Text = ViewModel.StatusText;
+            DeleteStatusText.Text = ViewModel.StatusText;
+            DeleteProgressBar.Value = ViewModel.DeleteProgress;
+
+            // Selection summary
+            SelectionSummaryText.Text = ViewModel.SelectionSummary;
+            SpaceReclaimText.Text = ViewModel.SpaceReclaimText;
+            DeleteButton.IsEnabled = ViewModel.HasSelection;
+
+            // Select-all checkbox tri-state
+            SelectAllCheckBox.IsChecked = ViewModel.SelectAllState;
+
+            // InfoBar
             ResultInfoBar.Severity = ViewModel.InfoSeverity switch
             {
-                ViewModels.Optimization.InfoSeverity.Success => InfoBarSeverity.Success,
-                ViewModels.Optimization.InfoSeverity.Warning => InfoBarSeverity.Warning,
-                ViewModels.Optimization.InfoSeverity.Error => InfoBarSeverity.Error,
-                ViewModels.Optimization.InfoSeverity.Informational => InfoBarSeverity.Informational,
+                InfoSeverity.Success => InfoBarSeverity.Success,
+                InfoSeverity.Warning => InfoBarSeverity.Warning,
+                InfoSeverity.Error => InfoBarSeverity.Error,
+                InfoSeverity.Informational => InfoBarSeverity.Informational,
                 _ => InfoBarSeverity.Informational,
             };
-
-            SelectAllCheckBox.IsChecked = ViewModel.SelectAllState;
+            ResultInfoBar.Message = ViewModel.InfoMessage;
+            ResultInfoBar.IsOpen = ViewModel.InfoVisible;
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────

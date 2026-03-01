@@ -9,20 +9,14 @@ using Winspeqt.Models;
 
 namespace Winspeqt.Helpers
 {
-    /// <summary>
-    /// Scans AppData folders and cross-references them against the Windows registry
-    /// to identify orphaned directories left behind by uninstalled applications.
-    /// </summary>
     public static class AppDataCleanupHelper
     {
-        // Registry paths that list installed applications
         private static readonly string[] InstalledAppRegistryKeys =
         [
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
             @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
         ];
 
-        // Well-known system/OS folders that should never be flagged as orphaned
         private static readonly HashSet<string> SystemFolderAllowlist = new(StringComparer.OrdinalIgnoreCase)
         {
             // Windows & system
@@ -42,12 +36,6 @@ namespace Winspeqt.Helpers
             "SquirrelTemp", "D3DSCache", "GPUCache",
         };
 
-        // ── Public API ────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Scans all three AppData locations and returns folders that have no
-        /// matching entry in the installed-applications registry.
-        /// </summary>
         public static async Task<List<OrphanedAppDataEntry>> ScanAsync(
             IProgress<ScanProgress>? progress = null,
             CancellationToken cancellationToken = default)
@@ -106,8 +94,8 @@ namespace Winspeqt.Helpers
                             });
                         }
                     }
-                    catch (UnauthorizedAccessException) { /* skip inaccessible roots */ }
-                    catch (IOException) { /* skip locked/missing dirs */ }
+                    catch (UnauthorizedAccessException) { }
+                    catch (IOException) { }
 
                     done++;
                 }
@@ -116,9 +104,6 @@ namespace Winspeqt.Helpers
             }, cancellationToken);
         }
 
-        /// <summary>
-        /// Deletes the specified folders. Returns paths that failed with their error messages.
-        /// </summary>
         public static async Task<Dictionary<string, string>> DeleteFoldersAsync(
             IEnumerable<OrphanedAppDataEntry> entries,
             IProgress<DeleteProgress>? progress = null,
@@ -159,12 +144,6 @@ namespace Winspeqt.Helpers
             return failures;
         }
 
-        // ── Registry scanning ─────────────────────────────────────────────────
-
-        /// <summary>
-        /// Reads all installed application display names and install locations
-        /// from both HKLM and HKCU uninstall keys.
-        /// </summary>
         private static HashSet<string> GetInstalledApplicationNames()
         {
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -184,25 +163,20 @@ namespace Winspeqt.Helpers
                             using var sub = key.OpenSubKey(subName);
                             if (sub is null) continue;
 
-                            // Collect the DisplayName
                             if (sub.GetValue("DisplayName") is string displayName && !string.IsNullOrWhiteSpace(displayName))
                                 names.Add(displayName.Trim());
 
-                            // Collect the install location folder name
                             if (sub.GetValue("InstallLocation") is string installLoc && !string.IsNullOrWhiteSpace(installLoc))
                             {
                                 var folderName = Path.GetFileName(installLoc.TrimEnd('\\', '/'));
                                 if (!string.IsNullOrWhiteSpace(folderName))
                                     names.Add(folderName);
                             }
-
-                            // The subkey name itself is often the publisher/app identifier
-                            names.Add(subName);
                         }
-                        catch { /* skip inaccessible subkey */ }
+                        catch { }
                     }
                 }
-                catch { /* skip inaccessible hive */ }
+                catch { }
             }
 
             foreach (var regPath in InstalledAppRegistryKeys)
@@ -215,22 +189,28 @@ namespace Winspeqt.Helpers
         }
 
         /// <summary>
-        /// Checks whether a folder name is "close enough" to a known installed app name.
-        /// Uses exact match, contains, and starts-with heuristics.
+        /// Only skips a folder if it's an exact match or the folder name is fully
+        /// contained within a known installed app name (not the other way around).
+        /// This prevents "Google" from matching "Google Chrome" and being skipped.
         /// </summary>
         private static bool IsMatchedByInstalledApp(string folderName, HashSet<string> installedNames)
         {
+            // Exact match
             if (installedNames.Contains(folderName))
                 return true;
 
-            // Check if any installed app name starts with or contains the folder name (and vice versa)
-            foreach (var name in installedNames)
+            // Only match if an installed app name fully starts with the folder name
+            // AND the folder name is at least 5 chars (avoids short false positives)
+            if (folderName.Length >= 5)
             {
-                if (name.Length < 3 || folderName.Length < 3) continue;
+                foreach (var name in installedNames)
+                {
+                    if (name.Length < 3) continue;
 
-                if (name.StartsWith(folderName, StringComparison.OrdinalIgnoreCase) ||
-                    folderName.StartsWith(name, StringComparison.OrdinalIgnoreCase))
-                    return true;
+                    // Folder name exactly matches start of app name (e.g. "Mozilla" matches "Mozilla Firefox")
+                    if (name.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
             }
 
             return false;
@@ -240,10 +220,8 @@ namespace Winspeqt.Helpers
             => SystemFolderAllowlist.Contains(folderName)
             || folderName.StartsWith("com.", StringComparison.OrdinalIgnoreCase)
             || folderName.StartsWith("net.", StringComparison.OrdinalIgnoreCase)
-            || (folderName.StartsWith("{") && folderName.EndsWith("}")) // GUIDs
+            || (folderName.StartsWith("{") && folderName.EndsWith("}"))
             || folderName.StartsWith(".");
-
-        // ── Filesystem helpers ────────────────────────────────────────────────
 
         private static List<(string Path, AppDataLocation Location)> GetAppDataLocations()
         {
@@ -270,11 +248,11 @@ namespace Winspeqt.Helpers
                 {
                     ct.ThrowIfCancellationRequested();
                     try { total += new FileInfo(file).Length; }
-                    catch { /* skip locked files */ }
+                    catch { }
                 }
             }
             catch (OperationCanceledException) { throw; }
-            catch { /* skip inaccessible dirs */ }
+            catch { }
             return total;
         }
 
@@ -284,8 +262,6 @@ namespace Winspeqt.Helpers
             catch { return DateTime.MinValue; }
         }
     }
-
-    // ── Progress report types ─────────────────────────────────────────────────
 
     public record ScanProgress
     {
