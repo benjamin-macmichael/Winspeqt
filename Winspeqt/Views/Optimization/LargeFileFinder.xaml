@@ -53,9 +53,10 @@
                             Foreground="#F44336"
                             Margin="0,0,10,10"/>
                         <TextBlock 
-                             Text="Large File Finder" 
-                             FontSize="36" 
-                             FontWeight="Bold"/>
+                            Text="Large File Finder" 
+                            FontSize="36" 
+                            FontWeight="Bold"
+                            TextWrapping="WrapWholeWords" />
                     </StackPanel>
 
                     <StackPanel>
