@@ -142,8 +142,9 @@ namespace Winspeqt.ViewModels.Optimization
                 return;
             }
 
-            (long totalSize, long availableSize) driveSizeInfo = GetDriveSize();
-            TotalHardDrive = driveSizeInfo.totalSize;
+            (long totalSize, long availableSize) = GetDriveSize();
+            TotalHardDrive = totalSize;
+            AvailableHardDrive = availableSize;
 
             PathItems = [];
         }
@@ -412,6 +413,7 @@ namespace Winspeqt.ViewModels.Optimization
 
             // I chose to use TotalFreeSpace over AvailableFreeSpace because this will better reflect what is left after 
             // apps have taken their space
+            System.Diagnostics.Debug.Print($"{driveInfo.TotalSize}, {driveInfo.TotalFreeSpace}");
             return (driveInfo.TotalSize, driveInfo.TotalFreeSpace);
         }
     }

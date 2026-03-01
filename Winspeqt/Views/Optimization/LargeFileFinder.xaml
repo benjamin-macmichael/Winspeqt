@@ -94,6 +94,18 @@
                         Width="20"
                         Height="20" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.UsedHardDrive}" />
+                    <TextBlock
+                        Text="{x:Bind ViewModel.UsedDriveLabel}" />
+                    <TextBlock
+                        Text="/" />
+                    <TextBlock
+                        Text="{x:Bind ViewModel.TotalHardDrive}" />
+                    <TextBlock
+                        Text="{x:Bind ViewModel.TotalDriveLabel}" />
+                </StackPanel>
                 <!-- Sorting and actions -->
                 <Grid MaxWidth="750" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
