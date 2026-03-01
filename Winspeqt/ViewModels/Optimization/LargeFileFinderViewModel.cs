@@ -103,7 +103,8 @@ namespace Winspeqt.ViewModels.Optimization
 
 
         private long _totalHardDrive;
-        public long TotalHardDrive {
+        public long TotalHardDrive
+        {
             get => DataSizeConverter.ReduceSize(_totalHardDrive).size;
             set
             {
@@ -420,7 +421,8 @@ namespace Winspeqt.ViewModels.Optimization
         private static (long totalSize, long availableSize) GetDriveSize()
         {
             string? initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (string.IsNullOrEmpty(initialFolder)) {
+            if (string.IsNullOrEmpty(initialFolder))
+            {
                 System.Diagnostics.Debug.Print("could not find initial folder to get drive size. Will not display drive size");
                 return (0, 0);
             }
