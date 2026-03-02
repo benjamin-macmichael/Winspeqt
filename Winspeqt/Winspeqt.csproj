@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\Quantum Lens Transparent.png" />
     <Content Remove="Assets\StartupApps\attribution.txt" />
     <Content Remove="Assets\StartupApps\dropbox_2015-2017-logo_brandlogos.net_3rdch.png" />
     <Content Remove="Assets\StartupApps\microsoft_teams_2025-logo_brandlogos.net_9ewvi.png" />
@@ -156,6 +157,6 @@
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
-    <ApplicationIcon>Assets\QuantumLens.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Quantum Lens Transparent (Icon).ico</ApplicationIcon>
   </PropertyGroup>
 </Project>
