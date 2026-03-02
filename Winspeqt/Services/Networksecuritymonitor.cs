@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Management;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,9 +18,13 @@ namespace Winspeqt.Services
         private readonly Dictionary<int, string> _wellKnownPorts = new();
         private readonly HashSet<int> _riskyPorts = new();
 
+        // Track which alert keys have already fired this session to prevent spam
+        private readonly HashSet<string> _firedAlerts = new();
+
         public event EventHandler<List<NetworkConnection>> ConnectionsUpdated;
         public event EventHandler<List<NetworkTrafficStats>> TrafficStatsUpdated;
         public event EventHandler<List<PortScanResult>> OpenPortsDetected;
+        public event EventHandler<List<ConnectedDevice>> ConnectedDevicesUpdated;
         public event EventHandler<string> SecurityAlertRaised;
 
         public NetworkSecurityMonitor()
@@ -36,25 +42,22 @@ namespace Winspeqt.Services
         public void StopMonitoring()
         {
             _monitoringTimer?.Dispose();
+            _firedAlerts.Clear();
         }
 
         private async Task MonitorNetworkAsync()
         {
             try
             {
-                // Monitor connections
                 var connections = await GetActiveConnectionsAsync();
                 ConnectionsUpdated?.Invoke(this, connections);
 
-                // Monitor traffic
-                var trafficStats = await GetNetworkTrafficStatsAsync();
-                TrafficStatsUpdated?.Invoke(this, trafficStats);
-
-                // Scan for open ports
                 var openPorts = await ScanOpenPortsAsync();
                 OpenPortsDetected?.Invoke(this, openPorts);
 
-                // Check for security risks
+                var devices = await GetConnectedDevicesAsync();
+                ConnectedDevicesUpdated?.Invoke(this, devices);
+
                 CheckForSecurityRisks(connections, openPorts);
             }
             catch (Exception ex)
@@ -82,7 +85,7 @@ namespace Winspeqt.Services
                         RemoteAddress = conn.RemoteEndPoint.Address.ToString(),
                         RemotePort = conn.RemoteEndPoint.Port,
                         State = conn.State.ToString(),
-                        ProcessId = 0, // Will be populated by GetExtendedTcpTable if available
+                        ProcessId = 0,
                         DetectedAt = DateTime.Now
                     });
                 }
@@ -121,7 +124,6 @@ namespace Winspeqt.Services
                     });
                 }
 
-                // Analyze risks
                 foreach (var conn in connections)
                 {
                     AnalyzeConnectionRisk(conn);
@@ -154,7 +156,6 @@ namespace Winspeqt.Services
                         LastUpdated = DateTime.Now
                     };
 
-                    // Calculate rates if we have previous data
                     if (_previousStats.TryGetValue(netInterface.Name, out var prevStats))
                     {
                         var timeDiff = (currentStats.LastUpdated - prevStats.LastUpdated).TotalSeconds;
@@ -180,7 +181,6 @@ namespace Winspeqt.Services
                 var openPorts = new List<PortScanResult>();
                 var properties = IPGlobalProperties.GetIPGlobalProperties();
 
-                // Get all listening TCP ports
                 var tcpListeners = properties.GetActiveTcpListeners();
                 foreach (var listener in tcpListeners)
                 {
@@ -199,7 +199,6 @@ namespace Winspeqt.Services
                     });
                 }
 
-                // Get all listening UDP ports
                 var udpListeners = properties.GetActiveUdpListeners();
                 foreach (var listener in udpListeners)
                 {
@@ -222,11 +221,160 @@ namespace Winspeqt.Services
             });
         }
 
+        public async Task<List<ConnectedDevice>> GetConnectedDevicesAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var devices = new List<ConnectedDevice>();
+
+                // Network interfaces (WiFi and Ethernet)
+                var interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(ni => ni.OperationalStatus == OperationalStatus.Up
+                              && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback
+                              && ni.NetworkInterfaceType != NetworkInterfaceType.Tunnel
+                              && ni.NetworkInterfaceType != NetworkInterfaceType.Ppp);
+
+                foreach (var ni in interfaces)
+                {
+                    var type = ni.NetworkInterfaceType switch
+                    {
+                        NetworkInterfaceType.Wireless80211 => "WiFi",
+                        NetworkInterfaceType.Ethernet => "Ethernet",
+                        NetworkInterfaceType.GigabitEthernet => "Ethernet",
+                        NetworkInterfaceType.FastEthernetFx => "Ethernet",
+                        NetworkInterfaceType.FastEthernetT => "Ethernet",
+                        _ => "Network"
+                    };
+
+                    devices.Add(new ConnectedDevice
+                    {
+                        Name = ni.Name,
+                        Description = ni.Description,
+                        DeviceType = type,
+                        Status = "Connected",
+                        InterfaceName = ni.Name
+                    });
+                }
+
+                // Bluetooth devices via WMI
+                try
+                {
+                    using var searcher = new ManagementObjectSearcher(
+                        "SELECT * FROM Win32_PnPEntity WHERE DeviceID LIKE 'BTHENUM%' AND Status = 'OK'");
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        var name = obj["Name"]?.ToString() ?? "";
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            devices.Add(new ConnectedDevice
+                            {
+                                Name = name,
+                                Description = "Bluetooth Device",
+                                DeviceType = "Bluetooth",
+                                Status = "Connected",
+                                InterfaceName = ""
+                            });
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Bluetooth enumeration error: {ex.Message}");
+                }
+
+                return devices;
+            });
+        }
+
+        public async Task<List<WifiDisconnectEvent>> GetWifiDisconnectEventsAsync(int maxEvents = 15)
+        {
+            return await Task.Run(() =>
+            {
+                var events = new List<WifiDisconnectEvent>();
+                try
+                {
+                    // Event ID 8003 = disconnected from wireless network
+                    var query = new EventLogQuery(
+                        "Microsoft-Windows-WLAN-AutoConfig/Operational",
+                        PathType.LogName,
+                        "*[System[(EventID=8003)]]")
+                    {
+                        ReverseDirection = true // newest events first
+                    };
+
+                    using var reader = new EventLogReader(query);
+                    int count = 0;
+                    EventRecord record;
+
+                    while ((record = reader.ReadEvent()) != null && count < maxEvents)
+                    {
+                        using (record)
+                        {
+                            try
+                            {
+                                // Property indices for EventID 8003:
+                                // Index 3 = SSID (network name)
+                                // Index 7 = reason code
+                                var networkName = record.Properties.Count > 3
+                                    ? record.Properties[3]?.Value?.ToString() ?? "Unknown"
+                                    : "Unknown";
+                                var reasonCode = record.Properties.Count > 7
+                                    ? record.Properties[7]?.Value?.ToString() ?? "0"
+                                    : "0";
+
+                                events.Add(new WifiDisconnectEvent
+                                {
+                                    Timestamp = record.TimeCreated ?? DateTime.Now,
+                                    NetworkName = networkName,
+                                    Reason = TranslateDisconnectReason(reasonCode)
+                                });
+                                count++;
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"WiFi event parse error: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"WiFi event log error: {ex.Message}");
+                }
+
+                return events.OrderByDescending(e => e.Timestamp).ToList();
+            });
+        }
+
+        public async Task DisconnectWifiAsync(string interfaceName)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "netsh",
+                        Arguments = $"wlan disconnect interface=\"{interfaceName}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    };
+                    using var process = Process.Start(psi);
+                    process?.WaitForExit(5000);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"WiFi disconnect error: {ex.Message}");
+                }
+            });
+        }
+
         private void AnalyzeConnectionRisk(NetworkConnection connection)
         {
             var risks = new List<string>();
 
-            // Check for risky ports
             if (_riskyPorts.Contains(connection.LocalPort))
             {
                 risks.Add($"Risky port {connection.LocalPort} ({GetServiceName(connection.LocalPort)})");
@@ -239,10 +387,8 @@ namespace Winspeqt.Services
                 connection.RiskLevel = connection.RiskLevel == "High" ? "High" : "Medium";
             }
 
-            // Check for suspicious remote connections
             if (!string.IsNullOrEmpty(connection.RemoteAddress))
             {
-                // Check for non-standard HTTP/HTTPS ports
                 if ((connection.RemotePort != 80 && connection.RemotePort != 443) &&
                     connection.RemotePort > 1024 && connection.RemotePort < 49152)
                 {
@@ -262,23 +408,26 @@ namespace Winspeqt.Services
 
         private void CheckForSecurityRisks(List<NetworkConnection> connections, List<PortScanResult> openPorts)
         {
-            // Check for risky open ports
             var riskyOpenPorts = openPorts.Where(p => p.IsKnownRisky).ToList();
             if (riskyOpenPorts.Any())
             {
-                var alert = $"⚠️ Warning: {riskyOpenPorts.Count} potentially risky ports are open: " +
-                           string.Join(", ", riskyOpenPorts.Select(p => $"{p.Port} ({p.ServiceName})"));
-                SecurityAlertRaised?.Invoke(this, alert);
+                // Build a stable key so we only alert once per unique set of risky ports
+                var key = "risky_ports:" + string.Join(",", riskyOpenPorts.Select(p => p.Port).OrderBy(p => p));
+                if (_firedAlerts.Add(key))
+                {
+                    var alert = $"⚠️ {riskyOpenPorts.Count} potentially risky port(s) open: " +
+                               string.Join(", ", riskyOpenPorts.Select(p => $"{p.Port} ({p.ServiceName})"));
+                    SecurityAlertRaised?.Invoke(this, alert);
+                }
             }
 
-            // Check for unusual number of connections
             if (connections.Count > 100)
             {
-                SecurityAlertRaised?.Invoke(this,
-                    $"⚠️ High number of active connections detected: {connections.Count}");
+                const string key = "high_connection_count";
+                if (_firedAlerts.Add(key))
+                    SecurityAlertRaised?.Invoke(this, $"⚠️ High number of active connections: {connections.Count}");
             }
 
-            // Check for connections to unusual ports
             var unusualConnections = connections.Where(c =>
                 c.RemotePort > 0 &&
                 c.RemotePort != 80 &&
@@ -287,9 +436,34 @@ namespace Winspeqt.Services
 
             if (unusualConnections.Count > 5)
             {
-                SecurityAlertRaised?.Invoke(this,
-                    $"⚠️ Multiple connections to unusual low ports detected");
+                const string key = "unusual_low_ports";
+                if (_firedAlerts.Add(key))
+                    SecurityAlertRaised?.Invoke(this, "⚠️ Multiple connections to unusual low-numbered ports detected");
             }
+        }
+
+        private string TranslateDisconnectReason(string reasonCode)
+        {
+            // WLAN disconnect reason codes (from IEEE 802.11)
+            return reasonCode switch
+            {
+                "0" => "Disconnected normally",
+                "1" => "Unspecified reason",
+                "2" => "Previous authentication no longer valid",
+                "3" => "Deauthenticated — station left",
+                "4" => "Disassociated due to inactivity",
+                "5" => "Too many associated stations",
+                "6" => "Class 2 frame from unauthenticated station",
+                "7" => "Class 3 frame from unassociated station",
+                "8" => "Disassociated — station left BSS",
+                "15" => "4-way handshake timeout (wrong password?)",
+                "16" => "Group key handshake timeout",
+                "17" => "Information element mismatch",
+                "23" => "802.1X authentication failed",
+                "34" => "TDLS teardown due to poor link",
+                "36" => "Disassociated: poor channel conditions",
+                _ => $"Code {reasonCode}"
+            };
         }
 
         private void InitializeWellKnownPorts()
@@ -312,7 +486,6 @@ namespace Winspeqt.Services
 
         private void InitializeRiskyPorts()
         {
-            // Commonly exploited or risky ports
             _riskyPorts.Add(23);    // Telnet - unencrypted
             _riskyPorts.Add(445);   // SMB - ransomware vector
             _riskyPorts.Add(3389);  // RDP - brute force target
