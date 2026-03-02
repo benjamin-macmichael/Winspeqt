@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using Winspeqt.Models;
 using Winspeqt.ViewModels.Optimization;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -32,6 +34,7 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Loads the initial folder contents when the page is navigated to.
         /// </summary>
+        /// <param name="e">Navigation event data supplied by the frame.</param>
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
@@ -41,6 +44,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Navigates back to the previous page when possible.
         /// </summary>
+        /// <param name="sender">The back button control.</param>
+        /// <param name="e">Routed event data.</param>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if (Frame.CanGoBack)
@@ -52,22 +57,34 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Navigates into a folder item when clicked.
         /// </summary>
-        private void Folder_Click(object sender, RoutedEventArgs e)
+        /// <param name="sender">The folder button that carries the folder path as its command parameter.</param>
+        /// <param name="e">Routed event data.</param>
+        private async void Folder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is string path && path != "")
             {
-                _ = ViewModel.RetrieveFolderItems(path);
+                if (ViewModel.ActiveNode.Children == null) return;
+                FileSearchItem newNode = ViewModel.ActiveNode.Children.First(c => c.FilePath == path);
+                await ViewModel.ChangeActiveNode(newNode);
             }
         }
 
         /// <summary>
         /// Resets the breadcrumb to a given index and loads that folder.
         /// </summary>
-        private void BreadCrumb_Click(object sender, RoutedEventArgs e)
+        /// <param name="sender">The breadcrumb button whose command parameter is the target index.</param>
+        /// <param name="e">Routed event data.</param>
+        private async void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int index)
             {
-                _ = ViewModel.RetrieveFolderItems(ViewModel.PathItems[index].Path);
+                FileSearchItem newNode = ViewModel.ActiveNode;
+
+                for (int progenitor = ViewModel.PathItems.Count - index - 1; progenitor > 0; progenitor--)
+                {
+                    newNode = newNode.Parent;
+                }
+                await ViewModel.ChangeActiveNode(newNode);
                 ViewModel.ResetBreadCrumb(index);
             }
         }
@@ -75,6 +92,8 @@ namespace Winspeqt.Views.Optimization
         /// <summary>
         /// Opens File Explorer at the current breadcrumb path.
         /// </summary>
+        /// <param name="sender">The button that triggers the action.</param>
+        /// <param name="e">Routed event data.</param>
         private void ViewFileExplorer_Click(object sender, RoutedEventArgs e)
         {
             try

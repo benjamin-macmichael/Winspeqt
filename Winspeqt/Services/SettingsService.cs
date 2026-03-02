@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Diagnostics;
-using Microsoft.Win32;
 using Windows.Storage;
 using Winspeqt.Models;
 
