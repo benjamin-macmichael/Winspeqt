@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
 
@@ -15,7 +16,7 @@ namespace Winspeqt.Models
         public string Name { get; }
 
         /// <summary>
-        /// Full file system path (folders only). Files may use an empty string.
+        /// File system path for this item. Current callers store folder paths and may leave file paths empty.
         /// </summary>
         public string FilePath { get; }
         /// <summary>
@@ -52,21 +53,51 @@ namespace Winspeqt.Models
             private set => SetProperty(ref _finished, value);
         }
 
+        private ObservableCollection<FileSearchItem> _children = [];
+
+        /// <summary>
+        /// Child entries for this folder node. Empty for file nodes.
+        /// </summary>
+        public ObservableCollection<FileSearchItem> Children
+        {
+            get => _children;
+            set => SetProperty(ref _children, value);
+        }
+
+        private FileSearchItem? _parent;
+
+        /// <summary>
+        /// Parent folder node in the navigation hierarchy, if known.
+        /// </summary>
+        public FileSearchItem? Parent
+        {
+            get => _parent;
+            set => SetProperty(ref _parent, value);
+        }
+
         /// <summary>
         /// Initializes a new item and derives the display size from the raw byte count.
         /// </summary>
-        public FileSearchItem(string name, string path, string type, long size, bool finished)
+        /// <param name="name">Display name shown in the list.</param>
+        /// <param name="path">File system path for the item (currently used primarily for folders).</param>
+        /// <param name="type">UI type discriminator such as "file" or "folder".</param>
+        /// <param name="size">Initial raw size in bytes.</param>
+        /// <param name="parent">Parent folder node, or <see langword="null"/> for roots.</param>
+        /// <param name="finished">Initial completion state for size calculation.</param>
+        public FileSearchItem(string name, string path, string type, long size, FileSearchItem? parent, bool finished)
         {
             Name = name;
             FilePath = path;
             Type = type;
             UpdateSize(size);
+            Parent = parent;
             Finished = finished;
         }
 
         /// <summary>
         /// Updates the size and marks the item as finished.
         /// </summary>
+        /// <param name="size">Raw size in bytes.</param>
         public void UpdateSize(long size)
         {
             var result = ReduceSize(size);
@@ -78,6 +109,8 @@ namespace Winspeqt.Models
         /// <summary>
         /// Reduces a byte count into a (value, unit) pair for display.
         /// </summary>
+        /// <param name="size">Raw byte value.</param>
+        /// <returns>Tuple containing the normalized numeric value and its unit label.</returns>
         private static (int size, DataSize label) ReduceSize(long size)
         {
             int iterations = 0;
