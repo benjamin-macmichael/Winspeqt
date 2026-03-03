@@ -177,7 +177,7 @@
                    Fill="Black" 
                    HorizontalAlignment="Center"/>
                 <!-- Folder and file results -->
-                <ItemsRepeater ItemsSource="{Binding FolderItems, Mode=OneWay}">
+                <ItemsRepeater ItemsSource="{Binding ActiveNode.Children, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>

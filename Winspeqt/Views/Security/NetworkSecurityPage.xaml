@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Winspeqt.Views.Security"
     xmlns:helpers="using:Winspeqt.Helpers"
+    xmlns:models="using:Winspeqt.Models"
     xmlns:viewmodels="using:Winspeqt.ViewModels.Security"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,6 +13,7 @@
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -19,7 +21,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
@@ -30,7 +32,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Button 
+                <Button
                     Grid.Column="0"
                     Content="← Back"
                     Click="BackButton_Click"
@@ -40,38 +42,38 @@
                     Margin="0,0,20,0"/>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock 
-                        Text="Network Security Monitor" 
-                        FontSize="36" 
+                    <TextBlock
+                        Text="Network Security Monitor"
+                        FontSize="36"
                         FontWeight="Bold"/>
-                    <TextBlock 
-                        Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
-                        FontSize="18" 
+                    <TextBlock
+                        Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                        FontSize="18"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-                    <Button 
+                    <Button
                         Content="▶️ Start"
                         Command="{x:Bind ViewModel.StartMonitoringCommand}"
                         Style="{StaticResource AccentButtonStyle}"
                         FontSize="16"
                         Padding="16,8"
-                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverse}">
+                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}">
                         <Button.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5"/>
                         </Button.KeyboardAccelerators>
                     </Button>
 
-                    <Button 
+                    <Button
                         Content="⏸️ Stop"
                         Command="{x:Bind ViewModel.StopMonitoringCommand}"
                         FontSize="16"
                         Padding="16,8"
                         Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
-                    <Button 
+                    <Button
                         Command="{x:Bind ViewModel.RefreshCommand}"
                         FontSize="16"
                         Padding="16,8"
@@ -84,8 +86,8 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Overview Stats Cards -->
-            <Border 
+            <!-- Overview Stats (3 columns — Data Sent/Received removed) -->
+            <Border
                 Grid.Row="1"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -98,21 +100,19 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Active Connections -->
                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
                         <TextBlock Text="🔗" FontSize="32" Margin="0,0,0,8"/>
-                        <TextBlock 
-                            Text="Active Connections" 
+                        <TextBlock
+                            Text="Active Connections"
                             FontSize="14"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="Wrap"
                             Margin="0,0,0,4"/>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.TotalConnections, Mode=OneWay}" 
+                        <TextBlock
+                            Text="{x:Bind ViewModel.TotalConnections, Mode=OneWay}"
                             FontSize="36"
                             FontWeight="Bold"/>
                     </StackPanel>
@@ -120,77 +120,49 @@
                     <!-- Listening Ports -->
                     <StackPanel Grid.Column="1" Margin="20,0">
                         <TextBlock Text="🚪" FontSize="32" Margin="0,0,0,8"/>
-                        <TextBlock 
-                            Text="Listening Ports" 
+                        <TextBlock
+                            Text="Listening Ports"
                             FontSize="14"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="Wrap"
                             Margin="0,0,0,4"/>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.ListeningPorts, Mode=OneWay}" 
+                        <TextBlock
+                            Text="{x:Bind ViewModel.ListeningPorts, Mode=OneWay}"
                             FontSize="36"
                             FontWeight="Bold"/>
                     </StackPanel>
 
                     <!-- Risky Connections -->
-                    <StackPanel Grid.Column="2" Margin="20,0">
+                    <StackPanel Grid.Column="2" Margin="20,0,0,0">
                         <TextBlock Text="⚠️" FontSize="32" Margin="0,0,0,8"/>
-                        <TextBlock 
-                            Text="Risky Connections" 
+                        <TextBlock
+                            Text="Risky Connections"
                             FontSize="14"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="Wrap"
                             Margin="0,0,0,4"/>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.RiskyConnections, Mode=OneWay}" 
+                        <TextBlock
+                            Text="{x:Bind ViewModel.RiskyConnections, Mode=OneWay}"
                             FontSize="36"
                             FontWeight="Bold"
                             Foreground="#D13438"/>
                     </StackPanel>
-
-                    <!-- Data Sent -->
-                    <StackPanel Grid.Column="3" Margin="20,0">
-                        <TextBlock Text="📤" FontSize="32" Margin="0,0,0,8"/>
-                        <TextBlock 
-                            Text="Data Sent" 
-                            FontSize="14"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Margin="0,0,0,4"/>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.TotalTrafficSent, Mode=OneWay}" 
-                            FontSize="28"
-                            FontWeight="Bold"/>
-                    </StackPanel>
-
-                    <!-- Data Received -->
-                    <StackPanel Grid.Column="4" Margin="20,0,0,0">
-                        <TextBlock Text="📥" FontSize="32" Margin="0,0,0,8"/>
-                        <TextBlock 
-                            Text="Data Received" 
-                            FontSize="14"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Margin="0,0,0,4"/>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.TotalTrafficReceived, Mode=OneWay}" 
-                            FontSize="28"
-                            FontWeight="Bold"/>
-                    </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Tabbed Content Grid (2x2 layout) -->
+            <!-- 2×2 Card Grid -->
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Active Connections Card -->
-                <Border 
+                <!-- ══ Active Connections Card ════════════════════════════════ -->
+                <Border
                     Grid.Row="0" Grid.Column="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -201,69 +173,103 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock 
-                                    Text="🔗" 
-                                    FontSize="28"
-                                    Margin="0,0,12,0"/>
-                                <TextBlock 
-                                    Text="Active Connections" 
-                                    FontSize="22" 
+                        <!-- Card Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="🔗" FontSize="28" Margin="0,0,12,0"/>
+                            <StackPanel>
+                                <TextBlock
+                                    Text="Active Connections"
+                                    FontSize="22"
                                     FontWeight="SemiBold"
                                     VerticalAlignment="Center"/>
+                                <TextBlock
+                                    Text="Notable outbound and inbound traffic (listening ports excluded)"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap"
+                                    Margin="0,2,0,0"/>
                             </StackPanel>
                         </StackPanel>
 
                         <!-- Connections List -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ListView ItemsSource="{x:Bind ViewModel.ActiveConnections, Mode=OneWay}"
-                                      SelectionMode="None"
-                                      IsItemClickEnabled="False">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Padding="0,8" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="60"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
+                        <ListView
+                            Grid.Row="1"
+                            Margin="0,12,0,0"
+                            ItemsSource="{x:Bind ViewModel.DisplayedConnections, Mode=OneWay}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:NetworkConnection">
+                                    <Grid Padding="0,8" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0" 
-                                                       Text="{Binding Protocol}" 
-                                                       FontWeight="SemiBold"
-                                                       FontSize="13"
-                                                       VerticalAlignment="Top"
-                                                       Margin="0,2,0,0"/>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Text="{x:Bind Protocol}"
+                                            FontWeight="SemiBold"
+                                            FontSize="13"
+                                            VerticalAlignment="Top"
+                                            Margin="0,2,0,0"/>
 
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock FontSize="13" Margin="0,0,0,2">
-                                                    <Run Text="Local: " Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                    <Run Text="{Binding DisplayLocalEndpoint}" FontFamily="Consolas" FontWeight="SemiBold"/>
-                                                </TextBlock>
-                                                <TextBlock FontSize="13" Margin="0,0,0,2">
-                                                    <Run Text="Remote: " Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                    <Run Text="{Binding DisplayRemoteEndpoint}" FontFamily="Consolas"/>
-                                                </TextBlock>
-                                                <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                    <Run Text="{Binding State}"/>
-                                                    <Run Text=" • "/>
-                                                    <Run Text="{Binding RiskLevel}"/>
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </ScrollViewer>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock FontSize="13" Margin="0,0,0,2">
+                                                <Run Text="Local: " Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                <Run Text="{x:Bind DisplayLocalEndpoint}" FontFamily="Consolas" FontWeight="SemiBold"/>
+                                            </TextBlock>
+                                            <TextBlock FontSize="13" Margin="0,0,0,2">
+                                                <Run Text="Remote: " Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                <Run Text="{x:Bind DisplayRemoteEndpoint}" FontFamily="Consolas"/>
+                                            </TextBlock>
+                                            <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{x:Bind State}"/>
+                                                <Run Text=" • "/>
+                                                <Run Text="{x:Bind RiskLevel}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!-- Risk label -->
+                                        <Border
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            CornerRadius="4"
+                                            Padding="8,4"
+                                            Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                                            <TextBlock
+                                                Text="{x:Bind RiskLevel}"
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- Show more / less button -->
+                        <Button
+                            Grid.Row="2"
+                            Content="{x:Bind ViewModel.ConnectionsToggleText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.ToggleConnectionsCommand}"
+                            Visibility="{x:Bind ViewModel.HasMoreConnections, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="13"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            HorizontalAlignment="Center"
+                            Margin="0,8,0,0"/>
                     </Grid>
                 </Border>
 
-                <!-- Open Ports Card -->
-                <Border 
+                <!-- ══ Risky Open Ports Card ══════════════════════════════════ -->
+                <Border
                     Grid.Row="0" Grid.Column="1"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -274,67 +280,116 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock 
-                                    Text="🚪" 
-                                    FontSize="28"
-                                    Margin="0,0,12,0"/>
-                                <TextBlock 
-                                    Text="Open Ports" 
-                                    FontSize="22" 
+                        <!-- Card Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="⚠️" FontSize="28" Margin="0,0,12,0"/>
+                            <StackPanel>
+                                <TextBlock
+                                    Text="Risky Open Ports"
+                                    FontSize="22"
                                     FontWeight="SemiBold"
                                     VerticalAlignment="Center"/>
+                                <TextBlock
+                                    Text="Ports that are commonly targeted by attackers"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Margin="0,2,0,0"/>
                             </StackPanel>
                         </StackPanel>
 
+                        <!-- Empty state -->
+                        <Border
+                            Grid.Row="1"
+                            Visibility="{x:Bind ViewModel.HasNoRiskyPorts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            CornerRadius="8"
+                            Padding="20,16"
+                            Margin="0,12,0,0">
+                            <StackPanel HorizontalAlignment="Center" Spacing="6">
+                                <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
+                                <TextBlock
+                                    Text="No risky ports detected"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"/>
+                                <TextBlock
+                                    Text="Your system looks good. Start monitoring or refresh to scan."
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Center"
+                                    TextAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Ports List -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ListView ItemsSource="{x:Bind ViewModel.OpenPorts, Mode=OneWay}"
-                                      SelectionMode="None"
-                                      IsItemClickEnabled="False">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Padding="0,8" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="80"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
+                        <ListView
+                            Grid.Row="2"
+                            Margin="0,12,0,0"
+                            Visibility="{x:Bind ViewModel.HasNoRiskyPorts, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}"
+                            ItemsSource="{x:Bind ViewModel.DisplayedRiskyPorts, Mode=OneWay}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:PortScanResult">
+                                    <Grid Padding="0,8" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Top">
-                                                <TextBlock Text="{Binding Port}" 
-                                                           FontFamily="Consolas" 
-                                                           FontWeight="Bold"
-                                                           FontSize="18"/>
-                                                <TextBlock Text="{Binding Protocol}" 
-                                                           FontSize="11"
-                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                            </StackPanel>
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Top">
+                                            <TextBlock
+                                                Text="{x:Bind Port}"
+                                                FontFamily="Consolas"
+                                                FontWeight="Bold"
+                                                FontSize="18"
+                                                Foreground="#D13438"/>
+                                            <TextBlock
+                                                Text="{x:Bind Protocol}"
+                                                FontSize="11"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </StackPanel>
 
-                                            <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding ServiceName}" 
-                                                           FontSize="14"
-                                                           FontWeight="SemiBold"
-                                                           Margin="0,0,0,4"/>
-                                                <TextBlock Text="{Binding RiskDescription}" 
-                                                           FontSize="12"
-                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                           TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </ScrollViewer>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock
+                                                Text="{x:Bind ServiceName}"
+                                                FontSize="14"
+                                                FontWeight="SemiBold"
+                                                Margin="0,0,0,4"/>
+                                            <TextBlock
+                                                Text="{x:Bind RiskDescription}"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- Show more / less button -->
+                        <Button
+                            Grid.Row="3"
+                            Content="{x:Bind ViewModel.RiskyPortsToggleText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.ToggleRiskyPortsCommand}"
+                            Visibility="{x:Bind ViewModel.HasMoreRiskyPorts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="13"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            HorizontalAlignment="Center"
+                            Margin="0,8,0,0"/>
                     </Grid>
                 </Border>
 
-                <!-- Network Traffic Card -->
-                <Border 
+                <!-- ══ Connected Devices Card ═════════════════════════════════ -->
+                <Border
                     Grid.Row="1" Grid.Column="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -345,81 +400,80 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header -->
-                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock 
-                                    Text="📊" 
-                                    FontSize="28"
-                                    Margin="0,0,12,0"/>
-                                <TextBlock 
-                                    Text="Network Traffic" 
-                                    FontSize="22" 
-                                    FontWeight="SemiBold"
-                                    VerticalAlignment="Center"/>
+                        <!-- Card Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                            <TextBlock Text="📡" FontSize="28" Margin="0,0,12,0"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock
+                                    Text="Connected Devices"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"/>
+                                <TextBlock
+                                    Text="WiFi, Ethernet, and Bluetooth connections"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Margin="0,2,0,0"/>
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Traffic Stats List -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ListView ItemsSource="{x:Bind ViewModel.TrafficStats, Mode=OneWay}"
-                                      SelectionMode="None"
-                                      IsItemClickEnabled="False">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid Padding="0,12" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
+                        <!-- Devices List -->
+                        <ListView
+                            Grid.Row="1"
+                            ItemsSource="{x:Bind ViewModel.ConnectedDevices, Mode=OneWay}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ConnectedDevice">
+                                    <Grid Padding="0,10" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="36"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Row="0" 
-                                                       Text="{Binding InterfaceName}" 
-                                                       FontWeight="SemiBold"
-                                                       FontSize="15"
-                                                       Margin="0,0,0,8"/>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Text="{x:Bind Icon}"
+                                            FontSize="22"
+                                            VerticalAlignment="Center"/>
 
-                                            <Grid Grid.Row="1">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
+                                            <TextBlock
+                                                Text="{x:Bind Name}"
+                                                FontWeight="SemiBold"
+                                                FontSize="14"/>
+                                            <TextBlock
+                                                Text="{x:Bind Description}"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
 
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                        <Run Text="📤 Sent: "/>
-                                                        <Run Text="{Binding FormattedBytesSent}" FontWeight="SemiBold"/>
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,2,0,0">
-                                                        <Run Text="Rate: "/>
-                                                        <Run Text="{Binding FormattedSendRate}"/>
-                                                    </TextBlock>
-                                                </StackPanel>
-
-                                                <StackPanel Grid.Column="1">
-                                                    <TextBlock FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                                        <Run Text="📥 Received: "/>
-                                                        <Run Text="{Binding FormattedBytesReceived}" FontWeight="SemiBold"/>
-                                                    </TextBlock>
-                                                    <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,2,0,0">
-                                                        <Run Text="Rate: "/>
-                                                        <Run Text="{Binding FormattedReceiveRate}"/>
-                                                    </TextBlock>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </ScrollViewer>
+                                        <!-- Disconnect button (WiFi only) -->
+                                        <Button
+                                            Grid.Column="2"
+                                            Content="Disconnect"
+                                            Tag="{x:Bind}"
+                                            Click="DisconnectDevice_Click"
+                                            Visibility="{x:Bind CanDisconnect, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Background="#D13438"
+                                            Foreground="White"
+                                            FontSize="12"
+                                            Padding="12,6"
+                                            CornerRadius="6"
+                                            VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </Border>
 
-                <!-- Security Alerts Card -->
-                <Border 
+                <!-- ══ Security Alerts & WiFi Events Card ════════════════════ -->
+                <Border
                     Grid.Row="1" Grid.Column="1"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -430,23 +484,22 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <!-- Header -->
-                        <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock 
-                                    Text="⚠️" 
-                                    FontSize="28"
-                                    Margin="0,0,12,0"/>
-                                <TextBlock 
-                                    Text="Security Alerts" 
-                                    FontSize="22" 
+                                <TextBlock Text="🛡️" FontSize="28" Margin="0,0,12,0"/>
+                                <TextBlock
+                                    Text="Security Alerts"
+                                    FontSize="22"
                                     FontWeight="SemiBold"
                                     VerticalAlignment="Center"/>
                             </StackPanel>
-                            <Button 
+                            <Button
                                 Content="🗑️"
                                 Command="{x:Bind ViewModel.ClearAlertsCommand}"
                                 Background="Transparent"
@@ -459,26 +512,97 @@
                         </Grid>
 
                         <!-- Alerts List -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ListView ItemsSource="{x:Bind ViewModel.SecurityAlerts, Mode=OneWay}"
-                                      SelectionMode="None"
-                                      IsItemClickEnabled="False">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <Border Padding="12,8" 
-                                                Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
-                                                CornerRadius="6"
-                                                Margin="0,0,0,8">
-                                            <TextBlock Text="{x:Bind}" 
-                                                       TextWrapping="Wrap"
-                                                       FontFamily="Consolas"
-                                                       FontSize="12"
-                                                       Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </ScrollViewer>
+                        <ListView
+                            Grid.Row="1"
+                            MaxHeight="180"
+                            ItemsSource="{x:Bind ViewModel.SecurityAlerts, Mode=OneWay}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Border
+                                        Padding="12,8"
+                                        Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                        CornerRadius="6"
+                                        Margin="0,0,0,6">
+                                        <TextBlock
+                                            Text="{x:Bind}"
+                                            TextWrapping="Wrap"
+                                            FontFamily="Consolas"
+                                            FontSize="12"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- WiFi Disconnect History divider + header -->
+                        <StackPanel Grid.Row="2" Margin="0,16,0,8">
+                            <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="0,0,0,12"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="📶" FontSize="18"/>
+                                <TextBlock
+                                    Text="WiFi Disconnect History"
+                                    FontSize="16"
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock
+                                Text="Recent disconnects from Windows Event Log"
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <!-- WiFi Events List -->
+                        <ListView
+                            Grid.Row="3"
+                            MaxHeight="200"
+                            ItemsSource="{x:Bind ViewModel.WifiEvents, Mode=OneWay}"
+                            SelectionMode="None"
+                            IsItemClickEnabled="False">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:WifiDisconnectEvent">
+                                    <Border
+                                        Padding="12,8"
+                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                        CornerRadius="6"
+                                        Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock
+                                                    Text="{x:Bind NetworkName}"
+                                                    FontWeight="SemiBold"
+                                                    FontSize="13"
+                                                    Margin="0,0,0,2"/>
+                                                <TextBlock
+                                                    Text="{x:Bind Reason}"
+                                                    FontSize="12"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                                <TextBlock
+                                                    Text="{x:Bind TimeAgo}"
+                                                    FontSize="11"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    HorizontalAlignment="Right"/>
+                                                <TextBlock
+                                                    Text="{x:Bind DisplayTimestamp}"
+                                                    FontSize="10"
+                                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                    HorizontalAlignment="Right"
+                                                    Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </Grid>
                 </Border>
             </Grid>
