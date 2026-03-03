@@ -112,37 +112,185 @@
                                 MaxWidth="480"/>
                         </StackPanel>
 
-                        <!-- Checklist -->
-                        <Border
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            CornerRadius="12"
-                            Padding="24"
-                            Margin="0,0,0,32">
-                            <StackPanel>
-                                <TextBlock
-                                    Text="Select what to clean"
-                                    FontSize="15"
-                                    FontWeight="SemiBold"
-                                    Margin="0,0,0,12"/>
+                        <!-- Task List -->
+                        <StackPanel Spacing="8" Margin="0,0,0,32">
+                            <TextBlock
+                                Text="Select what to clean"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,4"/>
+
+                            <!-- Recycle Bin -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" Spacing="10">
-                                        <CheckBox IsChecked="{Binding Options.CleanRecycleBin, Mode=TwoWay}" Content="🗑️  Recycle Bin"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanTempFiles, Mode=TwoWay}" Content="📁  Temp Files"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanThumbnailCache, Mode=TwoWay}" Content="🖼️  Thumbnail Cache"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanCrashDumps, Mode=TwoWay}" Content="💥  Crash Dumps"/>
+                                    <TextBlock Grid.Column="0" Text="🗑️" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Recycle Bin" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Permanently deletes files you've already sent to the Recycle Bin." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="10">
-                                        <CheckBox IsChecked="{Binding Options.FlushDnsCache, Mode=TwoWay}" Content="🌐  DNS Cache"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanPrefetch, Mode=TwoWay}" Content="⚡  Prefetch Files"/>
-                                        <CheckBox IsChecked="{Binding Options.CleanWindowsErrorReports, Mode=TwoWay}" Content="📋  Error Reports"/>
-                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanRecycleBin, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
                                 </Grid>
-                            </StackPanel>
-                        </Border>
+                            </Border>
+
+                            <!-- Temp Files -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="📁" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Temporary Files" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes leftover files apps create while running. They're no longer needed once the app closes." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanTempFiles, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Thumbnail Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="🖼️" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Thumbnail Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears the preview images Windows stores for your files. They'll rebuild automatically next time you browse." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanThumbnailCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- DNS Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="🌐" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="DNS Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Flushes your PC's memory of website addresses. Useful if websites aren't loading correctly." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.FlushDnsCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Prefetch -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="⚡" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Prefetch Files" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes files Windows uses to speed up app launches. They'll be recreated automatically over time." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanPrefetch, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Error Reports -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="📋" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Windows Error Reports" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Deletes crash reports Windows saves when apps stop working. Safe to remove once you've resolved any issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanWindowsErrorReports, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Crash Dumps -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="💥" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Crash Dump Files" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes memory snapshots saved when your PC crashes. Only needed for diagnosing issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanCrashDumps, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Windows Update Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="🔄" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Windows Update Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears downloaded update files that have already been installed. Safe to remove anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Event Logs -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="📝" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Windows Event Logs" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears Windows system and application logs. Skip this if your PC is managed by IT support." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Edge Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="🌍" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Microsoft Edge Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears Edge's temporary browsing cache. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                </Grid>
+                            </Border>
+
+                        </StackPanel>
 
                         <!-- Run Button -->
                         <Button
@@ -275,124 +423,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- Optional Tasks (Expandable) -->
-            <Expander
-                Grid.Row="2"
-                HorizontalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                Margin="0,0,0,24">
-                <Expander.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <TextBlock Text="⚙️" FontSize="18" VerticalAlignment="Center"/>
-                        <StackPanel>
-                            <TextBlock Text="Customize (Optional)" FontSize="16" FontWeight="SemiBold"/>
-                            <TextBlock
-                                Text="Add extra cleaning tasks — these are off by default"
-                                FontSize="13"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Expander.Header>
-                <StackPanel Padding="8,16,8,8" Spacing="12">
 
-                    <!-- Windows Update Cache -->
-                    <Border
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="20">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="🔄" FontSize="28" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Windows Update Cache" FontSize="15" FontWeight="SemiBold"/>
-                                <TextBlock
-                                    Text="Clears downloaded update files. Safe to remove after updates have installed."
-                                    FontSize="13"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    TextWrapping="Wrap"/>
-                            </StackPanel>
-                            <ToggleSwitch
-                                Grid.Column="2"
-                                IsOn="{Binding CleanUpdateCache, Mode=TwoWay}"
-                                VerticalAlignment="Center"
-                                Margin="16,0,0,0"
-                                OnContent=""
-                                OffContent=""/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Event Logs -->
-                    <Border
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="20">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="📝" FontSize="28" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Windows Event Logs" FontSize="15" FontWeight="SemiBold"/>
-                                <TextBlock
-                                    Text="Clears Application and System logs. Skip this if you share your PC with IT support."
-                                    FontSize="13"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    TextWrapping="Wrap"/>
-                            </StackPanel>
-                            <ToggleSwitch
-                                Grid.Column="2"
-                                IsOn="{Binding CleanEventLogs, Mode=TwoWay}"
-                                VerticalAlignment="Center"
-                                Margin="16,0,0,0"
-                                OnContent=""
-                                OffContent=""/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Edge Cache -->
-                    <Border
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="20">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="🌍" FontSize="28" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="Microsoft Edge Cache" FontSize="15" FontWeight="SemiBold"/>
-                                <TextBlock
-                                    Text="Clears Edge's temporary browser cache. Websites may load slightly slower on first visit."
-                                    FontSize="13"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    TextWrapping="Wrap"/>
-                            </StackPanel>
-                            <ToggleSwitch
-                                Grid.Column="2"
-                                IsOn="{Binding CleanBrowserCache, Mode=TwoWay}"
-                                VerticalAlignment="Center"
-                                Margin="16,0,0,0"
-                                OnContent=""
-                                OffContent=""/>
-                        </Grid>
-                    </Border>
-
-                </StackPanel>
-            </Expander>
 
         </Grid>
     </ScrollViewer>
