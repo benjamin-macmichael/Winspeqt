@@ -39,6 +39,69 @@ namespace Winspeqt.Services
             return result;
         }
 
+        // ── Pre-scan (size estimation only, no deletion) ─────────────────────
+
+        public async Task<Dictionary<string, long>> ScanSizesAsync()
+        {
+            var results = new Dictionary<string, long>();
+
+            await Task.Run(() =>
+            {
+                // Recycle Bin
+                try
+                {
+                    var info = new NativeMethods.SHQUERYRBINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(NativeMethods.SHQUERYRBINFO)) };
+                    NativeMethods.SHQueryRecycleBin(null, ref info);
+                    results["RecycleBin"] = info.i64Size;
+                }
+                catch { results["RecycleBin"] = 0; }
+
+                // Temp Files
+                results["TempFiles"] = GetDirectorySize(Path.GetTempPath()) + GetDirectorySize(@"C:\Windows\Temp");
+
+                // Thumbnail Cache
+                var thumbDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\Explorer");
+                long thumbSize = 0;
+                if (Directory.Exists(thumbDir))
+                    foreach (var f in Directory.GetFiles(thumbDir, "thumbcache_*.db"))
+                        try { thumbSize += new FileInfo(f).Length; } catch { }
+                results["ThumbnailCache"] = thumbSize;
+
+                // DNS Cache — no measurable size
+                results["DnsCache"] = 0;
+
+                // Prefetch
+                results["Prefetch"] = GetDirectorySize(@"C:\Windows\Prefetch");
+
+                // Error Reports
+                results["ErrorReports"] =
+                    GetDirectorySize(@"C:\ProgramData\Microsoft\Windows\WER\ReportArchive") +
+                    GetDirectorySize(@"C:\ProgramData\Microsoft\Windows\WER\ReportQueue") +
+                    GetDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\WER\ReportArchive")) +
+                    GetDirectorySize(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\Windows\WER\ReportQueue"));
+
+                // Crash Dumps
+                long dumpSize = 0;
+                if (File.Exists(@"C:\Windows\MEMORY.DMP"))
+                    try { dumpSize += new FileInfo(@"C:\Windows\MEMORY.DMP").Length; } catch { }
+                dumpSize += GetDirectorySize(@"C:\Windows\Minidump");
+                results["CrashDumps"] = dumpSize;
+
+                // Windows Update Cache — requires admin, skip size estimate
+                results["UpdateCache"] = 0;
+
+                // Event Logs — no measurable size without clearing
+                results["EventLogs"] = 0;
+
+                // Edge Cache
+                results["EdgeCache"] = GetDirectorySize(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Microsoft\Edge\User Data\Default\Cache\Cache_Data"));
+            });
+
+            return results;
+        }
+
         // ── Always-on tasks ───────────────────────────────────────────────────
 
         private Task<OptimizationTaskResult> CleanRecycleBinAsync(IProgress<string> progress)
@@ -365,8 +428,9 @@ namespace Winspeqt.Services
                     {
                         try
                         {
-                            freed += new FileInfo(file).Length;
+                            var size = new FileInfo(file).Length;
                             File.Delete(file);
+                            freed += size; // only count if delete succeeded
                         }
                         catch { errors++; }
                     }
@@ -385,7 +449,13 @@ namespace Winspeqt.Services
             {
                 foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
                 {
-                    try { size += new FileInfo(file).Length; } catch { }
+                    try
+                    {
+                        // Only count files we can actually open and delete
+                        using var fs = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                        size += fs.Length;
+                    }
+                    catch { }
                 }
             }
             catch { }

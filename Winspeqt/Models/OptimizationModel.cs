@@ -57,9 +57,9 @@ namespace Winspeqt.Models
         public bool CleanWindowsErrorReports { get; set; } = true;
         public bool CleanCrashDumps { get; set; } = true;
 
-        // Optional toggles (off by default)
-        public bool CleanWindowsUpdateCache { get; set; } = false;
-        public bool CleanEventLogs { get; set; } = false;
-        public bool CleanBrowserCache { get; set; } = false;
+        // Optional toggles (on by default)
+        public bool CleanWindowsUpdateCache { get; set; } = true;
+        public bool CleanEventLogs { get; set; } = true;
+        public bool CleanBrowserCache { get; set; } = true;
     }
 }

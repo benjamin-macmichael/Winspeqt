@@ -88,6 +88,63 @@
                             HorizontalAlignment="Center"/>
                     </StackPanel>
 
+                    <!-- Results Summary (shown after a run, ALWAYS at top) -->
+                    <StackPanel
+                        Visibility="{Binding HasCompleted, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Margin="0,0,0,32">
+                        <TextBlock
+                            Text="✅  Last Optimization Results"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,16"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="12" Padding="20" Margin="0,0,8,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Result.FormattedBytesFreed}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#4CAF50"/>
+                                    <TextBlock Text="Space Freed" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="12" Padding="20" Margin="8,0,8,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Result.TasksCompleted}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#4CAF50"/>
+                                    <TextBlock Text="Tasks Done" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="12" Padding="20" Margin="8,0,0,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Result.TasksFailed}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FF9800"/>
+                                    <TextBlock Text="Skipped" FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <ItemsControl ItemsSource="{Binding Result.TaskResults}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:OptimizationTaskResult">
+                                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="16,10" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind TaskName}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{x:Bind StatusMessage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{x:Bind FormattedBytesFreed}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
                     <!-- Idle/Ready State (always visible unless running) -->
                     <StackPanel Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                         <StackPanel HorizontalAlignment="Center" Margin="0,0,0,32">
@@ -102,6 +159,26 @@
                                 FontWeight="SemiBold"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,8"/>
+
+                            <!-- Estimated size -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,4">
+                                <ProgressRing
+                                    IsActive="{Binding IsScanning}"
+                                    Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Width="18" Height="18"/>
+                                <TextBlock
+                                    Text="{Binding EstimatedTotal}"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"
+                                    Foreground="#4CAF50"
+                                    HorizontalAlignment="Center"/>
+                                <TextBlock
+                                    Text="estimated to be freed"
+                                    FontSize="15"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
+                            </StackPanel>
                             <TextBlock
                                 Text="Winspeqt will safely clean up junk files from your PC."
                                 FontSize="15"
@@ -113,7 +190,19 @@
                         </StackPanel>
 
                         <!-- Task List -->
-                        <StackPanel Spacing="8" Margin="0,0,0,32">
+                        <StackPanel Spacing="8" Margin="0,32,0,32">
+
+                            <!-- Run Button -->
+                            <Button
+                            x:Name="RunButton"
+                            Content="🚀  Run Optimization"
+                            Command="{Binding RunOptimizationCommand}"
+                            HorizontalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Padding="48,16"
+                            CornerRadius="12"
+                            Margin="0,0,0,32"/>
                             <TextBlock
                                 Text="Select what to clean"
                                 FontSize="15"
@@ -133,7 +222,10 @@
                                         <TextBlock Text="Recycle Bin" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Permanently deletes files you've already sent to the Recycle Bin." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanRecycleBin, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeRecycleBin}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanRecycleBin, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -150,7 +242,10 @@
                                         <TextBlock Text="Temporary Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes leftover files apps create while running. They're no longer needed once the app closes." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanTempFiles, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeTempFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanTempFiles, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -167,7 +262,10 @@
                                         <TextBlock Text="Thumbnail Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears the preview images Windows stores for your files. They'll rebuild automatically next time you browse." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanThumbnailCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeThumbnailCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanThumbnailCache, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -184,7 +282,10 @@
                                         <TextBlock Text="DNS Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Flushes your PC's memory of website addresses. Useful if websites aren't loading correctly." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.FlushDnsCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding FlushDnsCache, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -201,7 +302,10 @@
                                         <TextBlock Text="Prefetch Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes files Windows uses to speed up app launches. They'll be recreated automatically over time." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanPrefetch, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizePrefetch}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanPrefetch, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -218,7 +322,10 @@
                                         <TextBlock Text="Windows Error Reports" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Deletes crash reports Windows saves when apps stop working. Safe to remove once you've resolved any issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanWindowsErrorReports, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeErrorReports}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanWindowsErrorReports, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -235,7 +342,10 @@
                                         <TextBlock Text="Crash Dump Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes memory snapshots saved when your PC crashes. Only needed for diagnosing issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding Options.CleanCrashDumps, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeCrashDumps}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanCrashDumps, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -252,7 +362,10 @@
                                         <TextBlock Text="Windows Update Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears downloaded update files that have already been installed. Safe to remove anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeUpdateCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -269,7 +382,10 @@
                                         <TextBlock Text="Windows Event Logs" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Windows system and application logs. Skip this if your PC is managed by IT support." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
@@ -286,137 +402,16 @@
                                         <TextBlock Text="Microsoft Edge Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Edge's temporary browsing cache. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="16,0,0,0" Spacing="4">
+                                        <TextBlock Text="{Binding SizeEdgeCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" HorizontalAlignment="Center"/>
+                                        <CheckBox IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
 
                         </StackPanel>
 
-                        <!-- Run Button -->
-                        <Button
-                            x:Name="RunButton"
-                            Content="🚀  Run Optimization"
-                            Command="{Binding RunOptimizationCommand}"
-                            HorizontalAlignment="Center"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Padding="48,16"
-                            CornerRadius="12"/>
-
-                        <!-- Results Summary (shown after a run) -->
-                        <StackPanel
-                            Visibility="{Binding HasCompleted, Converter={StaticResource BoolToVisibilityConverter}}"
-                            Margin="0,32,0,0">
-
-                            <TextBlock
-                                Text="✅  Last Optimization Results"
-                                FontSize="18"
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,16"/>
-
-                            <Grid Margin="0,0,0,16">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border
-                                    Grid.Column="0"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    CornerRadius="12"
-                                    Padding="20"
-                                    Margin="0,0,8,0">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock
-                                            Text="{Binding Result.FormattedBytesFreed}"
-                                            FontSize="28"
-                                            FontWeight="Bold"
-                                            HorizontalAlignment="Center"
-                                            Foreground="#4CAF50"/>
-                                        <TextBlock
-                                            Text="Space Freed"
-                                            FontSize="13"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border
-                                    Grid.Column="1"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    CornerRadius="12"
-                                    Padding="20"
-                                    Margin="8,0,8,0">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock
-                                            Text="{Binding Result.TasksCompleted}"
-                                            FontSize="28"
-                                            FontWeight="Bold"
-                                            HorizontalAlignment="Center"
-                                            Foreground="#4CAF50"/>
-                                        <TextBlock
-                                            Text="Tasks Done"
-                                            FontSize="13"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border
-                                    Grid.Column="2"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    CornerRadius="12"
-                                    Padding="20"
-                                    Margin="8,0,0,0">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock
-                                            Text="{Binding Result.TasksFailed}"
-                                            FontSize="28"
-                                            FontWeight="Bold"
-                                            HorizontalAlignment="Center"
-                                            Foreground="#FF9800"/>
-                                        <TextBlock
-                                            Text="Skipped"
-                                            FontSize="13"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-
-                            <ItemsControl ItemsSource="{Binding Result.TaskResults}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="models:OptimizationTaskResult">
-                                        <Border
-                                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                            CornerRadius="8"
-                                            Padding="16,10"
-                                            Margin="0,0,0,6">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{x:Bind TaskName}" FontSize="14" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{x:Bind StatusMessage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                                </StackPanel>
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Text="{x:Bind FormattedBytesFreed}"
-                                                    FontSize="13"
-                                                    FontWeight="SemiBold"
-                                                    Foreground="#4CAF50"
-                                                    VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
+                        
 
                     </StackPanel>
 
