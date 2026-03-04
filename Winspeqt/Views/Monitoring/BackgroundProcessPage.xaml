@@ -10,7 +10,8 @@
     xmlns:helpers="using:Winspeqt.Helpers"
     xmlns:monitoring="using:Winspeqt.ViewModels.Monitoring"
 
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.DataContext>
         <viewmodels:BackgroundProcessViewModel/>
@@ -18,6 +19,8 @@
 
     <Page.Resources>
         <helpers:CollectionCountToVisibilityConverter x:Key="CollectionCountToVisibilityConverter"/>
+        <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
 
         <!-- Compact Grid Card Template -->
         <DataTemplate x:Key="ProcessGridCardTemplate" x:DataType="models:ProcessInfo">
@@ -85,30 +88,45 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" 
-                                Background="{ThemeResource SystemFillColorSuccessBrush}" 
-                                CornerRadius="4" 
+                        <!-- Status badge -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource SystemFillColorSuccessBrush}"
+                                CornerRadius="4"
                                 Padding="8,4"
                                 HorizontalAlignment="Left">
-                            <TextBlock Text="{x:Bind Status}" 
+                            <TextBlock Text="{x:Bind Status}"
                                        FontSize="10"
-                                       Foreground="White" 
+                                       Foreground="White"
                                        FontWeight="SemiBold"/>
                         </Border>
 
-                        <Button Grid.Column="1" 
-                                Content="End" 
-                                Click="EndProcess_Click" 
+                        <!-- End Task button — only shown for non-protected processes -->
+                        <Button Grid.Column="1"
+                                Content="🛑 End Task"
+                                Click="EndProcess_Click"
                                 Tag="{x:Bind}"
-                                Padding="12,6" 
-                                FontSize="12"
-                                CornerRadius="6">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
-                                    <Setter Property="Background" Value="{ThemeResource SystemFillColorCriticalBrush}"/>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                                Visibility="{x:Bind IsEndable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Background="#F44336"
+                                Foreground="White"
+                                Padding="12,8"
+                                FontSize="12"/>
+
+                        <!-- Protected badge — shown instead of End for system processes -->
+                        <Border Grid.Column="1"
+                                Visibility="{x:Bind IsProtected, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="10,8">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE72E;" FontSize="11"
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="System"
+                                           FontSize="11"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Grid>
             </Border>

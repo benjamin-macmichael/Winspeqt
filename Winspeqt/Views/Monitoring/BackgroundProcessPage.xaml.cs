@@ -32,14 +32,18 @@ namespace Winspeqt.Views.Monitoring
             var process = button?.Tag as ProcessInfo;
             if (process == null) return;
 
+            // Safety guard — protected processes should never reach here via the UI,
+            // but defend against it just in case.
+            if (process.IsProtected) return;
+
             ContentDialog confirmDialog = new ContentDialog
             {
-                Title = "End Process?",
-                Content = $"Are you sure you want to end '{process.Description}'?\n\n" +
+                Title = $"End {process.Description}?",
+                Content = $"Are you sure you want to close '{process.Description}'?\n\n" +
                           $"Process: {process.ProcessName}\n" +
                           $"Memory: {process.MemoryUsageDisplay}\n\n" +
-                          $"⚠️ Warning: Ending this process may cause data loss or system instability.",
-                PrimaryButtonText = "End Process",
+                          $"If this app has unsaved work, it will be lost.",
+                PrimaryButtonText = "End Task",
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = this.XamlRoot

@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using Winspeqt.Views.Optimization;
 
 namespace Winspeqt.Views.Optimization
 {
@@ -51,7 +52,7 @@ namespace Winspeqt.Views.Optimization
         private async void AppDataCleanupCard_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Navigate to AppData Cleanup page
-            await ShowComingSoonDialog("Safe AppData Cleanup");
+            Frame.Navigate(typeof(AppDataCleanupCard));
         }
 
         /// <summary>
@@ -59,8 +60,7 @@ namespace Winspeqt.Views.Optimization
         /// </summary>
         private async void OneClickOptimizationCard_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Navigate to One-Click Optimization page
-            await ShowComingSoonDialog("One-Click Optimization");
+            Frame.Navigate(typeof(OptimizationPage));
         }
 
         /// <summary>
