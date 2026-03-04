@@ -99,7 +99,56 @@ namespace Winspeqt.ViewModels.Optimization
         /// <summary>
         /// List of available sort options for the UI.
         /// </summary>
-        public ObservableCollection<string> SortOptions { get; set; } = ["Default", "Name", "Size"];
+        public ObservableCollection<string> SortOptions { get; } = ["Default", "Name", "Size"];
+
+
+        private long _totalHardDrive;
+        public long TotalHardDrive
+        {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive).size;
+            set
+            {
+                if (SetProperty(ref _totalHardDrive, value))
+                {
+                    OnPropertyChanged(nameof(TotalDriveLabel));
+                    OnPropertyChanged(nameof(UsedHardDrive));
+                    OnPropertyChanged(nameof(UsedDriveLabel));
+                    OnPropertyChanged(nameof(DriveUsageText));
+                }
+            }
+        }
+        public Enums.DataSize TotalDriveLabel { get => DataSizeConverter.ReduceSize(_totalHardDrive).label; }
+
+        private long _availableHardDrive;
+
+        public long AvailableHardDrive
+        {
+            get => DataSizeConverter.ReduceSize(_availableHardDrive).size;
+            set
+            {
+                if (SetProperty(ref _availableHardDrive, value))
+                {
+                    OnPropertyChanged(nameof(AvailableDriveLabel));
+                    OnPropertyChanged(nameof(UsedHardDrive));
+                    OnPropertyChanged(nameof(UsedDriveLabel));
+                    OnPropertyChanged(nameof(DriveUsageText));
+                }
+            }
+        }
+        public Enums.DataSize AvailableDriveLabel { get => DataSizeConverter.ReduceSize(_availableHardDrive).label; }
+
+        public long UsedHardDrive
+        {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).size;
+        }
+
+        public Enums.DataSize UsedDriveLabel
+        {
+            get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).label;
+        }
+
+        public string DriveUsageText =>
+            $"You are using {UsedHardDrive} {UsedDriveLabel} of {TotalHardDrive} {TotalDriveLabel} on this drive";
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
@@ -114,6 +163,10 @@ namespace Winspeqt.ViewModels.Optimization
                 ErrorMessage = "There was a problem calculating storage. If this problem persists, please contact winspeqtsupport@byu.onmicrosoft.com.";
                 return;
             }
+
+            (long totalSize, long availableSize) = GetDriveSize();
+            TotalHardDrive = totalSize;
+            AvailableHardDrive = availableSize;
 
             PathItems = [];
         }
@@ -363,6 +416,28 @@ namespace Winspeqt.ViewModels.Optimization
             }
 
             ActiveNode.Children = new ObservableCollection<FileSearchItem>(listItems);
+        }
+
+        private static (long totalSize, long availableSize) GetDriveSize()
+        {
+            string? initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (string.IsNullOrEmpty(initialFolder))
+            {
+                System.Diagnostics.Debug.Print("could not find initial folder to get drive size. Will not display drive size");
+                return (0, 0);
+            }
+            string? driveName = Path.GetPathRoot(initialFolder);
+            if (string.IsNullOrEmpty(driveName))
+            {
+                System.Diagnostics.Debug.Print("could not find initial folder to get drive size. Will not display drive size");
+                return (0, 0);
+            }
+            DriveInfo driveInfo = new(driveName);
+
+            // I chose to use TotalFreeSpace over AvailableFreeSpace because this will better reflect what is left after 
+            // apps have taken their space
+            System.Diagnostics.Debug.Print($"{driveInfo.TotalSize}, {driveInfo.TotalFreeSpace}");
+            return (driveInfo.TotalSize, driveInfo.TotalFreeSpace);
         }
     }
 }
