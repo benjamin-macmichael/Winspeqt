@@ -1,5 +1,6 @@
-﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Dispatching;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -20,119 +21,111 @@ namespace Winspeqt.ViewModels.Security
         private int _totalConnections;
         private int _listeningPorts;
         private int _riskyConnections;
-        private string _totalTrafficSent = string.Empty;
-        private string _totalTrafficReceived = string.Empty;
 
-        public ObservableCollection<NetworkConnection> ActiveConnections { get; }
-        public ObservableCollection<NetworkTrafficStats> TrafficStats { get; }
-        public ObservableCollection<PortScanResult> OpenPorts { get; }
-        public ObservableCollection<string> SecurityAlerts { get; }
+        // Backing lists for all data (unfiltered)
+        private readonly List<NetworkConnection> _allNotableConnections = new();
+        private readonly List<PortScanResult> _allRiskyPorts = new();
+
+        // Expand/collapse state
+        private bool _showAllConnections = false;
+        private bool _showAllRiskyPorts = false;
+
+        // Public collections bound to the UI
+        public ObservableCollection<NetworkConnection> DisplayedConnections { get; } = new();
+        public ObservableCollection<PortScanResult> DisplayedRiskyPorts { get; } = new();
+        public ObservableCollection<ConnectedDevice> ConnectedDevices { get; } = new();
+        public ObservableCollection<WifiDisconnectEvent> WifiEvents { get; } = new();
+        public ObservableCollection<string> SecurityAlerts { get; } = new();
+
+        // Keep full collections for stats
+        public ObservableCollection<NetworkConnection> ActiveConnections { get; } = new();
+        public ObservableCollection<PortScanResult> OpenPorts { get; } = new();
 
         public bool IsMonitoring
         {
             get => _isMonitoring;
-            set
-            {
-                _isMonitoring = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MonitoringStatusText));
-            }
+            set { _isMonitoring = value; OnPropertyChanged(); OnPropertyChanged(nameof(MonitoringStatusText)); }
         }
 
         public string StatusMessage
         {
             get => _statusMessage;
-            set
-            {
-                _statusMessage = value;
-                OnPropertyChanged();
-            }
+            set { _statusMessage = value; OnPropertyChanged(); }
         }
 
         public int TotalConnections
         {
             get => _totalConnections;
-            set
-            {
-                _totalConnections = value;
-                OnPropertyChanged();
-            }
+            set { _totalConnections = value; OnPropertyChanged(); }
         }
 
         public int ListeningPorts
         {
             get => _listeningPorts;
-            set
-            {
-                _listeningPorts = value;
-                OnPropertyChanged();
-            }
+            set { _listeningPorts = value; OnPropertyChanged(); }
         }
 
         public int RiskyConnections
         {
             get => _riskyConnections;
-            set
-            {
-                _riskyConnections = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string TotalTrafficSent
-        {
-            get => _totalTrafficSent;
-            set
-            {
-                _totalTrafficSent = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string TotalTrafficReceived
-        {
-            get => _totalTrafficReceived;
-            set
-            {
-                _totalTrafficReceived = value;
-                OnPropertyChanged();
-            }
+            set { _riskyConnections = value; OnPropertyChanged(); }
         }
 
         public string MonitoringStatusText => IsMonitoring ? "Monitoring Active" : "Monitoring Stopped";
 
+        // ── Connections expand/collapse ──────────────────────────────────────
+        public bool HasMoreConnections { get; private set; }
+
+        public string ConnectionsToggleText =>
+            _showAllConnections
+                ? "Show less"
+                : $"Show {_allNotableConnections.Count - 10} more";
+
+        // ── Risky ports expand/collapse ──────────────────────────────────────
+        public bool HasMoreRiskyPorts { get; private set; }
+        public bool HasNoRiskyPorts { get; private set; }
+
+        public string RiskyPortsToggleText =>
+            _showAllRiskyPorts
+                ? "Show less"
+                : $"Show {_allRiskyPorts.Count - 10} more";
+
+        // ── Commands ─────────────────────────────────────────────────────────
         public ICommand StartMonitoringCommand { get; }
         public ICommand StopMonitoringCommand { get; }
         public ICommand RefreshCommand { get; }
         public ICommand ClearAlertsCommand { get; }
+        public ICommand ToggleConnectionsCommand { get; }
+        public ICommand ToggleRiskyPortsCommand { get; }
+        public ICommand DisconnectDeviceCommand { get; }
 
         public NetworkSecurityViewModel()
         {
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             _monitor = new NetworkSecurityMonitor();
 
-            ActiveConnections = new ObservableCollection<NetworkConnection>();
-            TrafficStats = new ObservableCollection<NetworkTrafficStats>();
-            OpenPorts = new ObservableCollection<PortScanResult>();
-            SecurityAlerts = new ObservableCollection<string>();
-
             StartMonitoringCommand = new RelayCommand(StartMonitoring);
             StopMonitoringCommand = new RelayCommand(StopMonitoring);
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             ClearAlertsCommand = new RelayCommand(ClearAlerts);
+            ToggleConnectionsCommand = new RelayCommand(ToggleConnections);
+            ToggleRiskyPortsCommand = new RelayCommand(ToggleRiskyPorts);
+            DisconnectDeviceCommand = new RelayCommand<ConnectedDevice>(async d => await DisconnectDeviceAsync(d));
 
-            // Subscribe to monitor events
             _monitor.ConnectionsUpdated += OnConnectionsUpdated;
-            _monitor.TrafficStatsUpdated += OnTrafficStatsUpdated;
             _monitor.OpenPortsDetected += OnOpenPortsDetected;
+            _monitor.ConnectedDevicesUpdated += OnConnectedDevicesUpdated;
             _monitor.SecurityAlertRaised += OnSecurityAlertRaised;
 
             StatusMessage = "Ready to monitor network security";
+
+            // Load WiFi disconnect history on startup
+            _ = LoadWifiEventsAsync();
         }
 
         private void StartMonitoring()
         {
-            _monitor.StartMonitoring(3000); // Update every 3 seconds
+            _monitor.StartMonitoring(3000);
             IsMonitoring = true;
             StatusMessage = "Network monitoring started...";
         }
@@ -149,14 +142,16 @@ namespace Winspeqt.ViewModels.Security
             StatusMessage = "Refreshing data...";
 
             var connections = await _monitor.GetActiveConnectionsAsync();
-            var traffic = await _monitor.GetNetworkTrafficStatsAsync();
             var ports = await _monitor.ScanOpenPortsAsync();
+            var devices = await _monitor.GetConnectedDevicesAsync();
 
             OnConnectionsUpdated(this, connections);
-            OnTrafficStatsUpdated(this, traffic);
             OnOpenPortsDetected(this, ports);
+            OnConnectedDevicesUpdated(this, devices);
 
-            StatusMessage = "Data refreshed successfully";
+            await LoadWifiEventsAsync();
+
+            StatusMessage = "Data refreshed";
         }
 
         private void ClearAlerts()
@@ -168,49 +163,85 @@ namespace Winspeqt.ViewModels.Security
             });
         }
 
-        private void OnConnectionsUpdated(object? sender, System.Collections.Generic.List<NetworkConnection> connections)
+        private void ToggleConnections()
+        {
+            _showAllConnections = !_showAllConnections;
+            _dispatcherQueue.TryEnqueue(() => RefreshDisplayedConnections());
+        }
+
+        private void ToggleRiskyPorts()
+        {
+            _showAllRiskyPorts = !_showAllRiskyPorts;
+            _dispatcherQueue.TryEnqueue(() => RefreshDisplayedRiskyPorts());
+        }
+
+        private async System.Threading.Tasks.Task DisconnectDeviceAsync(ConnectedDevice? device)
+        {
+            if (device == null || !device.CanDisconnect) return;
+            StatusMessage = $"Disconnecting {device.Name}...";
+            await _monitor.DisconnectWifiAsync(device.InterfaceName);
+            StatusMessage = $"Disconnect command sent to {device.Name}";
+        }
+
+        private async System.Threading.Tasks.Task LoadWifiEventsAsync()
+        {
+            var events = await _monitor.GetWifiDisconnectEventsAsync();
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                WifiEvents.Clear();
+                foreach (var ev in events)
+                    WifiEvents.Add(ev);
+            });
+        }
+
+        // ── Event handlers ────────────────────────────────────────────────────
+
+        private void OnConnectionsUpdated(object? sender, List<NetworkConnection> connections)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
                 ActiveConnections.Clear();
-                foreach (var conn in connections)
-                {
-                    ActiveConnections.Add(conn);
-                }
+                foreach (var c in connections) ActiveConnections.Add(c);
 
                 TotalConnections = connections.Count;
                 ListeningPorts = connections.Count(c => c.State == "LISTENING");
                 RiskyConnections = connections.Count(c => c.RiskLevel == "High" || c.RiskLevel == "Medium");
+
+                // Notable = active (not listening), with a real remote address, non-loopback
+                _allNotableConnections.Clear();
+                _allNotableConnections.AddRange(connections
+                    .Where(c => c.State != "LISTENING"
+                             && !string.IsNullOrEmpty(c.RemoteAddress)
+                             && c.RemoteAddress != "0.0.0.0"
+                             && c.RemoteAddress != "::"
+                             && !c.RemoteAddress.StartsWith("127.")
+                             && c.RemoteAddress != "::1")
+                    .OrderByDescending(c => c.RiskLevel == "High" ? 2 : c.RiskLevel == "Medium" ? 1 : 0));
+
+                RefreshDisplayedConnections();
             });
         }
 
-        private void OnTrafficStatsUpdated(object? sender, System.Collections.Generic.List<NetworkTrafficStats> stats)
-        {
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                TrafficStats.Clear();
-                foreach (var stat in stats)
-                {
-                    TrafficStats.Add(stat);
-                }
-
-                var totalSent = stats.Sum(s => s.BytesSent);
-                var totalReceived = stats.Sum(s => s.BytesReceived);
-
-                TotalTrafficSent = FormatBytes(totalSent);
-                TotalTrafficReceived = FormatBytes(totalReceived);
-            });
-        }
-
-        private void OnOpenPortsDetected(object? sender, System.Collections.Generic.List<PortScanResult> ports)
+        private void OnOpenPortsDetected(object? sender, List<PortScanResult> ports)
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
                 OpenPorts.Clear();
-                foreach (var port in ports)
-                {
-                    OpenPorts.Add(port);
-                }
+                foreach (var p in ports) OpenPorts.Add(p);
+
+                _allRiskyPorts.Clear();
+                _allRiskyPorts.AddRange(ports.Where(p => p.IsKnownRisky).OrderBy(p => p.Port));
+
+                RefreshDisplayedRiskyPorts();
+            });
+        }
+
+        private void OnConnectedDevicesUpdated(object? sender, List<ConnectedDevice> devices)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                ConnectedDevices.Clear();
+                foreach (var d in devices) ConnectedDevices.Add(d);
             });
         }
 
@@ -218,28 +249,44 @@ namespace Winspeqt.ViewModels.Security
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
-                var timestampedAlert = $"[{DateTime.Now:HH:mm:ss}] {alert}";
-                SecurityAlerts.Insert(0, timestampedAlert);
+                var timestamped = $"[{DateTime.Now:HH:mm:ss}] {alert}";
+                SecurityAlerts.Insert(0, timestamped);
 
-                // Keep only last 50 alerts
                 while (SecurityAlerts.Count > 50)
-                {
                     SecurityAlerts.RemoveAt(SecurityAlerts.Count - 1);
-                }
             });
         }
 
-        private string FormatBytes(long bytes)
+        // ── Display refresh helpers ───────────────────────────────────────────
+
+        private void RefreshDisplayedConnections()
         {
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            double len = bytes;
-            int order = 0;
-            while (len >= 1024 && order < sizes.Length - 1)
-            {
-                order++;
-                len = len / 1024;
-            }
-            return $"{len:0.##} {sizes[order]}";
+            DisplayedConnections.Clear();
+            var toShow = _showAllConnections
+                ? _allNotableConnections
+                : _allNotableConnections.Take(10).ToList();
+
+            foreach (var c in toShow) DisplayedConnections.Add(c);
+
+            HasMoreConnections = _allNotableConnections.Count > 10;
+            OnPropertyChanged(nameof(HasMoreConnections));
+            OnPropertyChanged(nameof(ConnectionsToggleText));
+        }
+
+        private void RefreshDisplayedRiskyPorts()
+        {
+            DisplayedRiskyPorts.Clear();
+            var toShow = _showAllRiskyPorts
+                ? _allRiskyPorts
+                : _allRiskyPorts.Take(10).ToList();
+
+            foreach (var p in toShow) DisplayedRiskyPorts.Add(p);
+
+            HasMoreRiskyPorts = _allRiskyPorts.Count > 10;
+            HasNoRiskyPorts = _allRiskyPorts.Count == 0;
+            OnPropertyChanged(nameof(HasMoreRiskyPorts));
+            OnPropertyChanged(nameof(HasNoRiskyPorts));
+            OnPropertyChanged(nameof(RiskyPortsToggleText));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -250,7 +297,6 @@ namespace Winspeqt.ViewModels.Security
         }
     }
 
-    // Simple RelayCommand implementation
     public class RelayCommand : ICommand
     {
         private readonly Action _execute;
@@ -263,11 +309,25 @@ namespace Winspeqt.ViewModels.Security
         }
 
         public event EventHandler? CanExecuteChanged;
-
         public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
-
         public void Execute(object? parameter) => _execute();
+        public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
 
+    public class RelayCommand<T> : ICommand
+    {
+        private readonly Action<T?> _execute;
+        private readonly Func<T?, bool>? _canExecute;
+
+        public RelayCommand(Action<T?> execute, Func<T?, bool>? canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler? CanExecuteChanged;
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke((T?)parameter) ?? true;
+        public void Execute(object? parameter) => _execute((T?)parameter);
         public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
