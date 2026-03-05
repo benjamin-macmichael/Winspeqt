@@ -78,13 +78,13 @@ namespace Winspeqt.Views.Optimization
         {
             if (sender is Button button && button.CommandParameter is int index)
             {
-                FileSearchItem newNode = ViewModel.ActiveNode;
+                FileSearchItem? newNode = ViewModel.ActiveNode;
 
                 for (int progenitor = ViewModel.PathItems.Count - index - 1; progenitor > 0; progenitor--)
                 {
-                    newNode = newNode.Parent;
+                    if (newNode != null) newNode = newNode.Parent;
                 }
-                await ViewModel.ChangeActiveNode(newNode);
+                if (newNode != null) await ViewModel.ChangeActiveNode(newNode);
                 ViewModel.ResetBreadCrumb(index);
             }
         }

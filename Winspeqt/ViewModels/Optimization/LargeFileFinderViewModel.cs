@@ -232,8 +232,9 @@ namespace Winspeqt.ViewModels.Optimization
         /// <param name="newNode">The folder node to make active.</param>
         public async Task ChangeActiveNode(FileSearchItem newNode)
         {
+            IsLoading = true;
+            await RetrieveFolderItems(newNode);
             ActiveNode = newNode;
-            await RetrieveFolderItems(ActiveNode);
             IsLoading = false;
         }
 
@@ -250,19 +251,12 @@ namespace Winspeqt.ViewModels.Optimization
             if (folder.Children.Count > 0)
             {
                 return;
-            }
+            } 
 
             var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
             await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
             {
-                if (item.FilePath == ActiveNode.FilePath)
-                {
-                    folder.Children.Add(ActiveNode);
-                } 
-                else
-                {
                 folder.Children.Add(item);
-            }
             }
 
             SortFiles();
@@ -295,8 +289,19 @@ namespace Winspeqt.ViewModels.Optimization
                 {
                     foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
-                        var name = System.IO.Path.GetFileName(dir);
-                        var item = new FileSearchItem(name, dir, "folder", 0, folder, false);
+                        FileSearchItem item;
+                        System.Diagnostics.Debug.Print(dir);
+                        System.Diagnostics.Debug.Print(ActiveNode.FilePath);
+                        if (ActiveNode.FilePath != dir)
+                        {
+                            var name = System.IO.Path.GetFileName(dir);
+                            item = new FileSearchItem(name, dir, "folder", 0, folder, false);
+                        } 
+                        else
+                        {
+                            item = ActiveNode;
+                        }
+                        
                         channel.Writer.TryWrite(item);
                         sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
                     }
@@ -333,7 +338,16 @@ namespace Winspeqt.ViewModels.Optimization
         {
             try
             {
-                var size = await Task.Run(() => GetDirectorySize(path));
+                // the upside to this is that it is much faster. The downside is that it assumes that you have loaded all of the 
+                // child elements already.
+                long size = 0;
+                if (item.Children.Count == 0)
+                {
+                    size = await Task.Run(() => GetDirectorySize(path));
+                } else
+                {
+                    size = await Task.Run(() => item.Children.Sum(child => child.GetSizeInBytes()));
+                }
                 _dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)

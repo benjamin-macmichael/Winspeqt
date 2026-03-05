@@ -134,5 +134,18 @@ namespace Winspeqt.Models
             DataLabel = result.label;
             Finished = true;
         }
+
+        /// <summary>
+        /// Converts the displayed <see cref="Size"/> and <see cref="DataLabel"/> back to bytes.
+        /// </summary>
+        /// <returns>Approximate raw byte size represented by this item.</returns>
+        public long GetSizeInBytes()
+        {
+            checked
+            {
+                long multiplier = 1L << (10 * (int)DataLabel); // 1024^DataLabel
+                return Size * multiplier;
+            }
+        }
     }
 }
