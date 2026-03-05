@@ -77,6 +77,9 @@ namespace Winspeqt.Views
                     case "SecurityStatus":
                         RootFrame.Navigate(typeof(SecurityStatusPage));
                         break;
+                    case "Optimization":
+                        RootFrame.Navigate(typeof(OptimizationPage));
+                        break;
                     case "SystemOptimization":
                         RootFrame.Navigate(typeof(OptimizationDashboardPage));
                         break;

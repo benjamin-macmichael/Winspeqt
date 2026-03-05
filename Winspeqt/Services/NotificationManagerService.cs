@@ -28,8 +28,8 @@ namespace Winspeqt.Services
         }
 
         // --- Config ---
-        //private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(15);   // How often we check if it's time
-        //private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(30);    // Min gap between ANY notification
+        //private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(10);   // How often we check if it's time
+        //private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(5);    // Min gap between ANY notification
         private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);   // How often we check if it's time
         private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(3);    // Min gap between ANY notification
 
@@ -75,15 +75,11 @@ namespace Winspeqt.Services
                 {
                     var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
 
-                    System.Diagnostics.Debug.WriteLine($"[NotificationManager] Storage has LastScanTime: {c.ContainsKey("AppUpdateChecker_LastScanTime")}");
-                    System.Diagnostics.Debug.WriteLine($"[NotificationManager] Storage has HealthScore: {c.ContainsKey("AppUpdateChecker_HealthScore")}");
-
                     if (c.ContainsKey("AppUpdateChecker_LastScanTime"))
                     {
                         var ticks = (long)c["AppUpdateChecker_LastScanTime"];
                         var lastScan = new DateTime(ticks, DateTimeKind.Local);
                         var daysSince = (DateTime.Now - lastScan).TotalDays;
-                        System.Diagnostics.Debug.WriteLine($"[NotificationManager] Days since last scan: {daysSince:F1}");
 
                         if (daysSince > 14)
                             return (50, $"Your last app scan was {(int)daysSince} days ago — open Winspeqt to get a fresh result.");
@@ -96,8 +92,6 @@ namespace Winspeqt.Services
                         var critical = c.ContainsKey("AppUpdateChecker_CriticalApps") ? (int)c["AppUpdateChecker_CriticalApps"] : 0;
                         var total = c.ContainsKey("AppUpdateChecker_TotalApps") ? (int)c["AppUpdateChecker_TotalApps"] : 0;
                         var upToDate = c.ContainsKey("AppUpdateChecker_UpToDateApps") ? (int)c["AppUpdateChecker_UpToDateApps"] : 0;
-
-                        System.Diagnostics.Debug.WriteLine($"[NotificationManager] Score={score}, Outdated={outdated}, Critical={critical}, Total={total}");
 
                         string msg = score switch
                         {
@@ -115,7 +109,6 @@ namespace Winspeqt.Services
                     System.Diagnostics.Debug.WriteLine($"[NotificationManager] Error reading storage: {ex.Message}");
                 }
 
-                System.Diagnostics.Debug.WriteLine("[NotificationManager] No stored data found, returning never-scanned message");
                 return (50, "You haven't checked your apps yet — open Winspeqt to see if any need updates.");
             });
 
@@ -129,7 +122,6 @@ namespace Winspeqt.Services
                     if (c.ContainsKey("SecurityStatus_HealthScore"))
                     {
                         var score = (int)c["SecurityStatus_HealthScore"];
-                        System.Diagnostics.Debug.WriteLine($"[NotificationManager] SecurityStatus Score={score}");
 
                         string msg = score switch
                         {
@@ -151,7 +143,38 @@ namespace Winspeqt.Services
                 return (50, "You haven't checked your security status yet — open Winspeqt to run a scan.");
             });
 
-            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(5), CheckInterval);
+            RegisterFeature("Optimization", async () =>
+            {
+                System.Diagnostics.Debug.WriteLine("[NotificationManager] Optimization delegate called");
+                try
+                {
+                    var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+
+                    if (!c.ContainsKey("Optimization_LastRunTime"))
+                        return (50, "You haven't run an optimization yet — open Winspeqt to free up space on your PC.");
+
+                    var ticks = (long)c["Optimization_LastRunTime"];
+                    var lastRun = new DateTime(ticks, DateTimeKind.Local);
+                    var daysSince = (DateTime.Now - lastRun).TotalDays;
+                    var bytesFreed = c.ContainsKey("Optimization_LastBytesFreed") ? (long)c["Optimization_LastBytesFreed"] : 0;
+                    var mb = bytesFreed / 1_048_576.0;
+                    var freed = mb >= 1024 ? $"{mb / 1024:F1} GB" : $"{mb:F0} MB";
+
+                    string msg = daysSince > 14
+                        ? $"It's been {(int)daysSince} days since your last cleanup — junk files may be building up. Open Winspeqt to free up space."
+                        : $"Last cleanup freed {freed} of junk files. Run it again to keep your PC running smoothly.";
+
+                    return (-1, msg);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[NotificationManager] Error reading Optimization storage: {ex.Message}");
+                }
+
+                return (-1, "You haven't run an optimization yet — open Winspeqt to free up space on your PC.");
+            });
+
+            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(45), CheckInterval);
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer started");
         }
 
@@ -236,19 +259,22 @@ namespace Winspeqt.Services
                 {
                     "AppUpdateChecker" => ("🔄", "App Updates"),
                     "SecurityStatus" => ("🛡️", "Security"),
-                    "SystemOptimization" => ("🧹", "Optimization"),
+                    "Optimization" => ("🧹", "Optimization"),
                     "SystemMonitoring" => ("📊", "System Health"),
                     _ => ("💡", featureKey)
                 };
 
                 var scoreBar = BuildScoreBar(score);
+                var scoreLine = score >= 0
+                    ? $"<text>{scoreBar}  {score}/100</text>"
+                    : string.Empty;
 
                 string xml = $@"
                     <toast scenario='reminder'>
                         <visual>
                             <binding template='ToastGeneric'>
                                 <text>{emoji} Winspeqt: {label} Health Check</text>
-                                <text>{scoreBar}  {score}/100</text>
+                                {scoreLine}
                                 <text>{SecurityElement.Escape(message)}</text>
                             </binding>
                         </visual>
