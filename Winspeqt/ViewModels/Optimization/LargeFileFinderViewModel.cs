@@ -255,7 +255,14 @@ namespace Winspeqt.ViewModels.Optimization
             var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
             await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
             {
+                if (item.FilePath == ActiveNode.FilePath)
+                {
+                    folder.Children.Add(ActiveNode);
+                } 
+                else
+                {
                 folder.Children.Add(item);
+            }
             }
 
             SortFiles();
