@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.Widgets.Notifications;
+using System;
 using System.Collections.ObjectModel;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
+using Windows.UI;
 
 namespace Winspeqt.Models
 {
@@ -40,7 +43,10 @@ namespace Winspeqt.Models
         public DataSize DataLabel
         {
             get => _dataLabel;
-            private set => SetProperty(ref _dataLabel, value);
+            private set { 
+                SetProperty(ref _dataLabel, value); 
+                OnPropertyChanged(nameof(AnnouncementTextColor));
+            }
         }
 
         private bool _finished;
@@ -50,7 +56,30 @@ namespace Winspeqt.Models
         public bool Finished
         {
             get => _finished;
-            private set => SetProperty(ref _finished, value);
+            private set { 
+                SetProperty(ref _finished, value);
+                OnPropertyChanged(nameof(AnnouncementTextColor));
+            }
+        }
+
+        public SolidColorBrush AnnouncementTextColor {
+            get
+            {
+                if (_finished)
+                {
+                    // Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
+                    return DataLabel switch
+                    {
+                        Enums.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
+                        Enums.DataSize.KB => new SolidColorBrush(Color.FromArgb(255, 21, 176, 52)),
+                        Enums.DataSize.MB => new SolidColorBrush(Color.FromArgb(255, 232, 201, 28)),
+                        Enums.DataSize.GB => new SolidColorBrush(Color.FromArgb(255, 214, 9, 9)),
+                        Enums.DataSize.TB => new SolidColorBrush(Color.FromArgb(255, 148, 9, 9)),
+                        _ => new SolidColorBrush(Color.FromArgb(200, 25, 25, 25))
+                    };
+                }
+                return new SolidColorBrush(Color.FromArgb(200, 25, 25, 25));
+            }
         }
 
         private ObservableCollection<FileSearchItem> _children = [];

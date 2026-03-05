@@ -16,7 +16,6 @@
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
-        <helpers:DataSizeToBrushConverter x:Key="DataSizeToBrushConverter"/>
         <helpers:BoolInverter x:Key="BoolInverter"/>
     </Page.Resources>
 
@@ -207,11 +206,11 @@
                                             >
                                             <FontIcon
                                                 Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}" 
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                             <TextBlock
                                                 Text="{Binding Name}"
                                                 FontSize="24"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                         </StackPanel>
 
                                         <StackPanel
@@ -236,10 +235,10 @@
                                             Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <TextBlock 
                                                 Text="{Binding Size}"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                             <TextBlock 
                                                 Text="{Binding DataLabel}"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
