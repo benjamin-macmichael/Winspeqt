@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:Winspeqt.Helpers" 
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:optimization="using:Winspeqt.ViewModels.Optimization" d:DataContext="{d:DesignInstance Type=optimization:LargeFileFinderViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -71,6 +72,53 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Margin="0,8,0,0"
                             TextWrapping="WrapWholeWords"/>
+
+                        <controls:WrapPanel
+                            Orientation="Horizontal"
+                            Margin="0,12,0,0">
+                            <Button Content="Hidden files" Margin="0,0,10,10">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ScrollViewer MaxHeight="340">
+                                            <StackPanel MaxWidth="340" Spacing="8" Padding="6">
+                                                <TextBlock 
+                                                    Text="You may see some files here that you don't see in File Explorer. That is normal. Some files are hidden by default."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Hidden files are system or app files that Windows hides by default to keep important files out of the way. Their names often start with a period."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Hidden files can include configuration data and critical OS files. While it is okay to delete some hidden files to free up space, you should always exercise caution when doing so."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="To show hidden files in File Explorer, click on the button labeled 'View'. From the dropdown, select 'Show' and then select 'Hidden items'."
+                                                    TextWrapping="WrapWholeWords"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+
+                            <Button Content="Deleting files safely" Margin="0,0,10,10">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ScrollViewer MaxHeight="340">
+                                            <StackPanel MaxWidth="340" Spacing="8" Padding="6">
+                                                <TextBlock
+                                                    Text="Be careful when deleting files because some files are required by Windows or installed apps. When possible, it is better to unistall an app rather than just delete its files."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="If you are unsure, verify the file path or move files to Recycle Bin first instead of permanent deletion."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Alternatively, try using the Safe AppData Cleanup or One-Click Optimization in Winspeqt to safely free up space on your computer."
+                                                    TextWrapping="WrapWholeWords"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </controls:WrapPanel>
                     </StackPanel>
                 </StackPanel>
             </Grid>
