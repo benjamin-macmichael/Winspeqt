@@ -206,18 +206,18 @@ namespace Winspeqt.ViewModels.Optimization
             for (int i = systemDirectories.Count - 1; i >= 0; i--)
             {
                 string path = systemDirectories[i].ToString();
-                FileSearchItem? daddy;
+                FileSearchItem? parent;
                 if (ancestrialFolders.Count > 0)
                 {
-                    daddy = ancestrialFolders[ancestrialFolders.Count - 1];
+                    parent = ancestrialFolders[ancestrialFolders.Count - 1];
                 }
                 else
                 {
-                    daddy = null;
+                    parent = null;
                 }
 
                 var name = System.IO.Path.GetFileName(path);
-                var item = new FileSearchItem(name, path, "folder", 0, daddy, false);
+                var item = new FileSearchItem(name, path, "folder", 0, parent, false);
                 ancestrialFolders.Add(item);
                 PathItems.Add(new PathItem(path, PathItems.Count));
             }
