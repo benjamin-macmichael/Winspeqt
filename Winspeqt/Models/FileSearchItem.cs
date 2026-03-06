@@ -48,7 +48,6 @@ namespace Winspeqt.Models
             }
         }
 
-        private DataSize _dataLabel;
         /// <summary>
         /// Display unit that matches <see cref="Size"/> (B, KB, MB, GB, TB).
         /// </summary>
