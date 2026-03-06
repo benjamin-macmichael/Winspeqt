@@ -346,7 +346,7 @@ namespace Winspeqt.ViewModels.Optimization
                     size = await Task.Run(() => GetDirectorySize(path));
                 } else
                 {
-                    size = await Task.Run(() => item.Children.Sum(child => child.GetSizeInBytes()));
+                    size = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
                 }
                 _dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }

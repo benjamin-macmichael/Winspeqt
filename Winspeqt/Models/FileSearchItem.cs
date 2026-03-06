@@ -26,14 +26,24 @@ namespace Winspeqt.Models
         /// Item type label used by the UI ("file" or "folder").
         /// </summary>
         public string Type { get; }
-        private int _size;
+        private long _size;
         /// <summary>
         /// Size value normalized to the associated <see cref="DataLabel"/>.
         /// </summary>
         public int Size
         {
+            get => DataSizeConverter.ReduceSize(_size).size;
+        }
+
+        public long ByteSize
+        {
             get => _size;
-            set => SetProperty(ref _size, value);
+            set {
+                SetProperty(ref _size, value);
+                OnPropertyChanged(nameof(Size));
+                OnPropertyChanged(nameof(AnnouncementTextColor));
+                OnPropertyChanged(nameof(DataLabel));
+            }
         }
 
         private DataSize _dataLabel;
@@ -42,11 +52,7 @@ namespace Winspeqt.Models
         /// </summary>
         public DataSize DataLabel
         {
-            get => _dataLabel;
-            private set { 
-                SetProperty(ref _dataLabel, value); 
-                OnPropertyChanged(nameof(AnnouncementTextColor));
-            }
+            get => DataSizeConverter.ReduceSize(_size).label;
         }
 
         private bool _finished;
@@ -118,7 +124,7 @@ namespace Winspeqt.Models
             Name = name;
             FilePath = path;
             Type = type;
-            UpdateSize(size);
+            ByteSize = size;
             Parent = parent;
             Finished = finished;
         }
@@ -130,22 +136,8 @@ namespace Winspeqt.Models
         public void UpdateSize(long size)
         {
             var result = DataSizeConverter.ReduceSize(size);
-            Size = result.size;
-            DataLabel = result.label;
+            ByteSize = size;
             Finished = true;
-        }
-
-        /// <summary>
-        /// Converts the displayed <see cref="Size"/> and <see cref="DataLabel"/> back to bytes.
-        /// </summary>
-        /// <returns>Approximate raw byte size represented by this item.</returns>
-        public long GetSizeInBytes()
-        {
-            checked
-            {
-                long multiplier = 1L << (10 * (int)DataLabel); // 1024^DataLabel
-                return Size * multiplier;
-            }
         }
     }
 }
