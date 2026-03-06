@@ -1,10 +1,8 @@
 ﻿using Microsoft.UI.Xaml.Media;
-using Microsoft.Windows.Widgets.Notifications;
-using System;
 using System.Collections.ObjectModel;
+using Windows.UI;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
-using Windows.UI;
 
 namespace Winspeqt.Models
 {
@@ -41,7 +39,8 @@ namespace Winspeqt.Models
         public long ByteSize
         {
             get => _size;
-            set {
+            set
+            {
                 SetProperty(ref _size, value);
                 OnPropertyChanged(nameof(Size));
                 OnPropertyChanged(nameof(AnnouncementTextColor));
@@ -65,7 +64,8 @@ namespace Winspeqt.Models
         public bool Finished
         {
             get => _finished;
-            private set { 
+            private set
+            {
                 SetProperty(ref _finished, value);
                 OnPropertyChanged(nameof(AnnouncementTextColor));
             }
@@ -74,7 +74,8 @@ namespace Winspeqt.Models
         /// <summary>
         /// Text/icon color used by the list row to communicate relative size severity.
         /// </summary>
-        public SolidColorBrush AnnouncementTextColor {
+        public SolidColorBrush AnnouncementTextColor
+        {
             get
             {
                 if (_finished)

@@ -273,7 +273,7 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 SortFiles();
                 return;
-            } 
+            }
 
             var sizeTasks = new System.Collections.Concurrent.ConcurrentBag<Task>();
             await foreach (var item in EnumerateFolderItemsAsync(folder, sizeTasks))
@@ -318,12 +318,12 @@ namespace Winspeqt.ViewModels.Optimization
                         {
                             var name = System.IO.Path.GetFileName(dir);
                             item = new FileSearchItem(name, dir, "folder", 0, folder, false);
-                        } 
+                        }
                         else
                         {
                             item = ActiveNode;
                         }
-                        
+
                         channel.Writer.TryWrite(item);
                         sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
                     }
@@ -366,7 +366,8 @@ namespace Winspeqt.ViewModels.Optimization
                 if (item.Children.Count == 0)
                 {
                     size = await Task.Run(() => GetDirectorySize(path));
-                } else
+                }
+                else
                 {
                     size = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
                 }
