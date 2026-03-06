@@ -13,7 +13,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <!-- Converters for glyphs, visibility, and size-based coloring. -->
+        <!-- Converters used by item icons, loading visibility, and list interactivity. -->
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
@@ -28,7 +28,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Back Button -->
+            <!-- Header region with back navigation, page title, and educational flyouts. -->
             <Grid Grid.Row="0" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -123,7 +123,7 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
-                <!-- Error and loading status -->
+                <!-- Global status area for blocking errors and background-loading state. -->
                 <TextBlock
                     Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -151,7 +151,7 @@
                         Width="20"
                         Height="20" />
                 </StackPanel>
-                <!-- Sorting and actions -->
+                <!-- Toolbar for sorting and opening the current folder in File Explorer. -->
                 <Grid MaxWidth="750" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -189,7 +189,7 @@
                     HorizontalAlignment="Stretch"
                     >
                 </StackPanel>
-                <!-- Breadcrumb navigation -->
+                <!-- Breadcrumb path from root to the active folder. -->
                 <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
                           MaxWidth="750"
                           HorizontalAlignment="Stretch"
@@ -233,7 +233,7 @@
                    Width="750" 
                    Fill="Black" 
                    HorizontalAlignment="Center"/>
-                <!-- Folder and file results -->
+                <!-- Folder/file rows for the active directory level. -->
                 <ItemsRepeater ItemsSource="{Binding ActiveNode.Children, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>

@@ -18,7 +18,7 @@ namespace Winspeqt.Views.Optimization
     public sealed partial class LargeFileFinder : Page
     {
         /// <summary>
-        /// View model providing data and commands for the page.
+        /// View model that drives folder enumeration, sorting, and breadcrumb state.
         /// </summary>
         public LargeFileFinderViewModel ViewModel { get; }
         /// <summary>
@@ -55,9 +55,9 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Navigates into a folder item when clicked.
+        /// Navigates into the selected folder row.
         /// </summary>
-        /// <param name="sender">The folder button that carries the folder path as its command parameter.</param>
+        /// <param name="sender">The folder row button that carries a folder path as its command parameter.</param>
         /// <param name="e">Routed event data.</param>
         private async void Folder_Click(object sender, RoutedEventArgs e)
         {
@@ -70,9 +70,9 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Resets the breadcrumb to a given index and loads that folder.
+        /// Navigates to an ancestor represented by the clicked breadcrumb entry.
         /// </summary>
-        /// <param name="sender">The breadcrumb button whose command parameter is the target index.</param>
+        /// <param name="sender">The breadcrumb button whose command parameter is the target breadcrumb index.</param>
         /// <param name="e">Routed event data.</param>
         private async void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
@@ -90,7 +90,7 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Opens File Explorer at the current breadcrumb path.
+        /// Opens File Explorer to the currently displayed directory.
         /// </summary>
         /// <param name="sender">The button that triggers the action.</param>
         /// <param name="e">Routed event data.</param>

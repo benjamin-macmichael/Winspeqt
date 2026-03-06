@@ -103,6 +103,9 @@ namespace Winspeqt.ViewModels.Optimization
 
 
         private long _totalHardDrive;
+        /// <summary>
+        /// Total drive capacity reduced for display.
+        /// </summary>
         public long TotalHardDrive
         {
             get => DataSizeConverter.ReduceSize(_totalHardDrive).size;
@@ -117,10 +120,16 @@ namespace Winspeqt.ViewModels.Optimization
                 }
             }
         }
+        /// <summary>
+        /// Unit label for <see cref="TotalHardDrive"/>.
+        /// </summary>
         public Enums.DataSize TotalDriveLabel { get => DataSizeConverter.ReduceSize(_totalHardDrive).label; }
 
         private long _availableHardDrive;
 
+        /// <summary>
+        /// Available drive space reduced for display.
+        /// </summary>
         public long AvailableHardDrive
         {
             get => DataSizeConverter.ReduceSize(_availableHardDrive).size;
@@ -135,18 +144,30 @@ namespace Winspeqt.ViewModels.Optimization
                 }
             }
         }
+        /// <summary>
+        /// Unit label for <see cref="AvailableHardDrive"/>.
+        /// </summary>
         public Enums.DataSize AvailableDriveLabel { get => DataSizeConverter.ReduceSize(_availableHardDrive).label; }
 
+        /// <summary>
+        /// Used drive space reduced for display.
+        /// </summary>
         public long UsedHardDrive
         {
             get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).size;
         }
 
+        /// <summary>
+        /// Unit label for <see cref="UsedHardDrive"/>.
+        /// </summary>
         public Enums.DataSize UsedDriveLabel
         {
             get => DataSizeConverter.ReduceSize(_totalHardDrive - _availableHardDrive).label;
         }
 
+        /// <summary>
+        /// User-facing sentence summarizing used versus total capacity.
+        /// </summary>
         public string DriveUsageText =>
             $"You are using {UsedHardDrive} {UsedDriveLabel} of {TotalHardDrive} {TotalDriveLabel} on this drive";
 
@@ -239,9 +260,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Adds <paramref name="folder"/> to the breadcrumb path and loads its children when they are not already cached.
+        /// Appends the target folder to breadcrumbs, ensures its children are populated, and schedules folder-size updates.
         /// </summary>
-        /// <param name="folder">Folder node whose children should be loaded.</param>
+        /// <param name="folder">Folder node to display and hydrate.</param>
         public async Task RetrieveFolderItems(FileSearchItem folder)
         {
             IsLoading = true;
@@ -408,9 +429,9 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Truncates breadcrumb items to the specified index.
+        /// Truncates breadcrumbs so the selected index becomes the active tail item.
         /// </summary>
-        /// <param name="index">Zero-based breadcrumb index to keep as the last item.</param>
+        /// <param name="index">Zero-based breadcrumb index to keep as the last entry.</param>
         public void ResetBreadCrumb(int index)
         {
             IEnumerable<PathItem> test = PathItems.Take(index + 1);
@@ -418,7 +439,7 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Sorts <see cref="ActiveNode"/> children based on <see cref="SelectedSortOption"/>.
+        /// Reorders <see cref="ActiveNode"/> children according to the active sort option.
         /// </summary>
         public void SortFiles()
         {
@@ -440,6 +461,10 @@ namespace Winspeqt.ViewModels.Optimization
             ActiveNode.Children = new ObservableCollection<FileSearchItem>(listItems);
         }
 
+        /// <summary>
+        /// Retrieves total and free bytes for the drive containing the user profile directory.
+        /// </summary>
+        /// <returns>Total and available bytes as raw values.</returns>
         private static (long totalSize, long availableSize) GetDriveSize()
         {
             string? initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);

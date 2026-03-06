@@ -28,13 +28,16 @@ namespace Winspeqt.Models
         public string Type { get; }
         private long _size;
         /// <summary>
-        /// Size value normalized to the associated <see cref="DataLabel"/>.
+        /// Reduced numeric size for display, normalized to <see cref="DataLabel"/>.
         /// </summary>
         public int Size
         {
             get => DataSizeConverter.ReduceSize(_size).size;
         }
 
+        /// <summary>
+        /// Raw item size in bytes used for sorting and calculations.
+        /// </summary>
         public long ByteSize
         {
             get => _size;
@@ -48,7 +51,7 @@ namespace Winspeqt.Models
 
         private DataSize _dataLabel;
         /// <summary>
-        /// Unit label that matches <see cref="Size"/>.
+        /// Display unit that matches <see cref="Size"/> (B, KB, MB, GB, TB).
         /// </summary>
         public DataSize DataLabel
         {
@@ -68,6 +71,9 @@ namespace Winspeqt.Models
             }
         }
 
+        /// <summary>
+        /// Text/icon color used by the list row to communicate relative size severity.
+        /// </summary>
         public SolidColorBrush AnnouncementTextColor {
             get
             {
