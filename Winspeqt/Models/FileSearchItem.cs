@@ -135,7 +135,6 @@ namespace Winspeqt.Models
         /// <param name="size">Raw size in bytes.</param>
         public void UpdateSize(long size)
         {
-            var result = DataSizeConverter.ReduceSize(size);
             ByteSize = size;
             Finished = true;
         }

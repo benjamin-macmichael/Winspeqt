@@ -250,6 +250,7 @@ namespace Winspeqt.ViewModels.Optimization
 
             if (folder.Children.Count > 0)
             {
+                SortFiles();
                 return;
             } 
 
@@ -429,7 +430,7 @@ namespace Winspeqt.ViewModels.Optimization
             }
             else if (this.SelectedSortOption == "Size")
             {
-                listItems = listItems.OrderByDescending(item => item.Size).OrderByDescending(item => item.DataLabel);
+                listItems = listItems.OrderByDescending(item => item.ByteSize);
             }
             else
             {
