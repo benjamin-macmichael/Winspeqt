@@ -19,7 +19,7 @@
                         <Setter Target="CardsColumn0.Width" Value="*"/>
                         <Setter Target="CardsColumn1.Width" Value="*"/>
                         <Setter Target="CardsColumn2.Width" Value="*"/>
-                        <Setter Target="CardsRow0.Height" Value="*"/>
+                        <Setter Target="CardsRow0.Height" Value="Auto"/>
                         <Setter Target="CardsRow1.Height" Value="0"/>
                         <Setter Target="CardsRow2.Height" Value="0"/>
 
@@ -44,8 +44,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header Section -->
-        <Grid Grid.Row="0" Padding="60,60,60,40">
+            <!-- Header Section -->
+            <Grid Grid.Row="0" Padding="60,60,60,40">
             <!-- Gear icon top-right -->
             <Button
         HorizontalAlignment="Right"
@@ -79,20 +79,26 @@
             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
             TextAlignment="Center"/>
             </StackPanel>
-        </Grid>
+            </Grid>
 
-        <!-- Main Content Grid -->
-        <Grid Grid.Row="1" Padding="60,0,60,60" MaxWidth="1400">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="CardsColumn0" Width="*"/>
-                <ColumnDefinition x:Name="CardsColumn1" Width="0"/>
-                <ColumnDefinition x:Name="CardsColumn2" Width="0"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition x:Name="CardsRow0" Height="Auto"/>
-                <RowDefinition x:Name="CardsRow1" Height="Auto"/>
-                <RowDefinition x:Name="CardsRow2" Height="Auto"/>
-            </Grid.RowDefinitions>
+        <ScrollViewer
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Auto"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled">
+            <!-- Main Content Grid -->
+            <Grid Padding="60,0,60,60" MaxWidth="1400">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="CardsColumn0" Width="*"/>
+                    <ColumnDefinition x:Name="CardsColumn1" Width="0"/>
+                    <ColumnDefinition x:Name="CardsColumn2" Width="0"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="CardsRow0" Height="Auto"/>
+                    <RowDefinition x:Name="CardsRow1" Height="Auto"/>
+                    <RowDefinition x:Name="CardsRow2" Height="Auto"/>
+                </Grid.RowDefinitions>
 
             <!-- Security Card -->
             <Button 
@@ -273,6 +279,7 @@
                         Margin="0,24,0,0"/>
                 </Grid>
             </Button>
-        </Grid>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>
