@@ -36,6 +36,7 @@ namespace Winspeqt.Views
 
         private void ApplyResponsiveState()
         {
+            // Keep in sync with WideState AdaptiveTrigger MinWindowWidth in DashboardPage.xaml.
             const double MinWideWidth = 1250;
             var state = ActualWidth >= MinWideWidth ? "WideState" : "NarrowState";
             VisualStateManager.GoToState(this, state, false);

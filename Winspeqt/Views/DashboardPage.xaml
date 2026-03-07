@@ -13,6 +13,7 @@
                 <VisualState x:Name="NarrowState"/>
                 <VisualState x:Name="WideState">
                     <VisualState.StateTriggers>
+                        <!-- Keep in sync with ApplyResponsiveState() in code-behind. -->
                         <AdaptiveTrigger MinWindowWidth="1250"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
@@ -81,6 +82,7 @@
             </StackPanel>
             </Grid>
 
+        <!-- Scroll only the card region so header layout/state behavior stays stable. -->
         <ScrollViewer
             Grid.Row="1"
             VerticalScrollBarVisibility="Auto"
