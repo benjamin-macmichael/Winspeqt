@@ -463,6 +463,24 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
+        /// Removes all of the children items for the active node and each of its ancestors in order to refresh the file system
+        /// </summary>
+        public async void Refresh()
+        {
+            IsLoading = true;
+            FileSearchItem? clearItem = ActiveNode;
+
+            while (clearItem !=null)
+            {
+                clearItem.Children = [];
+                clearItem = clearItem.Parent;
+            }
+            
+            await RetrieveFolderItems(ActiveNode);
+            IsLoading = false;
+        }
+
+        /// <summary>
         /// Retrieves total and free bytes for the drive containing the user profile directory.
         /// </summary>
         /// <returns>Total and available bytes as raw values.</returns>

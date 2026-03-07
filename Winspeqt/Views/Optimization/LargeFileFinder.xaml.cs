@@ -110,5 +110,12 @@ namespace Winspeqt.Views.Optimization
                 Debug.WriteLine($"Error opening File Explorer for path {ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path}: {ex.Message}");
             }
         }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            int index = ViewModel.PathItems[ViewModel.PathItems.Count - 1].Index;
+            ViewModel.Refresh();
+            ViewModel.ResetBreadCrumb(index);
+        }
     }
 }
