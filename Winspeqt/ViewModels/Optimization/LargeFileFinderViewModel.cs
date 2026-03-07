@@ -470,12 +470,12 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = true;
             FileSearchItem? clearItem = ActiveNode;
 
-            while (clearItem !=null)
+            while (clearItem != null)
             {
                 clearItem.Children = [];
                 clearItem = clearItem.Parent;
             }
-            
+
             await RetrieveFolderItems(ActiveNode);
             IsLoading = false;
         }
