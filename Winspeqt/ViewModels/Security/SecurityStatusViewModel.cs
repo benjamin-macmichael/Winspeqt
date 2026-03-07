@@ -9,10 +9,10 @@ namespace Winspeqt.ViewModels.Security
 {
     public class SecurityStatusViewModel : ObservableObject
     {
-        private readonly SecurityService _securityService;
+        private readonly SecurityService _securityService = new();
         private readonly DispatcherQueue _dispatcherQueue;
 
-        private int _loadingProgress;
+        private int _loadingProgress = new();
         public int LoadingProgress
         {
             get => _loadingProgress;
@@ -26,7 +26,7 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _loadingMessage, value);
         }
 
-        private bool _isLoading;
+        private bool _isLoading = new();
         public bool IsLoading
         {
             get => _isLoading;
@@ -75,63 +75,63 @@ namespace Winspeqt.ViewModels.Security
             set => SetProperty(ref _isSecureBootLoading, value);
         }
 
-        private SecurityComponentStatus _defenderStatus;
+        private SecurityComponentStatus _defenderStatus = new();
         public SecurityComponentStatus DefenderStatus
         {
             get => _defenderStatus;
             set => SetProperty(ref _defenderStatus, value);
         }
 
-        private SecurityComponentStatus _firewallStatus;
+        private SecurityComponentStatus _firewallStatus = new();
         public SecurityComponentStatus FirewallStatus
         {
             get => _firewallStatus;
             set => SetProperty(ref _firewallStatus, value);
         }
 
-        private SecurityComponentStatus _updateStatus;
+        private SecurityComponentStatus _updateStatus = new();
         public SecurityComponentStatus UpdateStatus
         {
             get => _updateStatus;
             set => SetProperty(ref _updateStatus, value);
         }
 
-        private SecurityComponentStatus _bitlockerStatus;
+        private SecurityComponentStatus _bitlockerStatus = new();
         public SecurityComponentStatus BitLockerStatus
         {
             get => _bitlockerStatus;
             set => SetProperty(ref _bitlockerStatus, value);
         }
 
-        private SecurityComponentStatus _driveHealthStatus;
+        private SecurityComponentStatus _driveHealthStatus = new();
         public SecurityComponentStatus DriveHealthStatus
         {
             get => _driveHealthStatus;
             set => SetProperty(ref _driveHealthStatus, value);
         }
 
-        private SecurityComponentStatus _secureBootStatus;
+        private SecurityComponentStatus _secureBootStatus = new();
         public SecurityComponentStatus SecureBootStatus
         {
             get => _secureBootStatus;
             set => SetProperty(ref _secureBootStatus, value);
         }
 
-        private int _overallScore;
+        private int _overallScore = new();
         public int OverallScore
         {
             get => _overallScore;
             set => SetProperty(ref _overallScore, value);
         }
 
-        private string _overallStatus;
+        private string _overallStatus = string.Empty;
         public string OverallStatus
         {
             get => _overallStatus;
             set => SetProperty(ref _overallStatus, value);
         }
 
-        private string _overallScoreColor;
+        private string _overallScoreColor = string.Empty;
         public string OverallScoreColor
         {
             get => _overallScoreColor;

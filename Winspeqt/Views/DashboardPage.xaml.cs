@@ -17,7 +17,7 @@ namespace Winspeqt.Views
             ViewModel.NavigationRequested += OnNavigationRequested;
         }
 
-        private void OnNavigationRequested(object sender, string feature)
+        private void OnNavigationRequested(object? sender, string feature)
         {
             // Navigate to the appropriate dashboard page
             switch (feature)

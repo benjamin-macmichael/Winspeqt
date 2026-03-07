@@ -11,23 +11,23 @@ using Winspeqt.Models;
 
 namespace Winspeqt.Services
 {
-    public class NetworkSecurityMonitor
+    public class NetworkSecurityMonitorService
     {
-        private Timer _monitoringTimer;
-        private readonly Dictionary<string, NetworkTrafficStats> _previousStats = new();
-        private readonly Dictionary<int, string> _wellKnownPorts = new();
-        private readonly HashSet<int> _riskyPorts = new();
+        private Timer? _monitoringTimer = null;
+        private readonly Dictionary<string, NetworkTrafficStats> _previousStats = [];
+        private readonly Dictionary<int, string> _wellKnownPorts = [];
+        private readonly HashSet<int> _riskyPorts = [];
 
         // Track which alert keys have already fired this session to prevent spam
-        private readonly HashSet<string> _firedAlerts = new();
+        private readonly HashSet<string> _firedAlerts = [];
 
-        public event EventHandler<List<NetworkConnection>> ConnectionsUpdated;
-        public event EventHandler<List<NetworkTrafficStats>> TrafficStatsUpdated;
-        public event EventHandler<List<PortScanResult>> OpenPortsDetected;
-        public event EventHandler<List<ConnectedDevice>> ConnectedDevicesUpdated;
-        public event EventHandler<string> SecurityAlertRaised;
+        public event EventHandler<List<NetworkConnection>>? ConnectionsUpdated;
+        public event EventHandler<List<NetworkTrafficStats>>? TrafficStatsUpdated;
+        public event EventHandler<List<PortScanResult>>? OpenPortsDetected;
+        public event EventHandler<List<ConnectedDevice>>? ConnectedDevicesUpdated;
+        public event EventHandler<string>? SecurityAlertRaised;
 
-        public NetworkSecurityMonitor()
+        public NetworkSecurityMonitorService()
         {
             InitializeWellKnownPorts();
             InitializeRiskyPorts();
