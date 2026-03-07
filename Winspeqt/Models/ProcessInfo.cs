@@ -22,6 +22,10 @@ namespace Winspeqt.Models
         // Category for grouping processes
         public ProcessCategory Category { get; set; } = ProcessCategory.Other;
 
+        // Whether this process is protected and should not be ended by the user
+        public bool IsProtected { get; set; } = false;
+        public bool IsEndable => !IsProtected;
+
         // Running time tracking
         public DateTime StartTime { get; set; } = DateTime.Now;
         public TimeSpan RunningTime => DateTime.Now - StartTime;

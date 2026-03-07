@@ -10,6 +10,30 @@ namespace Winspeqt.Services
 {
     public class SystemMonitorService
     {
+        // Processes that are critical to Windows and should never be ended by the user.
+        // Includes core OS processes, shell infrastructure, and system tray residents.
+        private static readonly HashSet<string> _protectedProcessNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            // Windows kernel & session management
+            "system", "smss", "csrss", "wininit", "winlogon", "lsass", "lsaiso", "services",
+            // Shell & UI infrastructure
+            "explorer", "dwm", "sihost", "shellexperiencehost", "startmenuexperiencehost",
+            "taskhostw", "fontdrvhost", "ctfmon", "textinputhost",
+            // Runtime & app infrastructure
+            "svchost", "runtimebroker", "backgroundtaskhost", "conhost",
+            // Search
+            "searchindexer", "searchapp", "searchhost",
+            // Windows Security (system tray)
+            "securityhealthsystray", "securityhealthservice", "msmpeng", "nissrv",
+            // Spooler, audio, GPU
+            "spoolsv", "audiodg", "dashost",
+            // Windows Update
+            "wuauclt", "musnotification", "usoclient",
+        };
+
+        private static bool IsProtectedProcess(string processName)
+            => _protectedProcessNames.Contains(processName);
+
         private PerformanceCounter _availableMemoryCounter;
         private PerformanceCounter _cpuCounter;
         private Dictionary<int, (DateTime timestamp, TimeSpan processorTime)> _cpuUsageCache;
@@ -97,7 +121,8 @@ namespace Winspeqt.Services
                             CpuUsagePercent = 0, // Will calculate for top processes only
                             Status = process.Responding ? "Running" : "Not Responding",
                             FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
-                            Icon = GetProcessIcon(process.ProcessName)
+                            Icon = GetProcessIcon(process.ProcessName),
+                            IsProtected = IsProtectedProcess(process.ProcessName),
                         };
 
                         processInfoList.Add(processInfo);
@@ -183,7 +208,8 @@ namespace Winspeqt.Services
                             CpuUsagePercent = cpuUsage,
                             Status = process.Responding ? "Running" : "Not Responding",
                             FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
-                            Icon = GetProcessIcon(process.ProcessName)
+                            Icon = GetProcessIcon(process.ProcessName),
+                            IsProtected = IsProtectedProcess(process.ProcessName),
                         };
 
                         processInfoList.Add(processInfo);

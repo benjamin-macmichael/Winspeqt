@@ -5,9 +5,9 @@ using System;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
-using Winspeqt.Views.Security;
 using Winspeqt.Views.Monitoring;
 using Winspeqt.Views.Optimization;
+using Winspeqt.Views.Security;
 
 namespace Winspeqt.Views
 {
@@ -38,7 +38,7 @@ namespace Winspeqt.Views
                 IntPtr hWnd = WindowNative.GetWindowHandle(this);
                 WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
                 AppWindow appWindow = AppWindow.GetFromWindowId(wndId);
-                appWindow.SetIcon(@"Assets\QuantumLens.ico");
+                appWindow.SetIcon(@"Assets\Quantum Lens Transparent (Icon).ico");
             }
 
             var hWnd2 = WindowNative.GetWindowHandle(this);
@@ -76,6 +76,9 @@ namespace Winspeqt.Views
                         break;
                     case "SecurityStatus":
                         RootFrame.Navigate(typeof(SecurityStatusPage));
+                        break;
+                    case "Optimization":
+                        RootFrame.Navigate(typeof(OptimizationPage));
                         break;
                     case "SystemOptimization":
                         RootFrame.Navigate(typeof(OptimizationDashboardPage));
