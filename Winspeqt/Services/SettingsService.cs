@@ -48,10 +48,17 @@ namespace Winspeqt.Services
         {
             try
             {
+                System.Diagnostics.Debug.Print("Hi there");
                 using var key = Registry.CurrentUser.OpenSubKey(StartupKey, true);
                 if (enable)
                 {
-                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                    string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
+
+                    if (exePath == null)
+                    {
+                        throw new InvalidOperationException("Could not find the needed path to set up startup functionality");
+                    }
+
                     key?.SetValue(AppName, $"\"{exePath}\"");
                 }
                 else

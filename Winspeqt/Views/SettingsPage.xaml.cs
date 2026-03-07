@@ -23,7 +23,7 @@ namespace Winspeqt.Views
             ViewModel.LaunchAtStartup = !ViewModel.LaunchAtStartup;
         }
 
-        private void OnNavigationRequested(object sender, string destination)
+        private void OnNavigationRequested(object? sender, string destination)
         {
             if (destination == "Back" && Frame.CanGoBack)
                 Frame.GoBack();
