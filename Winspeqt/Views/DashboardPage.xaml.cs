@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Winspeqt.ViewModels;
 
@@ -15,6 +16,30 @@ namespace Winspeqt.Views
 
             // Subscribe to the ViewModel's navigation event
             ViewModel.NavigationRequested += OnNavigationRequested;
+
+            Loaded += DashboardPage_Loaded;
+            SizeChanged += DashboardPage_SizeChanged;
+        }
+
+        private void DashboardPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ApplyResponsiveState();
+
+            // Re-apply after first layout pass to avoid occasional startup timing misses.
+            DispatcherQueue.TryEnqueue(ApplyResponsiveState);
+        }
+
+        private void DashboardPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplyResponsiveState();
+        }
+
+        private void ApplyResponsiveState()
+        {
+            // Keep in sync with WideState AdaptiveTrigger MinWindowWidth in DashboardPage.xaml.
+            const double MinWideWidth = 1250;
+            var state = ActualWidth >= MinWideWidth ? "WideState" : "NarrowState";
+            VisualStateManager.GoToState(this, state, false);
         }
 
         private void OnNavigationRequested(object sender, string feature)
