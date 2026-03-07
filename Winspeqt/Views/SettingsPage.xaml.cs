@@ -37,6 +37,12 @@ namespace Winspeqt.Views
                 Frame.GoBack();
         }
 
+        /// <summary>
+        /// This will open the default mailing app and address an email to Winspeqt Support. If that doesn't work,
+        /// then it copies the email address to the clipboard. We may just want it to do the latter.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private async void Hyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
         {
             if (sender.NavigateUri is not Uri link)
