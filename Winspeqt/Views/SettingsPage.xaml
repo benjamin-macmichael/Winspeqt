@@ -137,7 +137,31 @@
                             TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
+                
+                <TextBlock
+                    Text="DATA AND PRIVACY"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="#A0A0A0"
+                    CharacterSpacing="150"
+                    Margin="0,8,0,4"/>
 
+                <Border Background="#2D2D30" CornerRadius="8" Padding="24">
+                    <StackPanel Spacing="4">
+                        <!-- It should be noted that the mailto may not work the way we want it to. We should consider removing it if it doesn't work for any of us. -->
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="#606060"
+                            TextWrapping="Wrap">
+                            Winspeqt captures app usage, settings, file storage, and other system information. 
+                            This information is necessary to make Winspeqt's features work. However, this data 
+                            still belongs to you. We never move it off your computer and only ever use it to show 
+                            you how your computer is behaving. If you have any questions, please reach out at
+                            <Hyperlink NavigateUri="mailto:winspeqtsupport@byu.onmicrosoft.com" Click="Hyperlink_Click">winspeqtsupport@byu.onmicrosoft.com</Hyperlink>.
+                        </TextBlock>
+                        
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

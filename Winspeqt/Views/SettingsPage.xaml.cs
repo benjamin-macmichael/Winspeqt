@@ -1,7 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Documents;
 using System;
+using Windows.ApplicationModel.DataTransfer;
 using Winspeqt.ViewModels;
 
 namespace Winspeqt.Views
@@ -34,6 +36,43 @@ namespace Winspeqt.Views
             if (Frame.CanGoBack)
                 Frame.GoBack();
         }
+
+        private async void Hyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+        {
+            if (sender.NavigateUri is not Uri link)
+                return;
+
+            var launched = await Windows.System.Launcher.LaunchUriAsync(link);
+            if (launched)
+                return;
+
+            var emailAddress = link.OriginalString;
+            if (emailAddress.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+                emailAddress = emailAddress.Substring("mailto:".Length);
+
+            var querySeparator = emailAddress.IndexOf('?');
+            if (querySeparator >= 0)
+                emailAddress = emailAddress.Substring(0, querySeparator);
+
+            if (string.IsNullOrWhiteSpace(emailAddress))
+                emailAddress = "winspeqtsupport@byu.onmicrosoft.com";
+
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(emailAddress);
+            Clipboard.SetContent(dataPackage);
+            Clipboard.Flush();
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = this.XamlRoot,
+                Title = "Email app unavailable",
+                Content = $"We couldn't open an email app. The address {emailAddress} was copied to your clipboard.",
+                CloseButtonText = "OK"
+            };
+
+            await dialog.ShowAsync();
+        }
+
     }
 
     public class StartupButtonColorConverter : IValueConverter
