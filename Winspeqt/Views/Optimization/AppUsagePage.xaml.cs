@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using System;
+using Winspeqt.Services;
 using Winspeqt.ViewModels.Optimization;
 
 namespace Winspeqt.Views.Optimization
@@ -14,7 +15,7 @@ namespace Winspeqt.Views.Optimization
 
             // Get the shared AppUsageService from MainWindow
             // You may need to adjust this based on how your App.xaml.cs exposes the window
-            var appUsageService = Views.MainWindow.GetAppUsageService();
+            AppUsageService? appUsageService = Views.MainWindow.GetAppUsageService();
 
             DataContext = new AppUsageViewModel(appUsageService);
         }

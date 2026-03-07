@@ -14,13 +14,13 @@ namespace Winspeqt.ViewModels.Optimization
     {
         private readonly AppUsageService _appUsageService;
         private readonly DispatcherQueue _dispatcherQueue;
-        private DispatcherQueueTimer _updateTimer;
+        private DispatcherQueueTimer? _updateTimer;
 
-        private ObservableCollection<AppUsageModel> _applications;
-        private ObservableCollection<InstalledAppModel> _installedApps;
-        private AppUsageStats _usageStats;
+        private ObservableCollection<AppUsageModel> _applications = new();
+        private ObservableCollection<InstalledAppModel> _installedApps = new();
+        private AppUsageStats? _usageStats;
         private bool _isLoading;
-        private string _searchText;
+        private string _searchText = string.Empty;
         private bool _isTrackingEnabled;
         private bool _hasOptedIn;
         private bool _showOnlyUnused;
@@ -28,7 +28,7 @@ namespace Winspeqt.ViewModels.Optimization
 
         public AppUsageViewModel() : this(null) { }
 
-        public AppUsageViewModel(AppUsageService appUsageService)
+        public AppUsageViewModel(AppUsageService? appUsageService)
         {
             _appUsageService = appUsageService ?? new AppUsageService();
             Applications = new ObservableCollection<AppUsageModel>();
@@ -71,7 +71,7 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _installedApps, value);
         }
 
-        public AppUsageStats UsageStats
+        public AppUsageStats? UsageStats
         {
             get => _usageStats;
             set
