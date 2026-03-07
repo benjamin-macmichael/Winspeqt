@@ -93,18 +93,18 @@
 
 	<PropertyGroup>
 		<PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-		<PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+		<PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">False</PublishReadyToRun>
 		<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-		<PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+		<PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
 		<ApplicationIcon>Assets\QuantumLens.ico</ApplicationIcon>
 	</PropertyGroup>
 
   <!-- Publish Properties -->
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
-    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">False</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
     <ApplicationIcon>Assets\Quantum Lens Transparent (Icon).ico</ApplicationIcon>
 	  <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
 	  <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
