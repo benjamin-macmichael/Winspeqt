@@ -251,6 +251,13 @@ namespace Winspeqt.ViewModels.Optimization
                         var settings = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
                         settings["Optimization_LastRunTime"] = DateTime.Now.Ticks;
                         settings["Optimization_LastBytesFreed"] = result.TotalBytesFreed;
+
+                        // Compute and save health score for notification manager
+                        // Score is based on how recently the user has run an optimization
+                        // and how much was freed (if a lot was freed, score was low before)
+                        int healthScore = ComputeHealthScore(result);
+                        settings["Optimization_HealthScore"] = healthScore;
+                        System.Diagnostics.Debug.WriteLine($"[OptimizationViewModel] Saved health score={healthScore}");
                     }
                     catch (Exception ex)
                     {
@@ -270,6 +277,18 @@ namespace Winspeqt.ViewModels.Optimization
                     CurrentTaskLabel = "An error occurred during optimization.";
                 });
             }
+        }
+
+        private static int ComputeHealthScore(OptimizationResult result)
+        {
+            // Score starts at 100 and drops based on how much was freed
+            // The more junk found, the worse the score was before cleaning
+            long freed = result.TotalBytesFreed;
+            if (freed >= 1_073_741_824) return 40;  // 1GB+ freed = was very dirty
+            if (freed >= 524_288_000) return 55;  // 500MB+
+            if (freed >= 104_857_600) return 70;  // 100MB+
+            if (freed >= 10_485_760) return 85;  // 10MB+
+            return 95;                               // barely anything = already clean
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
