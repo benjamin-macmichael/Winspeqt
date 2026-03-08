@@ -11,7 +11,7 @@ namespace Winspeqt.ViewModels
         public ICommand MonitoringCommand { get; }
         public ICommand SettingsCommand { get; }
 
-        public event EventHandler<string> NavigationRequested;
+        public event EventHandler<string>? NavigationRequested;
 
         public DashboardViewModel()
         {

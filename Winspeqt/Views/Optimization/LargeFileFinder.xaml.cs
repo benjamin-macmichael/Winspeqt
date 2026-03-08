@@ -18,7 +18,7 @@ namespace Winspeqt.Views.Optimization
     public sealed partial class LargeFileFinder : Page
     {
         /// <summary>
-        /// View model providing data and commands for the page.
+        /// View model that drives folder enumeration, sorting, and breadcrumb state.
         /// </summary>
         public LargeFileFinderViewModel ViewModel { get; }
         /// <summary>
@@ -55,9 +55,9 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Navigates into a folder item when clicked.
+        /// Navigates into the selected folder row.
         /// </summary>
-        /// <param name="sender">The folder button that carries the folder path as its command parameter.</param>
+        /// <param name="sender">The folder row button that carries a folder path as its command parameter.</param>
         /// <param name="e">Routed event data.</param>
         private async void Folder_Click(object sender, RoutedEventArgs e)
         {
@@ -70,27 +70,27 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Resets the breadcrumb to a given index and loads that folder.
+        /// Navigates to an ancestor represented by the clicked breadcrumb entry.
         /// </summary>
-        /// <param name="sender">The breadcrumb button whose command parameter is the target index.</param>
+        /// <param name="sender">The breadcrumb button whose command parameter is the target breadcrumb index.</param>
         /// <param name="e">Routed event data.</param>
         private async void BreadCrumb_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.CommandParameter is int index)
             {
-                FileSearchItem newNode = ViewModel.ActiveNode;
+                FileSearchItem? newNode = ViewModel.ActiveNode;
 
                 for (int progenitor = ViewModel.PathItems.Count - index - 1; progenitor > 0; progenitor--)
                 {
-                    newNode = newNode.Parent;
+                    if (newNode != null) newNode = newNode.Parent;
                 }
-                await ViewModel.ChangeActiveNode(newNode);
+                if (newNode != null) await ViewModel.ChangeActiveNode(newNode);
                 ViewModel.ResetBreadCrumb(index);
             }
         }
 
         /// <summary>
-        /// Opens File Explorer at the current breadcrumb path.
+        /// Opens File Explorer to the currently displayed directory.
         /// </summary>
         /// <param name="sender">The button that triggers the action.</param>
         /// <param name="e">Routed event data.</param>
@@ -109,6 +109,13 @@ namespace Winspeqt.Views.Optimization
             {
                 Debug.WriteLine($"Error opening File Explorer for path {ViewModel.PathItems[ViewModel.PathItems.Count - 1].Path}: {ex.Message}");
             }
+        }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            int index = ViewModel.PathItems[ViewModel.PathItems.Count - 1].Index;
+            ViewModel.Refresh();
+            ViewModel.ResetBreadCrumb(index);
         }
     }
 }

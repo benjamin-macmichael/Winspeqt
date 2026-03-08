@@ -26,7 +26,7 @@ namespace Winspeqt.ViewModels
             }
         }
 
-        public event EventHandler<string> NavigationRequested;
+        public event EventHandler<string>? NavigationRequested;
 
         public bool LaunchAtStartup
         {

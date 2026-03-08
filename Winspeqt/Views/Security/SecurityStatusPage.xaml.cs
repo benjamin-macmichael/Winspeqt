@@ -19,7 +19,7 @@ namespace Winspeqt.Views.Security
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.OverallScore) ||
                 e.PropertyName == nameof(ViewModel.OverallScoreColor))
@@ -216,7 +216,7 @@ namespace Winspeqt.Views.Security
 
         // ── Helpers ───────────────────────────────────────────────────────────
 
-        private bool TryLaunch(string fileName, string args = null)
+        private bool TryLaunch(string fileName, string? args = null)
         {
             try
             {

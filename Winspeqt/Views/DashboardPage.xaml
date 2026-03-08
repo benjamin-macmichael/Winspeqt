@@ -7,14 +7,46 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid x:Name="RootLayout">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="NarrowState"/>
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <!-- Keep in sync with ApplyResponsiveState() in code-behind. -->
+                        <AdaptiveTrigger MinWindowWidth="1250"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CardsColumn0.Width" Value="*"/>
+                        <Setter Target="CardsColumn1.Width" Value="*"/>
+                        <Setter Target="CardsColumn2.Width" Value="*"/>
+                        <Setter Target="CardsRow0.Height" Value="Auto"/>
+                        <Setter Target="CardsRow1.Height" Value="0"/>
+                        <Setter Target="CardsRow2.Height" Value="0"/>
+
+                        <Setter Target="SecurityCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="SecurityCard.(Grid.Column)" Value="0"/>
+                        <Setter Target="SecurityCard.Margin" Value="0,0,20,0"/>
+
+                        <Setter Target="OptimizationCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="OptimizationCard.(Grid.Column)" Value="1"/>
+                        <Setter Target="OptimizationCard.Margin" Value="20,0"/>
+
+                        <Setter Target="MonitoringCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="MonitoringCard.(Grid.Column)" Value="2"/>
+                        <Setter Target="MonitoringCard.Margin" Value="20,0,0,0"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header Section -->
-        <Grid Grid.Row="0" Padding="60,60,60,40">
+            <!-- Header Section -->
+            <Grid Grid.Row="0" Padding="60,60,60,40">
             <!-- Gear icon top-right -->
             <Button
         HorizontalAlignment="Right"
@@ -48,20 +80,34 @@
             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
             TextAlignment="Center"/>
             </StackPanel>
-        </Grid>
+            </Grid>
 
-        <!-- Main Content Grid -->
-        <Grid Grid.Row="1" Padding="60,0,60,60" MaxWidth="1400">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Scroll only the card region so header layout/state behavior stays stable. -->
+        <ScrollViewer
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto"
+            VerticalScrollMode="Auto"
+            HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled">
+            <!-- Main Content Grid -->
+            <Grid Padding="60,0,60,60" MaxWidth="1400">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="CardsColumn0" Width="*"/>
+                    <ColumnDefinition x:Name="CardsColumn1" Width="0"/>
+                    <ColumnDefinition x:Name="CardsColumn2" Width="0"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="CardsRow0" Height="Auto"/>
+                    <RowDefinition x:Name="CardsRow1" Height="Auto"/>
+                    <RowDefinition x:Name="CardsRow2" Height="Auto"/>
+                </Grid.RowDefinitions>
 
             <!-- Security Card -->
             <Button 
+                x:Name="SecurityCard"
+                Grid.Row="0"
                 Grid.Column="0"
-                Margin="0,0,20,0"
+                Margin="0,0,0,20"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -118,8 +164,10 @@
 
             <!-- Optimization Card -->
             <Button 
-                Grid.Column="1"
-                Margin="20,0"
+                x:Name="OptimizationCard"
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="0,0,0,20"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -176,8 +224,10 @@
 
             <!-- Monitoring Card -->
             <Button 
-                Grid.Column="2"
-                Margin="20,0,0,0"
+                x:Name="MonitoringCard"
+                Grid.Row="2"
+                Grid.Column="0"
+                Margin="0"
                 Padding="0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
@@ -231,6 +281,7 @@
                         Margin="0,24,0,0"/>
                 </Grid>
             </Button>
-        </Grid>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>
