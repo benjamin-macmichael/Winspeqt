@@ -189,6 +189,8 @@ namespace Winspeqt.ViewModels.Optimization
             TotalHardDrive = totalSize;
             AvailableHardDrive = availableSize;
 
+            SaveDriveHealthToStorage(totalSize, availableSize);
+
             PathItems = [];
         }
 
@@ -505,6 +507,44 @@ namespace Winspeqt.ViewModels.Optimization
             System.Diagnostics.Debug.Print($"{driveInfo.TotalSize}, {driveInfo.TotalFreeSpace}");
             return (driveInfo.TotalSize, driveInfo.TotalFreeSpace);
         }
+
+        /// <summary>
+        /// Determines a drive health zone (Green/Orange/Red) based on used disk space percentage,
+        /// then saves the zone and raw drive values to ApplicationData for the NotificationManagerService.
+        ///   Green  — under 70% used
+        ///   Orange — 70–85% used
+        ///   Red    — over 85% used
+        /// </summary>
+        /// <param name="totalBytes">Total drive capacity in bytes.</param>
+        /// <param name="availableBytes">Free space remaining in bytes.</param>
+        private static void SaveDriveHealthToStorage(long totalBytes, long availableBytes)
+        {
+            try
+            {
+                if (totalBytes <= 0) return;
+
+                double usedPercent = (double)(totalBytes - availableBytes) / totalBytes * 100.0;
+
+                string zone = usedPercent switch
+                {
+                    < 70 => "Green",
+                    < 85 => "Orange",
+                    _ => "Red"
+                };
+
+                var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+                c["LargeFileFinder_Zone"] = zone;
+                c["LargeFileFinder_TotalBytes"] = totalBytes;
+                c["LargeFileFinder_AvailableBytes"] = availableBytes;
+                c["LargeFileFinder_UsedPercent"] = (int)Math.Round(usedPercent);
+                c["LargeFileFinder_LastScanTime"] = DateTime.Now.Ticks;
+
+                System.Diagnostics.Debug.WriteLine($"[LargeFileFinder] Drive health saved — zone={zone}, used={usedPercent:F1}%");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LargeFileFinder] Failed to save drive health: {ex.Message}");
+            }
+        }
     }
 }
-

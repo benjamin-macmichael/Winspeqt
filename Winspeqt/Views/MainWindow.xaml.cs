@@ -80,6 +80,9 @@ namespace Winspeqt.Views
                     case "Optimization":
                         RootFrame.Navigate(typeof(OptimizationPage));
                         break;
+                    case "LargeFileFinder":
+                        RootFrame.Navigate(typeof(LargeFileFinder));
+                        break;
                     case "SystemOptimization":
                         RootFrame.Navigate(typeof(OptimizationDashboardPage));
                         break;
