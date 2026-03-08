@@ -60,12 +60,15 @@
                     </StackPanel>
 
                     <StackPanel>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.DriveUsageText, Mode=OneWay}" 
-                            FontSize="18" 
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Margin="0,8,0,0"
-                            TextWrapping="WrapWholeWords"/>
+                        <!-- Drive usage line: "You are using X GB of Y GB on this drive"
+                             The used amount is colored green/orange/red based on zone. -->
+                        <TextBlock FontSize="18" Margin="0,8,0,0" TextWrapping="WrapWholeWords">
+                            <Run Text="You are using "/>
+                            <Run Text="{x:Bind ViewModel.DriveUsageHighlight, Mode=OneWay}"
+                                 Foreground="{x:Bind ViewModel.DriveUsageColor, Mode=OneWay}"
+                                 FontWeight="SemiBold"/>
+                            <Run Text="{x:Bind ViewModel.DriveUsageSuffix, Mode=OneWay}"/>
+                        </TextBlock>
                         <TextBlock 
                             Text="Scan your folders to find the largest files taking up space on your PC" 
                             FontSize="18" 
@@ -295,7 +298,7 @@
                                                 Width="10"
                                                 Height="10" />
                                         </StackPanel>
-                                        
+
                                         <StackPanel
                                             Grid.Column="1"
                                             Orientation="Horizontal"
@@ -324,4 +327,3 @@
         </Grid>
     </ScrollViewer>
 </Page>
-
