@@ -117,6 +117,9 @@ namespace Winspeqt.ViewModels.Optimization
                     OnPropertyChanged(nameof(UsedHardDrive));
                     OnPropertyChanged(nameof(UsedDriveLabel));
                     OnPropertyChanged(nameof(DriveUsageText));
+                    OnPropertyChanged(nameof(DriveUsageHighlight));
+                    OnPropertyChanged(nameof(DriveUsageSuffix));
+                    OnPropertyChanged(nameof(DriveUsageColor));
                 }
             }
         }
@@ -141,6 +144,9 @@ namespace Winspeqt.ViewModels.Optimization
                     OnPropertyChanged(nameof(UsedHardDrive));
                     OnPropertyChanged(nameof(UsedDriveLabel));
                     OnPropertyChanged(nameof(DriveUsageText));
+                    OnPropertyChanged(nameof(DriveUsageHighlight));
+                    OnPropertyChanged(nameof(DriveUsageSuffix));
+                    OnPropertyChanged(nameof(DriveUsageColor));
                 }
             }
         }
@@ -170,6 +176,39 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         public string DriveUsageText =>
             $"You are using {UsedHardDrive} {UsedDriveLabel} of {TotalHardDrive} {TotalDriveLabel} on this drive";
+
+        /// <summary>
+        /// The colored portion of the drive usage line, e.g. "359 GB".
+        /// </summary>
+        public string DriveUsageHighlight =>
+            $"{UsedHardDrive} {UsedDriveLabel}";
+
+        /// <summary>
+        /// The plain-text suffix after the colored portion, e.g. " of 474 GB on this drive".
+        /// </summary>
+        public string DriveUsageSuffix =>
+            $" of {TotalHardDrive} {TotalDriveLabel} on this drive";
+
+        /// <summary>
+        /// Zone color for the used-space highlight: green / orange / red.
+        ///   Green  — under 70% used
+        ///   Orange — 70–85% used
+        ///   Red    — over 85% used
+        /// </summary>
+        public string DriveUsageColor
+        {
+            get
+            {
+                if (_totalHardDrive <= 0) return "#FFFFFF";
+                double usedPct = (double)(_totalHardDrive - _availableHardDrive) / _totalHardDrive * 100.0;
+                return usedPct switch
+                {
+                    < 70 => "#4CAF50",  // green
+                    < 85 => "#FF9800",  // orange
+                    _ => "#F44336"   // red
+                };
+            }
+        }
 
         /// <summary>
         /// Initializes a new view model with default collections and sort options.
@@ -362,7 +401,7 @@ namespace Winspeqt.ViewModels.Optimization
         {
             try
             {
-                // the upside to this is that it is much faster. The downside is that it assumes that you have loaded all of the 
+                // The upside to this is that it is much faster. The downside is that it assumes that you have loaded all of the 
                 // child elements already.
                 long size = 0;
                 if (item.Children.Count == 0)
@@ -465,7 +504,7 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         /// <summary>
-        /// Removes all of the children items for the active node and each of its ancestors in order to refresh the file system
+        /// Removes all of the children items for the active node and each of its ancestors in order to refresh the file system.
         /// </summary>
         public async void Refresh()
         {
