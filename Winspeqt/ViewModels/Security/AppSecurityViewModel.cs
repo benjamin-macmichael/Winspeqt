@@ -233,8 +233,7 @@ namespace Winspeqt.ViewModels.Security
                 "All Apps",
                 "Needs Updates",
                 "Critical Updates",
-                "Up to Date",
-                "Unknown Status"
+                "Up to Date"
             };
 
             ScanCommand = new RelayCommand(async () => await ScanAppsAsync());
@@ -478,7 +477,7 @@ namespace Winspeqt.ViewModels.Security
                 }
 
                 // Show WinGet progress bar during version check, hide main bar
-                await UpdateStatus("Checking WinGet version...", 0, showWingetProgress: true, showMainProgress: false);
+                await UpdateStatus("Checking WinGet version and updating package sources...", 0, showWingetProgress: true, showMainProgress: false);
 
                 var isOutdated = await CheckWinGetOutdatedAsync();
                 if (isOutdated)
@@ -626,7 +625,6 @@ namespace Winspeqt.ViewModels.Security
                 "Needs Updates" => _allApps.Where(a => a.Status == SecurityStatus.Outdated),
                 "Critical Updates" => _allApps.Where(a => a.Status == SecurityStatus.Critical),
                 "Up to Date" => _allApps.Where(a => a.Status == SecurityStatus.UpToDate),
-                "Unknown Status" => _allApps.Where(a => a.Status == SecurityStatus.Unknown),
                 _ => _allApps
             };
 
@@ -674,6 +672,17 @@ namespace Winspeqt.ViewModels.Security
 
                 if (app.ConfidenceScore >= 90 && !string.IsNullOrEmpty(app.WinGetId))
                 {
+                    // Add general warning about WinGet updates
+                    var updateWarning = new Microsoft.UI.Xaml.Controls.InfoBar
+                    {
+                        Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
+                        IsOpen = true,
+                        Title = "How this works",
+                        Message = "This will download and run the latest installer. Apps originally installed with WinGet will upgrade smoothly. For other apps, the installer usually replaces the old version automatically, but occasionally you may need to uninstall the old version manually (in Windows settings, go to Apps > Installed apps). Your settings and data will be preserved.",
+                        IsClosable = false
+                    };
+                    contentPanel.Children.Add(updateWarning);
+
                     var commandSection = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 8 };
                     commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
                     {
@@ -711,15 +720,7 @@ namespace Winspeqt.ViewModels.Security
                             var startInfo = new System.Diagnostics.ProcessStartInfo
                             {
                                 FileName = "wt.exe",
-                                Arguments = $"-w 0 nt cmd /k \"echo Updating WinGet sources... && " +
-                                                  $"winget source update && echo. && " +
-                                                  $"echo Upgrading {app.AppName}... && echo. && " +
-                                                  $"winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && " +
-                                                  $"(echo. && echo ================================ && echo SUCCESS: {app.AppName} has been updated! && echo ================================) || " +
-                                                  $"(echo. && echo ================================ && echo UPDATE FAILED && echo ================================ && echo. && " +
-                                                  $"echo This app may not have been installed with WinGet originally. && echo. && " +
-                                                  $"echo To update {app.AppName}, please: && echo. && " +
-                                                  $"echo   1. Visit the official {app.AppName} website && echo   2. Download the latest installer && echo   3. Run the installer to update && echo.) && pause\"",
+                                Arguments = $"-w 0 nt cmd /k \"winget upgrade --id {app.WinGetId} -e && pause\"",
                                 UseShellExecute = true
                             };
 
@@ -727,7 +728,7 @@ namespace Winspeqt.ViewModels.Security
                             catch
                             {
                                 startInfo.FileName = "cmd.exe";
-                                startInfo.Arguments = $"/k winget source update && winget upgrade --id {app.WinGetId} -e --accept-package-agreements --accept-source-agreements && pause";
+                                startInfo.Arguments = $"/k winget upgrade --id {app.WinGetId} -e && pause";
                                 System.Diagnostics.Process.Start(startInfo);
                             }
                         }
