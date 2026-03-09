@@ -412,7 +412,7 @@
                 VerticalAlignment="Center"
                 Spacing="16">
                 <TextBlock
-                    Text="📱"
+                    Text="💻"
                     FontSize="72"
                     HorizontalAlignment="Center"
                     Opacity="0.5"/>
