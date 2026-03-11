@@ -168,60 +168,33 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_QuickFixEngineering");
+                // Use Microsoft.Update.Session to check for pending updates
+                var updateSession = new WUApiLib.UpdateSession();
+                var updateSearcher = updateSession.CreateUpdateSearcher();
 
-                DateTime lastUpdate = DateTime.MinValue;
-                int updateCount = 0;
+                // Only search for software updates that are not installed and not hidden
+                var searchResult = updateSearcher.Search("IsInstalled=0 AND IsHidden=0 AND Type='Software'");
 
-                foreach (ManagementObject obj in searcher.Get())
-                {
-                    updateCount++;
-                    try
-                    {
-                        var installedOn = obj["InstalledOn"]?.ToString();
-                        if (!string.IsNullOrEmpty(installedOn))
-                        {
-                            if (DateTime.TryParse(installedOn, out DateTime installDate))
-                            {
-                                if (installDate > lastUpdate)
-                                    lastUpdate = installDate;
-                            }
-                        }
-                    }
-                    catch { }
-                }
+                int pendingCount = searchResult.Updates.Count;
 
-                var daysSinceUpdate = (DateTime.Now - lastUpdate).Days;
-
-                if (lastUpdate == DateTime.MinValue)
-                {
-                    return new SecurityComponentStatus
-                    {
-                        IsEnabled = true,
-                        Status = "Unknown",
-                        Message = "Unable to determine last update date",
-                        Icon = "?",
-                        Color = "#9E9E9E"
-                    };
-                }
-                else if (daysSinceUpdate <= 7)
+                if (pendingCount == 0)
                 {
                     return new SecurityComponentStatus
                     {
                         IsEnabled = true,
                         Status = "Up to Date",
-                        Message = $"Last update was {daysSinceUpdate} days ago - your system is current",
+                        Message = "Windows has checked for updates and your system is fully up to date",
                         Icon = "✓",
                         Color = "#4CAF50"
                     };
                 }
-                else if (daysSinceUpdate <= 30)
+                else if (pendingCount <= 5)
                 {
                     return new SecurityComponentStatus
                     {
-                        IsEnabled = true,
-                        Status = "Check for Updates",
-                        Message = $"Last update was {daysSinceUpdate} days ago - consider checking for updates",
+                        IsEnabled = false,
+                        Status = "Updates Available",
+                        Message = $"{pendingCount} update(s) are available but not yet installed. Open Windows Update to install them.",
                         Icon = "⚠",
                         Color = "#FF9800"
                     };
@@ -232,7 +205,7 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = false,
                         Status = "Outdated",
-                        Message = $"Last update was {daysSinceUpdate} days ago - updates needed!",
+                        Message = $"{pendingCount} updates are waiting to be installed. Your system may be missing important security patches.",
                         Icon = "✗",
                         Color = "#F44336"
                     };
@@ -646,7 +619,7 @@ namespace Winspeqt.Services
             // Windows Update (20 points)
             if (status.WindowsUpdateStatus.Status == "Up to Date")
                 score += 20;
-            else if (status.WindowsUpdateStatus.Status == "Check for Updates")
+            else if (status.WindowsUpdateStatus.Status == "Updates Available")
                 score += 10;
 
             // BitLocker (10 points) — less critical, not all systems support it
