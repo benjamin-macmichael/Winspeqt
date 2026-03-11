@@ -16,7 +16,7 @@
         <local:TrackingButtonTextConverter x:Key="TrackingButtonTextConverter"/>
     </Page.Resources>
 
-    <Grid Background="#1E1E1E">
+    <Grid>
         <!-- Usage Tracking View -->
         <Grid Visibility="{Binding ShowInstalledAppsView, Converter={StaticResource InverseBoolToVisibilityConverter}}">
             <Grid.RowDefinitions>
@@ -40,7 +40,7 @@
                     Click="BackButton_Click"
                     Background="Transparent"
                     BorderThickness="0"
-                    Foreground="White"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                     FontSize="16"
                     Padding="0"
                     Margin="0,0,20,0"
@@ -50,17 +50,17 @@
                     <TextBlock Text="App Usage Tracker" 
                                FontSize="28" 
                                FontWeight="Bold" 
-                               Foreground="White"/>
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Monitor your application usage and screen time" 
                                FontSize="14" 
-                               Foreground="#A0A0A0" 
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                Margin="0,5,0,0"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
                     <Button Content="View Installed Apps" 
                             Command="{Binding ShowInstalledAppsCommand}"
-                            Background="#16C60C"
+                            Background="#007ACC"
                             Foreground="White"
                             Padding="20,10"
                             CornerRadius="6"/>
@@ -75,15 +75,15 @@
 
                     <Button Content="Refresh" 
                             Command="{Binding RefreshCommand}"
-                            Background="#3E3E42"
-                            Foreground="White"
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             Padding="20,10"
                             CornerRadius="6"
                             Visibility="{Binding HasOptedIn, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <Button Content="Reset" 
                             Command="{Binding ResetTrackingCommand}"
-                            Background="#E74856"
+                            Background="#BC2F32"
                             Foreground="White"
                             Padding="20,10"
                             CornerRadius="6"
@@ -95,7 +95,7 @@
             <Border Grid.Row="1" 
                     Padding="30,0,30,20"
                     Visibility="{Binding HasOptedIn, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                <Border Background="#2D2D30" 
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                         CornerRadius="8" 
                         Padding="30,24"
                         BorderBrush="#007ACC"
@@ -112,19 +112,19 @@
                                    Text="📊 Enable App Usage Tracking"
                                    FontSize="24"
                                    FontWeight="Bold"
-                                   Foreground="White"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                    Margin="0,0,0,12"/>
 
                         <TextBlock Grid.Row="1"
                                    TextWrapping="Wrap"
                                    FontSize="15"
-                                   Foreground="#CCCCCC"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Margin="0,0,0,16">
                             <Run Text="Track which applications you use and for how long. This helps you understand your productivity patterns and identify apps you might want to uninstall."/>
                         </TextBlock>
 
                         <Border Grid.Row="2"
-                                Background="#1E1E1E"
+                                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                                 CornerRadius="6"
                                 Padding="16,12"
                                 Margin="0,0,0,20">
@@ -135,7 +135,7 @@
                                            Foreground="#16C60C"/>
                                 <TextBlock TextWrapping="Wrap"
                                            FontSize="13"
-                                           Foreground="#A0A0A0">
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                     <Run Text="• All data stays on YOUR computer"/>
                                     <LineBreak/>
                                     <Run Text="• Nothing is sent to Winspeqt or any servers"/>
@@ -171,32 +171,32 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#2D2D30" CornerRadius="8" Padding="20" Margin="0,0,15,0">
+                <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20" Margin="0,0,15,0">
                     <StackPanel>
-                        <TextBlock Text="Total Screen Time" Foreground="#A0A0A0" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding TotalScreenTimeFormatted}" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock Text="Total Screen Time" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding TotalScreenTimeFormatted}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="24" FontWeight="Bold"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="1" Background="#2D2D30" CornerRadius="8" Padding="20" Margin="0,0,15,0">
+                <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20" Margin="0,0,15,0">
                     <StackPanel>
-                        <TextBlock Text="Apps Used" Foreground="#A0A0A0" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding UsageStats.TotalAppsUsed}" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock Text="Apps Used" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding UsageStats.TotalAppsUsed}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="24" FontWeight="Bold"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#2D2D30" CornerRadius="8" Padding="20" Margin="0,0,15,0">
+                <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20" Margin="0,0,15,0">
                     <StackPanel>
-                        <TextBlock Text="Currently Active" Foreground="#A0A0A0" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBlock Text="{Binding UsageStats.ActiveApps}" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock Text="Currently Active" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding UsageStats.ActiveApps}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="24" FontWeight="Bold"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="3" Background="#2D2D30" CornerRadius="8" Padding="20">
+                <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="20">
                     <StackPanel>
-                        <TextBlock Text="Most Used App" Foreground="#A0A0A0" FontSize="12" Margin="0,0,0,5"/>
+                        <TextBlock Text="Most Used App" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,0,0,5"/>
                         <TextBlock Text="{Binding UsageStats.MostUsedApp}" 
-                                   Foreground="White" 
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                                    FontSize="18"
                                    FontWeight="Bold"
                                    TextTrimming="CharacterEllipsis"/>
@@ -206,7 +206,7 @@
 
             <!-- Search Bar (hidden until opted in) -->
             <Border Grid.Row="2" 
-                    Background="#2D2D30" 
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                     CornerRadius="6" 
                     Margin="30,0,30,20"
                     Padding="15,10"
@@ -214,7 +214,7 @@
                 <TextBox Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="🔍 Search applications..."
                          Background="Transparent"
-                         Foreground="White"
+                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                          BorderThickness="0"
                          FontSize="14"
                          VerticalAlignment="Center"/>
@@ -228,7 +228,7 @@
                 <ItemsControl ItemsSource="{Binding Applications}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#2D2D30" 
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="6" 
                                     Padding="15" 
                                     Margin="0,0,0,10">
@@ -259,10 +259,10 @@
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal" Spacing="10">
                                             <TextBlock Text="{Binding AppName}" 
-                                                       Foreground="White" 
+                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                                                        FontSize="16" 
                                                        FontWeight="SemiBold"/>
-                                            <Border Background="#16C60C" 
+                                            <Border Background="#007ACC" 
                                                     CornerRadius="10" 
                                                     Padding="8,2"
                                                     Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -272,16 +272,16 @@
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding ProcessName}" 
-                                                   Foreground="#A0A0A0" 
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                                    FontSize="12" 
                                                    Margin="0,3,0,0"/>
                                         <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,3,0,0">
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="Last used:"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="{Binding FormattedLastUsed}"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="•"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="Launched"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="{Binding LaunchCount}"/>
-                                            <TextBlock Foreground="#A0A0A0" FontSize="12" Text="times"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="Last used:"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="{Binding FormattedLastUsed}"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="•"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="Launched"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="{Binding LaunchCount}"/>
+                                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12" Text="times"/>
                                         </StackPanel>
                                     </StackPanel>
 
@@ -291,12 +291,12 @@
                                                 HorizontalAlignment="Right"
                                                 Margin="0,0,30,0">
                                         <TextBlock Text="{Binding FormattedUsageTime}" 
-                                                   Foreground="White" 
+                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                                                    FontSize="20" 
                                                    FontWeight="Bold"
                                                    HorizontalAlignment="Right"/>
                                         <TextBlock Text="Total Time" 
-                                                   Foreground="#A0A0A0" 
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                                    FontSize="11"
                                                    HorizontalAlignment="Right"
                                                    Margin="0,2,0,0"/>
@@ -304,7 +304,7 @@
 
                                     <!-- Usage Percentage -->
                                     <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                        <TextBlock Foreground="#16C60C" 
+                                        <TextBlock Foreground="#007ACC" 
                                                    FontSize="18" 
                                                    FontWeight="Bold"
                                                    HorizontalAlignment="Center">
@@ -316,8 +316,8 @@
                                                      Width="60"
                                                      Height="6"
                                                      Margin="0,5,0,0"
-                                                     Background="#3E3E42"
-                                                     Foreground="#16C60C"/>
+                                                     Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                     Foreground="#007ACC"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -335,45 +335,47 @@
             </Grid.RowDefinitions>
 
             <!-- Installed Apps Header -->
-            <Grid Grid.Row="0" Padding="30,20,30,10" Background="#1E1E1E">
+            <Grid Grid.Row="0" Padding="30,20,30,10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Grid.Row="0">
+                <Button Grid.Column="0" Grid.Row="0"
+                        Content="← Back"
+                        Command="{Binding ShowUsageViewCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        FontSize="16"
+                        Padding="0"
+                        Margin="0,0,20,0"
+                        VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Grid.Row="0">
                     <TextBlock Text="Installed Applications" 
                                FontSize="28" 
                                FontWeight="Bold" 
-                               Foreground="White"/>
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Find apps you haven't used recently and consider uninstalling" 
                                FontSize="14" 
-                               Foreground="#A0A0A0" 
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                Margin="0,5,0,0"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <Button Content="← Back to Usage" 
-                            Command="{Binding ShowUsageViewCommand}"
-                            Background="#3E3E42"
-                            Foreground="White"
-                            Padding="20,10"
-                            CornerRadius="6"/>
                 </StackPanel>
 
                 <Border Grid.Row="1" 
                         Grid.ColumnSpan="2" 
-                        Background="#2D2D30" 
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                         CornerRadius="6" 
                         Padding="20,15"
                         Margin="0,15,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBlock Text="ℹ️" FontSize="20" VerticalAlignment="Center"/>
-                        <TextBlock Foreground="#CCCCCC" 
+                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
                                    FontSize="14"
                                    TextWrapping="Wrap"
                                    VerticalAlignment="Center">
@@ -390,7 +392,7 @@
                 <ItemsControl ItemsSource="{Binding InstalledApps}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#2D2D30" 
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                                     CornerRadius="6" 
                                     Padding="15" 
                                     Margin="0,0,0,8">
@@ -403,15 +405,15 @@
                                     <!-- App Info -->
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding AppName}" 
-                                                   Foreground="White" 
+                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
                                                    FontSize="14" 
                                                    FontWeight="SemiBold"/>
                                     </StackPanel>
 
                                     <!-- Last Used -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
-                                        <TextBlock Text="Last Used" Foreground="#A0A0A0" FontSize="10"/>
-                                        <TextBlock Text="{Binding FormattedLastUsed}" Foreground="White" FontSize="12"/>
+                                        <TextBlock Text="Last Used" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="10"/>
+                                        <TextBlock Text="{Binding FormattedLastUsed}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="12"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
