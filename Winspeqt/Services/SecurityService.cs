@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
 using System.Threading.Tasks;
 using Winspeqt.Models;
@@ -39,16 +40,63 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Defender",
+                // Check SecurityCenter2 first for all registered AV products
+                var sc2Searcher = new ManagementObjectSearcher(@"root\SecurityCenter2",
+                    "SELECT * FROM AntiVirusProduct");
+
+                var activeProducts = new List<string>();
+
+                foreach (ManagementObject obj in sc2Searcher.Get())
+                {
+                    var displayName = obj["displayName"]?.ToString() ?? "Unknown";
+                    var productState = Convert.ToUInt32(obj["productState"]);
+                    var hex = productState.ToString("X6");
+
+                    // productState first two hex chars indicate AV status:
+                    // 06 = disabled/passive, 01 = not registered properly, 00 = unknown
+                    // Rather than whitelisting known good values, we blacklist known bad ones
+                    // so unknown AV products default to being treated as active
+                    var statePrefix = hex.Substring(0, 2);
+                    var isInactive = statePrefix == "06" || statePrefix == "01" || statePrefix == "00";
+                    var isActive = !isInactive;
+
+                    System.Diagnostics.Debug.WriteLine($"AV Product: {displayName}, State: {hex}, Active: {isActive}");
+
+                    if (isActive)
+                        activeProducts.Add(displayName);
+                }
+
+                if (activeProducts.Count > 0)
+                {
+                    var thirdParty = activeProducts.Where(p => !p.Contains("Windows Defender")).ToList();
+                    string message;
+
+                    if (thirdParty.Count > 0)
+                        message = $"Your PC is protected by Windows Defender. The scan also found these additional security products: {string.Join(", ", thirdParty)}.";
+                    else
+                        message = "Windows Defender is actively protecting your computer.";
+
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = true,
+                        Status = "Protected",
+                        Message = message,
+                        Icon = "✓",
+                        Color = "#4CAF50"
+                    };
+                }
+
+                // Fall back to checking Defender directly via WMI
+                var defenderSearcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Defender",
                     "SELECT * FROM MSFT_MpComputerStatus");
 
-                foreach (ManagementObject obj in searcher.Get())
+                foreach (ManagementObject obj in defenderSearcher.Get())
                 {
                     var antivirusEnabled = Convert.ToBoolean(obj["AntivirusEnabled"]);
                     var realTimeProtectionEnabled = Convert.ToBoolean(obj["RealTimeProtectionEnabled"]);
-                    var antiSpywareEnabled = Convert.ToBoolean(obj["AntispywareEnabled"]);
 
-                    if (antivirusEnabled && realTimeProtectionEnabled && antiSpywareEnabled)
+                    // Only require real-time protection to be on — antivirus flag may be off if a third-party AV is registered
+                    if (realTimeProtectionEnabled || antivirusEnabled)
                     {
                         return new SecurityComponentStatus
                         {
@@ -65,8 +113,8 @@ namespace Winspeqt.Services
                         {
                             IsEnabled = false,
                             Status = "At Risk",
-                            Message = "Windows Defender protection is turned off or incomplete",
-                            Icon = "⚠",
+                            Message = "No active antivirus protection detected. Enable Windows Defender or install an antivirus.",
+                            Icon = "✗",
                             Color = "#F44336"
                         };
                     }
@@ -76,19 +124,19 @@ namespace Winspeqt.Services
                 {
                     IsEnabled = false,
                     Status = "Unknown",
-                    Message = "Unable to check Windows Defender status",
+                    Message = "Unable to check antivirus status",
                     Icon = "?",
                     Color = "#9E9E9E"
                 };
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error checking Defender: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error checking antivirus: {ex.Message}");
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
                     Status = "Error",
-                    Message = "Could not access Windows Defender settings",
+                    Message = "Could not access antivirus settings",
                     Icon = "!",
                     Color = "#FF9800"
                 };
