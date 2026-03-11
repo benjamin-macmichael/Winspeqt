@@ -13,7 +13,7 @@ namespace Winspeqt.ViewModels.Security
 {
     public class NetworkSecurityViewModel : INotifyPropertyChanged
     {
-        private readonly NetworkSecurityMonitor _monitor;
+        private readonly NetworkSecurityMonitorService _monitor;
         private readonly DispatcherQueue _dispatcherQueue;
 
         private bool _isMonitoring;
@@ -102,7 +102,7 @@ namespace Winspeqt.ViewModels.Security
         public NetworkSecurityViewModel()
         {
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            _monitor = new NetworkSecurityMonitor();
+            _monitor = new NetworkSecurityMonitorService();
 
             StartMonitoringCommand = new RelayCommand(StartMonitoring);
             StopMonitoringCommand = new RelayCommand(StopMonitoring);

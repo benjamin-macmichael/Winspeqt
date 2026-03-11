@@ -7,16 +7,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:Winspeqt.Helpers" 
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:optimization="using:Winspeqt.ViewModels.Optimization" d:DataContext="{d:DesignInstance Type=optimization:LargeFileFinderViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
-        <!-- Converters for glyphs, visibility, and size-based coloring. -->
+        <!-- Converters used by item icons, loading visibility, and list interactivity. -->
         <helpers:FolderItemTypeToGlyphConverter x:Key="FolderItemTypeToGlyphConverter"/>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:BoolToCollapsedConverter x:Key="BoolToCollapsedConverter"/>
-        <helpers:DataSizeToBrushConverter x:Key="DataSizeToBrushConverter"/>
         <helpers:BoolInverter x:Key="BoolInverter"/>
     </Page.Resources>
 
@@ -28,7 +28,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Back Button -->
+            <!-- Header region with back navigation, page title, and educational flyouts. -->
             <Grid Grid.Row="0" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -60,23 +60,73 @@
                     </StackPanel>
 
                     <StackPanel>
-                        <TextBlock 
-                            Text="{x:Bind ViewModel.DriveUsageText, Mode=OneWay}" 
-                            FontSize="18" 
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Margin="0,8,0,0"
-                            TextWrapping="WrapWholeWords"/>
+                        <!-- Drive usage line: "You are using X GB of Y GB on this drive"
+                             The used amount is colored green/orange/red based on zone. -->
+                        <TextBlock FontSize="18" Margin="0,8,0,0" TextWrapping="WrapWholeWords">
+                            <Run Text="You are using "/>
+                            <Run Text="{x:Bind ViewModel.DriveUsageHighlight, Mode=OneWay}"
+                                 Foreground="{x:Bind ViewModel.DriveUsageColor, Mode=OneWay}"
+                                 FontWeight="SemiBold"/>
+                            <Run Text="{x:Bind ViewModel.DriveUsageSuffix, Mode=OneWay}"/>
+                        </TextBlock>
                         <TextBlock 
                             Text="Scan your folders to find the largest files taking up space on your PC" 
                             FontSize="18" 
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Margin="0,8,0,0"
                             TextWrapping="WrapWholeWords"/>
+
+                        <controls:WrapPanel
+                            Orientation="Horizontal"
+                            Margin="0,12,0,0">
+                            <Button Content="Hidden files" Margin="0,0,10,10">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ScrollViewer MaxHeight="340">
+                                            <StackPanel MaxWidth="340" Spacing="8" Padding="6">
+                                                <TextBlock 
+                                                    Text="You may see some files here that you don't see in File Explorer. That is normal. Some files are hidden by default."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Hidden files are system or app files that Windows hides by default to keep important files out of the way. Their names often start with a period."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Hidden files can include configuration data and critical OS files. While it is okay to delete some hidden files to free up space, you should always exercise caution when doing so."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="To show hidden files in File Explorer, click on the button labeled 'View'. From the dropdown, select 'Show' and then select 'Hidden items'."
+                                                    TextWrapping="WrapWholeWords"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+
+                            <Button Content="Deleting files safely" Margin="0,0,10,10">
+                                <Button.Flyout>
+                                    <Flyout Placement="Bottom">
+                                        <ScrollViewer MaxHeight="340">
+                                            <StackPanel MaxWidth="340" Spacing="8" Padding="6">
+                                                <TextBlock
+                                                    Text="Be careful when deleting files because some files are required by Windows or installed apps. When possible, it is better to unistall an app rather than just delete its files."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="If you are unsure, verify the file path or move files to Recycle Bin first instead of permanent deletion."
+                                                    TextWrapping="WrapWholeWords"/>
+                                                <TextBlock
+                                                    Text="Alternatively, try using the Safe AppData Cleanup or One-Click Optimization in Winspeqt to safely free up space on your computer."
+                                                    TextWrapping="WrapWholeWords"/>
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </controls:WrapPanel>
                     </StackPanel>
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
-                <!-- Error and loading status -->
+                <!-- Global status area for blocking errors and background-loading state. -->
                 <TextBlock
                     Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
@@ -104,7 +154,7 @@
                         Width="20"
                         Height="20" />
                 </StackPanel>
-                <!-- Sorting and actions -->
+                <!-- Toolbar for sorting and opening the current folder in File Explorer. -->
                 <Grid MaxWidth="750" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -128,12 +178,24 @@
                             IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}"
                             />
                     </StackPanel>
-                    <Button 
-                        Content="View Folder in File Explorer" 
-                        Grid.Column="1" 
-                        HorizontalAlignment="Right" 
-                        Click="ViewFileExplorer_Click"
-                        IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}"/>
+                    <StackPanel
+                        Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="10">
+                        <Button
+                            Click="Refresh_Click"
+                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <SymbolIcon Symbol="Refresh"/>
+                                <TextBlock Text="Refresh"/>
+                            </StackPanel>
+                        </Button>
+                        <Button 
+                            Content="View Folder in File Explorer"
+                            Click="ViewFileExplorer_Click"
+                            IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolInverter}}"/>
+                    </StackPanel>
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="2">
@@ -142,7 +204,7 @@
                     HorizontalAlignment="Stretch"
                     >
                 </StackPanel>
-                <!-- Breadcrumb navigation -->
+                <!-- Breadcrumb path from root to the active folder. -->
                 <ListView ItemsSource="{Binding PathItems, Mode=OneWay}"
                           MaxWidth="750"
                           HorizontalAlignment="Stretch"
@@ -186,7 +248,7 @@
                    Width="750" 
                    Fill="Black" 
                    HorizontalAlignment="Center"/>
-                <!-- Folder and file results -->
+                <!-- Folder/file rows for the active directory level. -->
                 <ItemsRepeater ItemsSource="{Binding ActiveNode.Children, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
@@ -217,11 +279,11 @@
                                             >
                                             <FontIcon
                                                 Glyph="{Binding Type, Converter={StaticResource FolderItemTypeToGlyphConverter}}" 
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                             <TextBlock
                                                 Text="{Binding Name}"
                                                 FontSize="24"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                         </StackPanel>
 
                                         <StackPanel
@@ -236,7 +298,7 @@
                                                 Width="10"
                                                 Height="10" />
                                         </StackPanel>
-                                        
+
                                         <StackPanel
                                             Grid.Column="1"
                                             Orientation="Horizontal"
@@ -246,10 +308,10 @@
                                             Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <TextBlock 
                                                 Text="{Binding Size}"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                             <TextBlock 
                                                 Text="{Binding DataLabel}"
-                                                Foreground="{Binding DataLabel, Converter={StaticResource DataSizeToBrushConverter}}"/>
+                                                Foreground="{Binding AnnouncementTextColor}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -265,4 +327,3 @@
         </Grid>
     </ScrollViewer>
 </Page>
-

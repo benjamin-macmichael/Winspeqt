@@ -174,6 +174,40 @@ namespace Winspeqt.Services
                 return (-1, "You haven't run an optimization yet — open Winspeqt to free up space on your PC.");
             });
 
+            RegisterFeature("LargeFileFinder", async () =>
+            {
+                System.Diagnostics.Debug.WriteLine("[NotificationManager] LargeFileFinder delegate called");
+                try
+                {
+                    var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+
+                    if (c.ContainsKey("LargeFileFinder_Zone"))
+                    {
+                        var zone = (string)c["LargeFileFinder_Zone"];
+                        var usedPct = c.ContainsKey("LargeFileFinder_UsedPercent") ? (int)c["LargeFileFinder_UsedPercent"] : -1;
+                        var avail = c.ContainsKey("LargeFileFinder_AvailableBytes") ? (long)c["LargeFileFinder_AvailableBytes"] : 0;
+
+                        string availLabel = FormatBytes(avail);
+
+                        string msg = zone switch
+                        {
+                            "Green" => $"Your drive is in great shape — only {usedPct}% used with {availLabel} free.",
+                            "Orange" => $"Your drive is {usedPct}% full with {availLabel} remaining. Consider cleaning up large files.",
+                            "Red" => $"Your drive is {usedPct}% full — only {availLabel} left! Open Winspeqt to free up space.",
+                            _ => $"Open Winspeqt's Large File Finder to check how much space you have left."
+                        };
+
+                        return (-1, msg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[NotificationManager] Error reading LargeFileFinder storage: {ex.Message}");
+                }
+
+                return (-1, "Open Winspeqt's Large File Finder to check how much space you have left on your drive.");
+            });
+
             _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(45), CheckInterval);
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer started");
         }
@@ -260,6 +294,7 @@ namespace Winspeqt.Services
                     "AppUpdateChecker" => ("🔄", "App Updates"),
                     "SecurityStatus" => ("🛡️", "Security"),
                     "Optimization" => ("🧹", "Optimization"),
+                    "LargeFileFinder" => ("💾", "Drive Storage"),
                     "SystemMonitoring" => ("📊", "System Health"),
                     _ => ("💡", featureKey)
                 };
@@ -304,6 +339,18 @@ namespace Winspeqt.Services
             int filled = score / 10;
             int empty = 10 - filled;
             return new string('█', filled) + new string('░', empty);
+        }
+
+        /// <summary>
+        /// Formats a byte count into a human-readable GB or MB string.
+        /// </summary>
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes <= 0) return "unknown space";
+            double gb = bytes / 1_073_741_824.0;
+            if (gb >= 1.0) return $"{gb:F1} GB";
+            double mb = bytes / 1_048_576.0;
+            return $"{mb:F0} MB";
         }
 
         private void LoadState()
