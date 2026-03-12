@@ -10,6 +10,7 @@
         <NavigationView 
             x:Name="nvCategories"
             SelectionChanged="NavigationView_SelectionChanged"
+            BackRequested="NavView_BackRequested"
             >
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Security" Tag="SecurityDashboard">

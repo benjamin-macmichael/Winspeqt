@@ -1,6 +1,7 @@
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
 using System.Collections.Generic;
@@ -131,6 +132,29 @@ namespace Winspeqt.Views
                 test.TryGetValue(selectedItemTag, out Type? pageType);
                 RootFrame.Navigate(pageType);
             }
+            nvCategories.IsBackEnabled = RootFrame.CanGoBack;
+        }
+
+        private void NavView_BackRequested(NavigationView sender,
+                                   NavigationViewBackRequestedEventArgs args)
+        {
+            TryGoBack();
+            nvCategories.IsBackEnabled = RootFrame.CanGoBack;
+        }
+
+        private bool TryGoBack()
+        {
+            if (!RootFrame.CanGoBack)
+                return false;
+
+            // Don't go back if the nav pane is overlayed.
+            if (nvCategories.IsPaneOpen &&
+                (nvCategories.DisplayMode == NavigationViewDisplayMode.Compact ||
+                 nvCategories.DisplayMode == NavigationViewDisplayMode.Minimal))
+                return false;
+
+            RootFrame.GoBack();
+            return true;
         }
     }
 }
