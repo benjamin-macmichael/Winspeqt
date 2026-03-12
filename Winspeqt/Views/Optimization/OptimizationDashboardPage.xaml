@@ -142,7 +142,7 @@
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
-                                Text="See all installed apps with last used dates, sizes, and uninstall suggestions"
+                                Text="Track your screen-time across apps, and see how long apps have been unused."
                                 FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
