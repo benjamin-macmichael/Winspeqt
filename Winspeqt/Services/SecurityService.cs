@@ -9,6 +9,14 @@ namespace Winspeqt.Services
 {
     public class SecurityService
     {
+        // Segoe Fluent Icons glyph codes
+        private const string IconGood = "\uE73E";     // Checkmark
+        private const string IconWarning = "\uE7BA";  // Warning
+        private const string IconBad = "\uE711";      // Cancel/X
+        private const string IconUnknown = "\uE9CE";  // Unknown
+        private const string IconError = "\uE783";    // Error
+        private const string IconNeutral = "\uE89A";  // Remove/dash
+
         public async Task<SecurityStatusInfo> GetSecurityStatusAsync()
         {
             var defenderTask = Task.Run(() => CheckWindowsDefender());
@@ -81,7 +89,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Protected",
                         Message = message,
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -103,7 +111,7 @@ namespace Winspeqt.Services
                             IsEnabled = true,
                             Status = "Protected",
                             Message = "Windows Defender is actively protecting your computer",
-                            Icon = "✓",
+                            Icon = IconGood,
                             Color = "#4CAF50"
                         };
                     }
@@ -114,7 +122,7 @@ namespace Winspeqt.Services
                             IsEnabled = false,
                             Status = "At Risk",
                             Message = "No active antivirus protection detected. Enable Windows Defender or install an antivirus.",
-                            Icon = "✗",
+                            Icon = IconBad,
                             Color = "#F44336"
                         };
                     }
@@ -125,7 +133,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Unknown",
                     Message = "Unable to check antivirus status",
-                    Icon = "?",
+                    Icon = IconUnknown,
                     Color = "#9E9E9E"
                 };
             }
@@ -137,7 +145,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not access antivirus settings",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -171,7 +179,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Active",
                         Message = "Windows Firewall is protecting all network connections",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -182,7 +190,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Partial",
                         Message = $"Firewall is active on {enabledCount} of {totalProfiles} network profiles",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -193,7 +201,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Disabled",
                         Message = "Windows Firewall is turned off - your PC is vulnerable",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#F44336"
                     };
                 }
@@ -206,7 +214,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Windows Firewall status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -232,7 +240,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Up to Date",
                         Message = "Windows has checked for updates and your system is fully up to date",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -243,7 +251,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Updates Available",
                         Message = $"{pendingCount} update(s) are available but not yet installed. Open Windows Update to install them.",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -254,7 +262,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Outdated",
                         Message = $"{pendingCount} updates are waiting to be installed. Your system may be missing important security patches.",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#F44336"
                     };
                 }
@@ -267,7 +275,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Windows Update status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -297,7 +305,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Not Available",
                     Message = "Encryption status could not be determined",
-                    Icon = "–",
+                    Icon = IconNeutral,
                     Color = "#9E9E9E"
                 };
             }
@@ -336,7 +344,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Available",
                         Message = "No encryptable drives found",
-                        Icon = "–",
+                        Icon = IconNeutral,
                         Color = "#9E9E9E"
                     };
                 }
@@ -347,7 +355,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Encrypted",
                         Message = $"All {totalVolumes} drive(s) are encrypted with BitLocker. Make sure you've backed up your recovery key!",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -358,7 +366,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Partial",
                         Message = $"{encryptedVolumes} of {totalVolumes} drives encrypted with BitLocker",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -369,7 +377,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Encrypted",
                         Message = "BitLocker is available but not enabled on your drives",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#FF9800"
                     };
                 }
@@ -381,7 +389,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Access Denied",
                     Message = "Administrator privileges required to check encryption status",
-                    Icon = "🔒",
+                    Icon = IconWarning,
                     Color = "#FF9800"
                 };
             }
@@ -443,7 +451,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Encrypted",
                         Message = "Device encryption is enabled and protecting your drives. Remember to back up your recovery key to a safe place!",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -457,7 +465,7 @@ namespace Winspeqt.Services
                             IsEnabled = false,
                             Status = "Available",
                             Message = "Your device supports encryption but it may not be enabled. Check Settings > Privacy & Security > Device Encryption",
-                            Icon = "⚠",
+                            Icon = IconWarning,
                             Color = "#FF9800"
                         };
                     }
@@ -468,7 +476,7 @@ namespace Winspeqt.Services
                             IsEnabled = false,
                             Status = "TPM Not Ready",
                             Message = "Your device has TPM hardware but it needs to be enabled in BIOS/UEFI",
-                            Icon = "⚠",
+                            Icon = IconWarning,
                             Color = "#FF9800"
                         };
                     }
@@ -479,7 +487,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Not Supported",
                     Message = "This device doesn't have TPM hardware required for encryption",
-                    Icon = "–",
+                    Icon = IconNeutral,
                     Color = "#9E9E9E"
                 };
             }
@@ -493,7 +501,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Unknown",
                     Message = "Could not determine encryption status. BitLocker/Device Encryption may not be available on Windows Home edition.",
-                    Icon = "?",
+                    Icon = IconUnknown,
                     Color = "#9E9E9E"
                 };
             }
@@ -525,7 +533,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "No Drives Found",
                         Message = "No drives could be detected",
-                        Icon = "?",
+                        Icon = IconUnknown,
                         Color = "#9E9E9E"
                     };
                 }
@@ -537,7 +545,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Healthy",
                         Message = $"All {totalDrives} drive(s) are reporting healthy status. No issues detected.",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -548,7 +556,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Warning",
                         Message = $"{issues.Count} of {totalDrives} drive(s) may have issues: {string.Join(", ", issues)}. Consider backing up your data.",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -559,7 +567,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "At Risk",
                         Message = $"Drive issues detected: {string.Join(", ", issues)}. Back up your data immediately!",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#F44336"
                     };
                 }
@@ -572,7 +580,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check drive health status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -591,7 +599,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Supported",
                         Message = "Your system uses legacy BIOS and does not support Secure Boot",
-                        Icon = "–",
+                        Icon = IconNeutral,
                         Color = "#9E9E9E"
                     };
                 }
@@ -604,7 +612,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Unknown",
                         Message = "Could not determine Secure Boot state",
-                        Icon = "?",
+                        Icon = IconUnknown,
                         Color = "#9E9E9E"
                     };
                 }
@@ -618,7 +626,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Enabled",
                         Message = "Secure Boot is active, protecting your PC from unauthorized software at startup",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -629,7 +637,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Disabled",
                         Message = "Secure Boot is off. Your PC may be vulnerable to bootkit malware. Enable it in your BIOS/UEFI settings.",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -642,7 +650,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Secure Boot status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
