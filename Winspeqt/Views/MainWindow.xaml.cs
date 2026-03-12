@@ -1,7 +1,9 @@
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
+using System.Collections.Generic;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
@@ -31,7 +33,7 @@ namespace Winspeqt.Views
             if (initialFeature != null)
                 NavigateToFeature(initialFeature);
             else
-                RootFrame.Navigate(typeof(DashboardPage));
+                RootFrame.Navigate(typeof(MonitoringDashboardPage));
 
             if (AppWindowTitleBar.IsCustomizationSupported() is true)
             {
@@ -90,7 +92,7 @@ namespace Winspeqt.Views
                         RootFrame.Navigate(typeof(MonitoringDashboardPage));
                         break;
                     default:
-                        RootFrame.Navigate(typeof(DashboardPage));
+                        RootFrame.Navigate(typeof(MonitoringDashboardPage));
                         break;
                 }
             });
@@ -109,6 +111,26 @@ namespace Winspeqt.Views
         private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
         {
             _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
+        }
+
+        private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
+        {
+            Dictionary<string, Type> test = new Dictionary<string, Type>
+            {
+                {"SecurityDashboard", typeof(SecurityDashboardPage)},
+                {"OptimizationDashboard", typeof(OptimizationDashboardPage)},
+                {"MonitoringDashboard", typeof(MonitoringDashboardPage)},
+            };
+            if (args.IsSettingsSelected)
+            {
+                RootFrame.Navigate(typeof(SettingsPage));
+            } else
+            {
+                var selectedItem = (Microsoft.UI.Xaml.Controls.NavigationViewItem)args.SelectedItem;
+                string selectedItemTag = (string)selectedItem.Tag;
+                test.TryGetValue(selectedItemTag, out Type? pageType);
+                RootFrame.Navigate(pageType);
+            }
         }
     }
 }

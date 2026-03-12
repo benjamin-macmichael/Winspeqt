@@ -16,31 +16,17 @@
             </Grid.RowDefinitions>
 
             <!-- Header with Back Button -->
-            <Grid Grid.Row="0" Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Button 
-                    Grid.Column="0"
-                    Content="← Back to Dashboard"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Click="BackButton_Click"
-                    Margin="0,0,20,0"/>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock 
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock 
                         Text="System Monitoring" 
                         FontSize="36" 
                         FontWeight="Bold"/>
-                    <TextBlock 
+                <TextBlock 
                         Text="Understand what's slowing your PC down in plain English" 
                         FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Margin="0,8,0,0"/>
-                </StackPanel>
-            </Grid>
+            </StackPanel>
 
             <!-- Feature Cards Grid -->
             <Grid Grid.Row="2" Margin="0,40,0,0">

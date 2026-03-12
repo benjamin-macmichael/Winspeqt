@@ -7,18 +7,39 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Grid>
-        <Frame x:Name="RootFrame">
-            <Frame.ContentTransitions>
-                <TransitionCollection>
-                    <NavigationThemeTransition>
-                        <NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                            <SuppressNavigationTransitionInfo/>
-                        </NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                    </NavigationThemeTransition>
-                </TransitionCollection>
-            </Frame.ContentTransitions>
-        </Frame>
-
+        <NavigationView 
+            x:Name="nvCategories"
+            SelectionChanged="NavigationView_SelectionChanged"
+            >
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Security" Tag="SecurityDashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Optimization" Tag="OptimizationDashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC4A;" FontFamily="Segoe MDL2 Assets" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Monitoring" Tag="MonitoringDashboard">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D9;" FontFamily="Segoe MDL2 Assets" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <Frame x:Name="RootFrame">
+                <Frame.ContentTransitions>
+                    <TransitionCollection>
+                        <NavigationThemeTransition>
+                            <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                                <SuppressNavigationTransitionInfo/>
+                            </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                        </NavigationThemeTransition>
+                    </TransitionCollection>
+                </Frame.ContentTransitions>
+            </Frame>
+        </NavigationView>
         <Button
             x:Name="FeedbackButton"
             Style="{StaticResource FloatingFeedbackButtonStyle}"
