@@ -82,11 +82,22 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                    <TextBlock 
-                        Text="💻 Processor (CPU)" 
-                        FontSize="20" 
-                        FontWeight="SemiBold"
-                        Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xEC4E;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#2196F3"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Processor (CPU)"
+                                VerticalAlignment="Center"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
@@ -108,11 +119,21 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <TextBlock 
-                            Text="🧠 Memory (RAM)" 
-                            FontSize="20" 
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE7F1;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#FF9800"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Memory (RAM)"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
@@ -134,11 +155,21 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <TextBlock 
-                            Text="💾 Disk Activity" 
-                            FontSize="20" 
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE74E;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#9C27B0"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Disk"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
@@ -160,11 +191,21 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <TextBlock 
-                            Text="📶 Network Activity" 
-                            FontSize="20" 
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE774;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#4CAF50"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Network"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
