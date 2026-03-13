@@ -12,6 +12,8 @@
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+        <helpers:AutoRefreshStateToGlyphConverter x:Key="AutoRefreshStateToGlyphConverter"/>
+        <helpers:AutoRefreshStateToTextConverter x:Key="AutoRefreshStateToTextConverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -53,10 +55,17 @@
 
                 <Button
                     Grid.Column="2"
-                    Content="{Binding RefreshButtonText, Mode=OneWay}"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
-                    Padding="16,8"/>
+                    Padding="16,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="15"
+                            Glyph="{Binding IsAutoRefreshEnabled, Converter={StaticResource AutoRefreshStateToGlyphConverter}}"/>
+                        <TextBlock Text="{Binding IsAutoRefreshEnabled, Converter={StaticResource AutoRefreshStateToTextConverter}}"/>
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <Grid Grid.Row="1" Margin="0,0,0,32">

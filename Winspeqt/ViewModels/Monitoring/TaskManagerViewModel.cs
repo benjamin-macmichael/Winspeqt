@@ -129,13 +129,6 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _isAutoRefreshEnabled, value);
         }
 
-        private string _refreshButtonText = "⏸ Pause";
-        public string RefreshButtonText
-        {
-            get => _refreshButtonText;
-            set => SetProperty(ref _refreshButtonText, value);
-        }
-
         private string _selectedSortOption = "Memory";
         public string SelectedSortOption
         {
@@ -206,12 +199,10 @@ namespace Winspeqt.ViewModels.Monitoring
 
             if (IsAutoRefreshEnabled)
             {
-                RefreshButtonText = "⏸ Pause";
                 StartAutoRefresh();
             }
             else
             {
-                RefreshButtonText = "▶ Resume";
                 _refreshTimer?.Dispose();
                 _refreshTimer = null;
             }
