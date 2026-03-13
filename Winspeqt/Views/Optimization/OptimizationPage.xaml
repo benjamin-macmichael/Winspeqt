@@ -92,11 +92,17 @@
                     <StackPanel
                         Visibility="{Binding HasCompleted, Converter={StaticResource BoolToVisibilityConverter}}"
                         Margin="0,0,0,32">
-                        <TextBlock
-                            Text="✅  Last Optimization Results"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <FontIcon 
+                                Glyph="&#xE73A;" 
+                                Foreground="#4CAF50" 
+                                Margin="0,0,4,0"/>
+                            <TextBlock
+                                Text="Last Optimization Results"
+                                FontSize="18"
+                                FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -148,11 +154,12 @@
                     <!-- Idle/Ready State (always visible unless running) -->
                     <StackPanel Visibility="{Binding IsRunning, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                         <StackPanel HorizontalAlignment="Center" Margin="0,0,0,32">
-                            <TextBlock
-                                Text="🧹"
+                            <FontIcon 
+                                Glyph="&#xEA99;" 
                                 FontSize="64"
                                 HorizontalAlignment="Center"
-                                Margin="0,0,0,16"/>
+                                Margin="0,0,0,16"
+                                Foreground="#4CAF50"/>
                             <TextBlock
                                 Text="Ready to Optimize"
                                 FontSize="26"
@@ -194,15 +201,24 @@
 
                             <!-- Run Button -->
                             <Button
-                            x:Name="RunButton"
-                            Content="🚀  Run Optimization"
-                            Command="{Binding RunOptimizationCommand}"
-                            HorizontalAlignment="Center"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Padding="48,16"
-                            CornerRadius="12"
-                            Margin="0,0,0,32"/>
+                                x:Name="RunButton"
+                                Command="{Binding RunOptimizationCommand}"
+                                HorizontalAlignment="Center"
+                                Padding="48,16"
+                                CornerRadius="12"
+                                Margin="0,0,0,32">
+                                <StackPanel Orientation="Horizontal">
+                                    <FontIcon 
+                                        Glyph="&#xE724;"
+                                        Foreground="#F44336"
+                                        Margin="0,0,12,0"/>
+                                    <TextBlock 
+                                        Text="Run Optimization" 
+                                        FontSize="18"
+                                        FontWeight="SemiBold" />
+                                </StackPanel>
+                                
+                            </Button>
                             <TextBlock
                                 Text="Select what to clean"
                                 FontSize="15"
