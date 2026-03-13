@@ -2,8 +2,6 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using WinRT.Interop;
@@ -157,6 +155,12 @@ namespace Winspeqt.Views
             _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
         }
 
+        /// <summary>
+        /// Handles navigation from the side bar. If the last navigation is still loading it will stop. Otherwise goes
+        /// to next frame if page is found.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             if (_isSyncingNavigationSelection)
@@ -165,7 +169,8 @@ namespace Winspeqt.Views
             if (args.IsSettingsSelected)
             {
                 RootFrame.Navigate(typeof(SettingsPage));
-            } else
+            }
+            else
             {
                 var selectedItem = (Microsoft.UI.Xaml.Controls.NavigationViewItem)args.SelectedItem;
                 string selectedItemTag = (string)selectedItem.Tag;
@@ -177,6 +182,11 @@ namespace Winspeqt.Views
             nvCategories.IsBackEnabled = RootFrame.CanGoBack;
         }
 
+        /// <summary>
+        /// Tries to go back. Checks if user can still go back and updates accordingly.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void NavView_BackRequested(NavigationView sender,
                                    NavigationViewBackRequestedEventArgs args)
         {
@@ -184,21 +194,25 @@ namespace Winspeqt.Views
             nvCategories.IsBackEnabled = RootFrame.CanGoBack;
         }
 
+        /// <summary>
+        /// Checks if able to go back to prevent error. Will go back if it can.
+        /// </summary>
+        /// <returns></returns>
         private bool TryGoBack()
         {
             if (!RootFrame.CanGoBack)
-                return false;
-
-            // Don't go back if the nav pane is overlayed.
-            if (nvCategories.IsPaneOpen &&
-                (nvCategories.DisplayMode == NavigationViewDisplayMode.Compact ||
-                 nvCategories.DisplayMode == NavigationViewDisplayMode.Minimal))
                 return false;
 
             RootFrame.GoBack();
             return true;
         }
 
+        /// <summary>
+        /// Sets the selected item in the navigation view in case the navigation came from a source other than the navigation
+        /// view.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             nvCategories.IsBackEnabled = RootFrame.CanGoBack;
@@ -223,6 +237,12 @@ namespace Winspeqt.Views
             _isSyncingNavigationSelection = false;
         }
 
+        /// <summary>
+        /// Finds the item related to the navigation view request
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         private static NavigationViewItem? FindNavigationViewItemByTag(IList<object> items, string tag)
         {
             foreach (object item in items)
