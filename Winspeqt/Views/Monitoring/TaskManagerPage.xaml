@@ -79,11 +79,22 @@
                     Padding="28"
                     Margin="0,0,12,12">
                     <StackPanel>
-                        <TextBlock
-                            Text="Processor (CPU)"
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xEC4E;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#2196F3"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Processor (CPU)"
+                                VerticalAlignment="Center"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
 
                         <TextBlock
                             Text="{Binding TotalCpuUsage, Mode=OneWay}"
@@ -115,11 +126,21 @@
                     Padding="28"
                     Margin="12,0,0,12">
                     <StackPanel>
-                        <TextBlock
-                            Text="Memory (RAM)"
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE7F1;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#FF9800"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Memory (RAM)"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
 
                         <StackPanel Orientation="Horizontal">
                             <TextBlock
@@ -162,11 +183,21 @@
                     Padding="28"
                     Margin="0,12,12,0">
                     <StackPanel>
-                        <TextBlock
-                            Text="Network"
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE774;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#4CAF50"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Network"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
 
                         <TextBlock
                             Text="{Binding NetworkUsage, Mode=OneWay}"
@@ -198,11 +229,21 @@
                     Padding="28"
                     Margin="12,12,0,0">
                     <StackPanel>
-                        <TextBlock
-                            Text="Disk"
-                            FontSize="20"
-                            FontWeight="SemiBold"
-                            Margin="0,0,0,16"/>
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon 
+                                Glyph="&#xE74E;" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Center"
+                                Foreground="#9C27B0"
+                                FontWeight="SemiBold"
+                                FontSize="20"
+                                Margin="0,0,4,16"/>
+                            <TextBlock
+                                Text="Disk"
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Margin="0,0,0,16"/>
+                        </StackPanel>
 
                         <TextBlock
                             Text="{Binding DiskUsage, Mode=OneWay}"
@@ -370,7 +411,6 @@
 
                                                 <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
                                                     <Button
-                                                        Content="Restart"
                                                         Command="{Binding DataContext.RestartProcessCommand, ElementName=TaskManagerPageRoot}"
                                                         CommandParameter="{Binding RootProcess}"
                                                         Foreground="#616161"
@@ -382,14 +422,32 @@
                                                             <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#616161"/>
                                                             <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
                                                         </Button.Resources>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <FontIcon 
+                                                                Glyph="&#xE72C;" 
+                                                                FontFamily="Segoe MDL2 Assets" 
+                                                                VerticalAlignment="Center"
+                                                                FontSize="15"
+                                                                Margin="0,0,4,0"/>
+                                                            <TextBlock Text="Restart" />
+                                                        </StackPanel>
                                                     </Button>
                                                     <Button
-                                                        Content="End Task"
                                                         Command="{Binding DataContext.EndProcessCommand, ElementName=TaskManagerPageRoot}"
                                                         CommandParameter="{Binding RootProcess}"
                                                         Background="#F44336"
                                                         Foreground="White"
-                                                        Padding="12,8"/>
+                                                        Padding="12,8">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <FontIcon 
+                                                                Glyph="&#xE71A;" 
+                                                                FontFamily="Segoe MDL2 Assets" 
+                                                                VerticalAlignment="Center"
+                                                                FontSize="15"
+                                                                Margin="0,0,4,0"/>
+                                                            <TextBlock Text="End Task" />
+                                                        </StackPanel>
+                                                    </Button>
                                                 </StackPanel>
 
                                                 <Border
@@ -494,9 +552,8 @@
                                                         </StackPanel>
                                                     </StackPanel>
 
-                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
-                                                        <Button
-                                                            Content="Restart"
+                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
+                                                    <Button
                                                             Command="{Binding DataContext.RestartProcessCommand, ElementName=TaskManagerPageRoot}"
                                                             CommandParameter="{Binding RootProcess}"
                                                             Foreground="#616161"
@@ -504,21 +561,38 @@
                                                             BorderBrush="#616161"
                                                             BorderThickness="1"
                                                             Padding="12,8">
-                                                            <Button.Resources>
-                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#616161"/>
-                                                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
-                                                            </Button.Resources>
-                                                        </Button>
-                                                        <Button
-                                                            Content="End Task"
+                                                        <Button.Resources>
+                                                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#616161"/>
+                                                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                                        </Button.Resources>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <FontIcon 
+                                                                Glyph="&#xE72C;" 
+                                                                FontFamily="Segoe MDL2 Assets" 
+                                                                VerticalAlignment="Center"
+                                                                FontSize="15"
+                                                                Margin="0,0,4,0"/>
+                                                            <TextBlock Text="Restart" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                    <Button
                                                             Command="{Binding DataContext.EndProcessCommand, ElementName=TaskManagerPageRoot}"
                                                             CommandParameter="{Binding RootProcess}"
                                                             Background="#F44336"
                                                             Foreground="White"
-                                                            Padding="12,8"/>
-                                                    </StackPanel>
-
-                                                    <ToggleButton
+                                                            Padding="12,8">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <FontIcon 
+                                                                Glyph="&#xE71A;" 
+                                                                FontFamily="Segoe MDL2 Assets" 
+                                                                VerticalAlignment="Center"
+                                                                FontSize="15"
+                                                                Margin="0,0,4,0"/>
+                                                            <TextBlock Text="End Task" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </StackPanel>
+                                                <ToggleButton
                                                         Grid.Column="5"
                                                         IsChecked="{Binding IsExpanded, Mode=TwoWay}"
                                                         Width="32"
