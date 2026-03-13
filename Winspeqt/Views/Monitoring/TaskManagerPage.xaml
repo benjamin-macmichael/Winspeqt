@@ -281,10 +281,11 @@
                                     Margin="0,0,0,12">
                                     <Grid HorizontalAlignment="Stretch">
                                         <Grid Visibility="{Binding HasChildren, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-                                            <Grid Padding="20" HorizontalAlignment="Stretch">
+                                            <Grid Padding="20" HorizontalAlignment="Stretch" MinHeight="112">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
@@ -292,36 +293,37 @@
 
                                                 <Border
                                                     Grid.Column="0"
-                                                    Width="40"
-                                                    Height="40"
-                                                    Background="#2196F3"
-                                                    CornerRadius="8"
-                                                    Margin="0,0,20,0"
+                                                    Width="48"
+                                                    Height="48"
+                                                    Background="#DCEEFF"
+                                                    CornerRadius="12"
+                                                    Margin="0,0,18,0"
                                                     VerticalAlignment="Center">
-                                                    <TextBlock
-                                                        Text="App"
-                                                        FontSize="24"
+                                                    <FontIcon
+                                                        Glyph="&#xE7C4;"
+                                                        FontSize="22"
+                                                        Foreground="#1565C0"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"/>
                                                 </Border>
 
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,2,0,0">
                                                     <TextBlock
                                                         Text="{Binding DisplayName}"
-                                                        FontSize="18"
+                                                        FontSize="17"
                                                         FontWeight="SemiBold"/>
                                                     <TextBlock
                                                         Text="{Binding ProcessCountDisplay}"
-                                                        FontSize="13"
+                                                        FontSize="12"
                                                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                        Margin="0,2,0,0"/>
+                                                        CharacterSpacing="10"/>
                                                     <TextBlock
                                                         Text="{Binding FriendlyExplanation}"
                                                         FontSize="14"
                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                         TextWrapping="Wrap"
-                                                        MaxWidth="500"
-                                                        Margin="0,4,0,0"/>
+                                                        MaxWidth="560"
+                                                        Margin="0,6,0,0"/>
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="2" Margin="20,0" VerticalAlignment="Center" MinWidth="80">
@@ -366,7 +368,7 @@
                                                     </StackPanel>
                                                 </StackPanel>
 
-                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" Margin="20,0,0,0" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
                                                     <Button
                                                         Content="Restart"
                                                         Command="{Binding DataContext.RestartProcessCommand, ElementName=TaskManagerPageRoot}"
@@ -389,56 +391,65 @@
                                                         Foreground="White"
                                                         Padding="12,8"/>
                                                 </StackPanel>
+
+                                                <Border
+                                                    Grid.Column="5"
+                                                    Width="32"
+                                                    Height="32"
+                                                    Margin="12,0,0,0"
+                                                    Background="Transparent"/>
                                             </Grid>
                                         </Grid>
 
-                                        <Expander
-                                            Visibility="{Binding HasChildren, Converter={StaticResource BoolToVisibilityConverter}}"
-                                            IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch">
-                                            <Expander.Header>
-                                                <Grid Padding="20" HorizontalAlignment="Stretch">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                        <Grid Visibility="{Binding HasChildren, Converter={StaticResource BoolToVisibilityConverter}}" HorizontalAlignment="Stretch">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0" Padding="20" HorizontalAlignment="Stretch" MinHeight="112">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
                                                     <Border
                                                         Grid.Column="0"
-                                                        Width="40"
-                                                        Height="40"
-                                                        Background="#2196F3"
-                                                        CornerRadius="8"
-                                                        Margin="0,0,20,0"
+                                                        Width="48"
+                                                        Height="48"
+                                                        Background="#DCEEFF"
+                                                        CornerRadius="12"
+                                                        Margin="0,0,18,0"
                                                         VerticalAlignment="Center">
-                                                        <TextBlock
-                                                            Text="App"
-                                                            FontSize="24"
+                                                        <FontIcon
+                                                            Glyph="&#xE7C4;"
+                                                            FontSize="22"
+                                                            Foreground="#1565C0"
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Center"/>
                                                     </Border>
 
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,2,0,0">
                                                         <TextBlock
                                                             Text="{Binding DisplayName}"
-                                                            FontSize="18"
+                                                            FontSize="17"
                                                             FontWeight="SemiBold"/>
                                                         <TextBlock
                                                             Text="{Binding ProcessCountDisplay}"
-                                                            FontSize="13"
+                                                            FontSize="12"
                                                             Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                            Margin="0,2,0,0"/>
+                                                            CharacterSpacing="10"/>
                                                         <TextBlock
                                                             Text="{Binding FriendlyExplanation}"
                                                             FontSize="14"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                             TextWrapping="Wrap"
-                                                            MaxWidth="500"
-                                                            Margin="0,4,0,0"/>
+                                                            MaxWidth="560"
+                                                            Margin="0,6,0,0"/>
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Column="2" Margin="20,0" VerticalAlignment="Center" MinWidth="80">
@@ -483,7 +494,7 @@
                                                         </StackPanel>
                                                     </StackPanel>
 
-                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" Margin="20,0,0,0" VerticalAlignment="Center">
+                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
                                                         <Button
                                                             Content="Restart"
                                                             Command="{Binding DataContext.RestartProcessCommand, ElementName=TaskManagerPageRoot}"
@@ -506,10 +517,26 @@
                                                             Foreground="White"
                                                             Padding="12,8"/>
                                                     </StackPanel>
-                                                </Grid>
-                                            </Expander.Header>
 
-                                            <ItemsRepeater ItemsSource="{Binding ChildProcesses}">
+                                                    <ToggleButton
+                                                        Grid.Column="5"
+                                                        IsChecked="{Binding IsExpanded, Mode=TwoWay}"
+                                                        Width="32"
+                                                        Height="32"
+                                                        Margin="12,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="Transparent"
+                                                        BorderBrush="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="0">
+                                                        <FontIcon
+                                                            Glyph="&#xE70D;"
+                                                            FontSize="14"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                                    </ToggleButton>
+                                                </Grid>
+
+                                            <ItemsRepeater Grid.Row="1" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" ItemsSource="{Binding ChildProcesses}">
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border
@@ -568,7 +595,7 @@
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
                                             </ItemsRepeater>
-                                        </Expander>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
