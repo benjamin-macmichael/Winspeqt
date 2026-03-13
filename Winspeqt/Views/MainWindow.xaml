@@ -13,6 +13,11 @@
             BackRequested="NavView_BackRequested"
             >
             <NavigationView.MenuItems>
+                <NavigationViewItem Content="Home" Tag="Home">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE80F;" FontFamily="Segoe MDL2 Assets" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Security" Tag="SecurityDashboard">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets" />

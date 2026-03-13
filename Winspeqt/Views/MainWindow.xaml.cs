@@ -34,7 +34,7 @@ namespace Winspeqt.Views
             if (initialFeature != null)
                 NavigateToFeature(initialFeature);
             else
-                RootFrame.Navigate(typeof(MonitoringDashboardPage));
+                RootFrame.Navigate(typeof(DashboardPage));
 
             if (AppWindowTitleBar.IsCustomizationSupported() is true)
             {
@@ -118,6 +118,7 @@ namespace Winspeqt.Views
         {
             Dictionary<string, Type> test = new Dictionary<string, Type>
             {
+                {"Home", typeof(DashboardPage)},
                 {"SecurityDashboard", typeof(SecurityDashboardPage)},
                 {"OptimizationDashboard", typeof(OptimizationDashboardPage)},
                 {"MonitoringDashboard", typeof(MonitoringDashboardPage)},
