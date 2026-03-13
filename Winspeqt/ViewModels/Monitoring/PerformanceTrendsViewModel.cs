@@ -215,7 +215,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 new LineSeries<double>
                 {
                     Values = DiskUsageValues,
-                    Fill = new SolidColorPaint(SKColor.Parse("#4CAF50")),
+                    Fill = new SolidColorPaint(SKColor.Parse("#9C27B0")),
                     Stroke = null,
                     GeometryFill = null,
                     GeometryStroke = null
@@ -243,7 +243,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 {
                     Values = NetworkSentValues,
                     Fill = null,
-                    Stroke = new SolidColorPaint(SKColor.Parse("#FF9800"), 3),
+                    Stroke = new SolidColorPaint(SKColor.Parse("#4CAF50"), 3),
                     GeometryFill = null,
                     GeometryStroke = null,
                     Name = "Upload"
