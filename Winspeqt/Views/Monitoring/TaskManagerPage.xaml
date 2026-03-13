@@ -11,6 +11,7 @@
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
     </Page.Resources>
 
     <ScrollViewer>
@@ -276,10 +277,11 @@
                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
                                     CornerRadius="8"
+                                    HorizontalAlignment="Stretch"
                                     Margin="0,0,0,12">
-                                    <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
-                                        <Expander.Header>
-                                            <Grid Padding="20">
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid Visibility="{Binding HasChildren, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                            <Grid Padding="20" HorizontalAlignment="Stretch">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
@@ -388,67 +390,186 @@
                                                         Padding="12,8"/>
                                                 </StackPanel>
                                             </Grid>
-                                        </Expander.Header>
+                                        </Grid>
 
-                                        <ItemsRepeater ItemsSource="{Binding ChildProcesses}">
-                                            <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate>
+                                        <Expander
+                                            Visibility="{Binding HasChildren, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid Padding="20" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
                                                     <Border
-                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                        BorderThickness="1,1,1,0"
-                                                        Padding="20,16,20,16"
-                                                        Margin="20,0,20,0">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-
-                                                            <StackPanel Grid.Column="0">
-                                                                <TextBlock
-                                                                    Text="{Binding Description}"
-                                                                    FontSize="16"
-                                                                    FontWeight="SemiBold"/>
-                                                                <TextBlock
-                                                                    Text="{Binding ProcessName}"
-                                                                    FontSize="13"
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    Margin="0,4,0,0"/>
-                                                            </StackPanel>
-
-                                                            <TextBlock
-                                                                Grid.Column="1"
-                                                                Text="{Binding CpuUsageDisplay}"
-                                                                FontSize="16"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="#2196F3"
-                                                                Margin="16,0"/>
-
-                                                            <TextBlock
-                                                                Grid.Column="2"
-                                                                Text="{Binding MemoryUsageDisplay}"
-                                                                FontSize="16"
-                                                                VerticalAlignment="Center"
-                                                                Foreground="#FF9800"
-                                                                Margin="16,0"/>
-
-                                                            <Button
-                                                                Grid.Column="3"
-                                                                Content="End"
-                                                                Command="{Binding DataContext.EndProcessCommand, ElementName=TaskManagerPageRoot}"
-                                                                CommandParameter="{Binding}"
-                                                                Background="#F44336"
-                                                                Foreground="White"
-                                                                Padding="10,6"
-                                                                Margin="16,0,0,0"/>
-                                                        </Grid>
+                                                        Grid.Column="0"
+                                                        Width="40"
+                                                        Height="40"
+                                                        Background="#2196F3"
+                                                        CornerRadius="8"
+                                                        Margin="0,0,20,0"
+                                                        VerticalAlignment="Center">
+                                                        <TextBlock
+                                                            Text="App"
+                                                            FontSize="24"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
                                                     </Border>
-                                                </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                        </ItemsRepeater>
-                                    </Expander>
+
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock
+                                                            Text="{Binding DisplayName}"
+                                                            FontSize="18"
+                                                            FontWeight="SemiBold"/>
+                                                        <TextBlock
+                                                            Text="{Binding ProcessCountDisplay}"
+                                                            FontSize="13"
+                                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                            Margin="0,2,0,0"/>
+                                                        <TextBlock
+                                                            Text="{Binding FriendlyExplanation}"
+                                                            FontSize="14"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            TextWrapping="Wrap"
+                                                            MaxWidth="500"
+                                                            Margin="0,4,0,0"/>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="2" Margin="20,0" VerticalAlignment="Center" MinWidth="80">
+                                                        <TextBlock
+                                                            Text="CPU"
+                                                            FontSize="12"
+                                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                            HorizontalAlignment="Center"/>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                                                            <TextBlock
+                                                                Text="{Binding CpuUsagePercent}"
+                                                                FontSize="18"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#2196F3"/>
+                                                            <TextBlock
+                                                                Text="%"
+                                                                FontSize="18"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#2196F3"
+                                                                Margin="2,0,0,0"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="3" Margin="20,0" VerticalAlignment="Center" MinWidth="100">
+                                                        <TextBlock
+                                                            Text="Memory"
+                                                            FontSize="12"
+                                                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                            HorizontalAlignment="Center"/>
+                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                                                            <TextBlock
+                                                                Text="{Binding MemoryUsageMB}"
+                                                                FontSize="18"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#FF9800"/>
+                                                            <TextBlock
+                                                                Text=" MB"
+                                                                FontSize="18"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#FF9800"
+                                                                Margin="4,0,0,0"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" Margin="20,0,0,0" VerticalAlignment="Center">
+                                                        <Button
+                                                            Content="Restart"
+                                                            Command="{Binding DataContext.RestartProcessCommand, ElementName=TaskManagerPageRoot}"
+                                                            CommandParameter="{Binding RootProcess}"
+                                                            Foreground="#616161"
+                                                            Background="Transparent"
+                                                            BorderBrush="#616161"
+                                                            BorderThickness="1"
+                                                            Padding="12,8">
+                                                            <Button.Resources>
+                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#616161"/>
+                                                                <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="White"/>
+                                                            </Button.Resources>
+                                                        </Button>
+                                                        <Button
+                                                            Content="End Task"
+                                                            Command="{Binding DataContext.EndProcessCommand, ElementName=TaskManagerPageRoot}"
+                                                            CommandParameter="{Binding RootProcess}"
+                                                            Background="#F44336"
+                                                            Foreground="White"
+                                                            Padding="12,8"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <ItemsRepeater ItemsSource="{Binding ChildProcesses}">
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border
+                                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                            BorderThickness="1,1,1,0"
+                                                            Padding="20,16,20,16"
+                                                            Margin="20,0,20,0"
+                                                            HorizontalAlignment="Stretch">
+                                                            <Grid HorizontalAlignment="Stretch">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock
+                                                                        Text="{Binding Description}"
+                                                                        FontSize="16"
+                                                                        FontWeight="SemiBold"/>
+                                                                    <TextBlock
+                                                                        Text="{Binding ProcessName}"
+                                                                        FontSize="13"
+                                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                        Margin="0,4,0,0"/>
+                                                                </StackPanel>
+
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    Text="{Binding CpuUsageDisplay}"
+                                                                    FontSize="16"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="#2196F3"
+                                                                    Margin="16,0"/>
+
+                                                                <TextBlock
+                                                                    Grid.Column="2"
+                                                                    Text="{Binding MemoryUsageDisplay}"
+                                                                    FontSize="16"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="#FF9800"
+                                                                    Margin="16,0"/>
+
+                                                                <Button
+                                                                    Grid.Column="3"
+                                                                    Content="End"
+                                                                    Command="{Binding DataContext.EndProcessCommand, ElementName=TaskManagerPageRoot}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Background="#F44336"
+                                                                    Foreground="White"
+                                                                    Padding="10,6"
+                                                                    Margin="16,0,0,0"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </Expander>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
