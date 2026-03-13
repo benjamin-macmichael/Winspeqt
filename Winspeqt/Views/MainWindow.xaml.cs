@@ -120,6 +120,7 @@ namespace Winspeqt.Views
             {
                 {"Home", typeof(DashboardPage)},
                 {"SecurityDashboard", typeof(SecurityDashboardPage)},
+                {"SecurityStatus", typeof(SecurityStatusPage)},
                 {"OptimizationDashboard", typeof(OptimizationDashboardPage)},
                 {"MonitoringDashboard", typeof(MonitoringDashboardPage)},
             };
