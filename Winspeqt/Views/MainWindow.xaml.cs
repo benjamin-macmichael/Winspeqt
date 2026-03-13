@@ -136,7 +136,7 @@ namespace Winspeqt.Views
                         RootFrame.Navigate(typeof(MonitoringDashboardPage));
                         break;
                     default:
-                        RootFrame.Navigate(typeof(MonitoringDashboardPage));
+                        RootFrame.Navigate(typeof(DashboardPage));
                         break;
                 }
             });
@@ -218,8 +218,6 @@ namespace Winspeqt.Views
             if (navItem == null)
                 return;
 
-            ExpandParentItems(navItem);
-
             _isSyncingNavigationSelection = true;
             nvCategories.SelectedItem = navItem;
             _isSyncingNavigationSelection = false;
@@ -241,18 +239,6 @@ namespace Winspeqt.Views
             }
 
             return null;
-        }
-
-        private static void ExpandParentItems(NavigationViewItem item)
-        {
-            DependencyObject? parent = item;
-            while (parent != null)
-            {
-                if (parent is NavigationViewItem parentItem)
-                    parentItem.IsExpanded = true;
-
-                parent = VisualTreeHelper.GetParent(parent);
-            }
         }
     }
 }

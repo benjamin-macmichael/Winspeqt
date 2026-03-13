@@ -45,42 +45,26 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-            <!-- Header Section -->
-            <Grid Grid.Row="0" Padding="60,60,60,40">
-            <!-- Gear icon top-right -->
-            <Button
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top"
-        Background="Transparent"
-        BorderThickness="0"
-        Padding="8"
-        CornerRadius="6"
-        Command="{Binding SettingsCommand}"
-        ToolTipService.ToolTip="Settings">
-                <FontIcon Glyph="&#xE713;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-            </Button>
-
-            <!-- Existing centered header text (unchanged) -->
-            <StackPanel HorizontalAlignment="Center">
-                <TextBlock
-            Text="Winspeqt"
-            FontSize="48"
-            FontWeight="Bold"
-            Margin="0,0,0,12"
-            TextAlignment="Center"/>
-                <TextBlock
-            Text="Your Windows System Inspector and Optimizer"
-            FontSize="20"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Margin="0,0,0,8"
-            TextAlignment="Center"/>
-                <TextBlock
-            Text="Choose a category to get started"
-            FontSize="18"
-            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-            TextAlignment="Center"/>
-            </StackPanel>
-            </Grid>
+        <!-- Existing centered header text (unchanged) -->
+        <StackPanel HorizontalAlignment="Center" Padding="60,60,60,40">
+            <TextBlock
+                Text="Winspeqt"
+                FontSize="48"
+                FontWeight="Bold"
+                Margin="0,0,0,12"
+                TextAlignment="Center"/>
+            <TextBlock
+                Text="Your Windows System Inspector and Optimizer"
+                FontSize="20"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Margin="0,0,0,8"
+                TextAlignment="Center"/>
+            <TextBlock
+                Text="Choose a category to get started"
+                FontSize="18"
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                TextAlignment="Center"/>
+        </StackPanel>
 
         <!-- Scroll only the card region so header layout/state behavior stays stable. -->
         <ScrollViewer
@@ -186,7 +170,7 @@
                     <!-- Icon -->
                     <FontIcon 
                         Grid.Row="0"
-                        Glyph="&#xE73C;" 
+                        Glyph="&#xEC4A;" 
                         FontSize="64"
                         Foreground="#2196F3"
                         HorizontalAlignment="Center"

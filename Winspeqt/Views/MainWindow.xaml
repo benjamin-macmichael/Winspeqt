@@ -15,86 +15,86 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Home" Tag="Home">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE80F;" FontFamily="Segoe MDL2 Assets" />
+                        <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Security" Tag="SecurityDashboard">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets" />
+                        <FontIcon Glyph="&#xE72E;" />
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem Content="Security Status" Tag="SecurityStatus">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE72E;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="App Update Checker" Tag="AppSecurity">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE7BA;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE7BA;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Network Security Monitor" Tag="NetworkSecurity">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE968;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE968;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Settings Recommendations" Tag="SettingsRecommendations">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE713;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE713;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Optimization" Tag="OptimizationDashboard">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEC4A;" FontFamily="Segoe MDL2 Assets" />
+                        <FontIcon Glyph="&#xEC4A;" />
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem Content="Large File Finder" Tag="LargeFileFinder">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE8B7;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE8B7;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="App Usage Tracker" Tag="AppUsage">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE74C;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE74C;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Safe AppData Cleanup" Tag="AppDataCleanup">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE74D;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE74D;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="One-Click Optimization" Tag="Optimization">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE73C;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE73C;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Monitoring" Tag="MonitoringDashboard">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE9D9;" FontFamily="Segoe MDL2 Assets" />
+                        <FontIcon Glyph="&#xE9D9;" />
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem Content="Friendly Task Manager" Tag="TaskManager">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE7C4;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE7C4;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Resource Trends" Tag="PerformanceTrends">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE9D9;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE9D9;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Startup Applications" Tag="StartupImpact">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE7E8;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE7E8;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem Content="Background Process Insights" Tag="BackgroundProcess">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE8B5;" FontFamily="Segoe MDL2 Assets" />
+                                <FontIcon Glyph="&#xE8B5;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
