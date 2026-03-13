@@ -116,13 +116,24 @@ namespace Winspeqt.Views
 
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
-            Dictionary<string, Type> test = new Dictionary<string, Type>
+            Dictionary<string, Type> routes = new Dictionary<string, Type>
             {
                 {"Home", typeof(DashboardPage)},
                 {"SecurityDashboard", typeof(SecurityDashboardPage)},
                 {"SecurityStatus", typeof(SecurityStatusPage)},
+                {"AppSecurity", typeof(AppSecurityPage)},
+                {"NetworkSecurity", typeof(NetworkSecurityPage)},
+                {"SettingsRecommendations", typeof(SettingsRecommendationsPage)},
                 {"OptimizationDashboard", typeof(OptimizationDashboardPage)},
+                {"LargeFileFinder", typeof(LargeFileFinder)},
+                {"AppUsage", typeof(AppUsagePage)},
+                {"AppDataCleanup", typeof(AppDataCleanupCard)},
+                {"Optimization", typeof(OptimizationPage)},
                 {"MonitoringDashboard", typeof(MonitoringDashboardPage)},
+                {"TaskManager", typeof(TaskManagerPage)},
+                {"PerformanceTrends", typeof(PerformanceTrendsPage)},
+                {"StartupImpact", typeof(StartupImpactPage)},
+                {"BackgroundProcess", typeof(BackgroundProcessPage)},
             };
             if (args.IsSettingsSelected)
             {
@@ -131,8 +142,10 @@ namespace Winspeqt.Views
             {
                 var selectedItem = (Microsoft.UI.Xaml.Controls.NavigationViewItem)args.SelectedItem;
                 string selectedItemTag = (string)selectedItem.Tag;
-                test.TryGetValue(selectedItemTag, out Type? pageType);
-                RootFrame.Navigate(pageType);
+                if (routes.TryGetValue(selectedItemTag, out Type? pageType))
+                {
+                    RootFrame.Navigate(pageType);
+                }
             }
             nvCategories.IsBackEnabled = RootFrame.CanGoBack;
         }
