@@ -158,7 +158,7 @@
                     <!-- Risky Connections -->
                     <StackPanel Grid.Column="2" Margin="20,0,0,0">
                         <FontIcon 
-                            Glyph="&#xE7BA;" 
+                            Glyph="&#xE7BA;"
                             FontSize="32" 
                             FontFamily="Segoe MDL2 Assets" 
                             Margin="-180,0,0,8"
@@ -207,7 +207,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="🔗" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xF003;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#7eb900"/>
                             <StackPanel>
                                 <TextBlock
                                     Text="Active Connections"
@@ -315,7 +321,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="⚠️" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xE7BA;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#D13438"/>
                             <StackPanel>
                                 <TextBlock
                                     Text="Risky Open Ports"
@@ -433,7 +445,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock Text="📡" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xE703;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#2196F3"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock
                                     Text="Connected Devices"
@@ -520,7 +538,13 @@
                         <!-- Header -->
                         <Grid Grid.Row="0" Margin="0,0,0,12">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🛡️" FontSize="28" Margin="0,0,12,0"/>
+                                <FontIcon 
+                                    Glyph="&#xEA18;" 
+                                    FontSize="22" 
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    VerticalAlignment="Top"
+                                    Margin="0,4,8,0"
+                                    Foreground="#f14f21"/>
                                 <TextBlock
                                     Text="Security Alerts"
                                     FontSize="22"
@@ -528,7 +552,6 @@
                                     VerticalAlignment="Center"/>
                             </StackPanel>
                             <Button
-                                Content="🗑️"
                                 Command="{x:Bind ViewModel.ClearAlertsCommand}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -536,7 +559,11 @@
                                 Padding="8"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                ToolTipService.ToolTip="Clear all alerts"/>
+                                ToolTipService.ToolTip="Clear all alerts">
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Glyph="&#xE74D;"/>
+                            </Button>
                         </Grid>
 
                         <!-- Alerts List -->
