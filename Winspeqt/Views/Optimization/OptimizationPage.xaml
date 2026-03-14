@@ -27,7 +27,7 @@
             <!-- Header -->
             <Grid Grid.Row="0" Margin="0,0,0,32">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="64"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -138,7 +138,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="64"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <FontIcon Grid.Column="0" Glyph="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{x:Bind Color}"/>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{x:Bind TaskName}" FontSize="14" FontWeight="SemiBold"/>
                                                 <TextBlock Text="{x:Bind StatusMessage}" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>

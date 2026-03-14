@@ -12,6 +12,8 @@ namespace Winspeqt.Models
         public string StatusMessage { get; set; } = "";
         public bool IsOptional { get; set; }
 
+        public string Color { get; set; } = "#000000";
+
         public string FormattedBytesFreed
         {
             get
