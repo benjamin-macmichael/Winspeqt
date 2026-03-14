@@ -102,7 +102,7 @@
                                 FontSize="18"
                                 FontWeight="SemiBold"/>
                         </StackPanel>
-                        
+
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -217,7 +217,7 @@
                                         FontSize="18"
                                         FontWeight="SemiBold" />
                                 </StackPanel>
-                                
+
                             </Button>
                             <TextBlock
                                 Text="Select what to clean"
@@ -238,10 +238,14 @@
                                         <TextBlock Text="Recycle Bin" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Permanently deletes files you've already sent to the Recycle Bin." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanRecycleBin, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeRecycleBin}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanRecycleBin, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeRecycleBin}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -258,10 +262,14 @@
                                         <TextBlock Text="Temporary Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes leftover files apps create while running. They're no longer needed once the app closes." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanTempFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeTempFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanTempFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeTempFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -278,10 +286,14 @@
                                         <TextBlock Text="Thumbnail Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears the preview images Windows stores for your files. They'll rebuild automatically next time you browse." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanThumbnailCache, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeThumbnailCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanThumbnailCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeThumbnailCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -298,10 +310,14 @@
                                         <TextBlock Text="DNS Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Flushes your PC's memory of website addresses. Useful if websites aren't loading correctly." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding FlushDnsCache, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding FlushDnsCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -318,10 +334,14 @@
                                         <TextBlock Text="Prefetch Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes files Windows uses to speed up app launches. They'll be recreated automatically over time." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanPrefetch, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizePrefetch}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanPrefetch, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizePrefetch}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -338,10 +358,14 @@
                                         <TextBlock Text="Windows Error Reports" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Deletes crash reports Windows saves when apps stop working. Safe to remove once you've resolved any issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanWindowsErrorReports, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeErrorReports}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanWindowsErrorReports, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeErrorReports}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -358,10 +382,14 @@
                                         <TextBlock Text="Crash Dump Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes memory snapshots saved when your PC crashes. Only needed for diagnosing issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanCrashDumps, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeCrashDumps}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanCrashDumps, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeCrashDumps}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -378,10 +406,14 @@
                                         <TextBlock Text="Windows Update Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears downloaded update files that have already been installed. Safe to remove anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeUpdateCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeUpdateCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -398,10 +430,14 @@
                                         <TextBlock Text="Windows Event Logs" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Windows system and application logs. Skip this if your PC is managed by IT support." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
@@ -418,26 +454,22 @@
                                         <TextBlock Text="Microsoft Edge Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Edge's temporary browsing cache. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
-                                        <CheckBox IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding SizeEdgeCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="-2,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="44"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeEdgeCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Grid>
                             </Border>
 
                         </StackPanel>
-
-                        
-
                     </StackPanel>
 
                 </StackPanel>
             </Border>
-
-
-
         </Grid>
     </ScrollViewer>
 </Page>
-
-
