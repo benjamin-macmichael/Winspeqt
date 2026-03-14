@@ -233,7 +233,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🗑️" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE74D;" FontSize="24" Foreground="#feb800" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Recycle Bin" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Permanently deletes files you've already sent to the Recycle Bin." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -253,7 +253,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="📁" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE8B7;" FontSize="24" Foreground="#f14f21" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Temporary Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes leftover files apps create while running. They're no longer needed once the app closes." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -273,7 +273,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🖼️" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE91B;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Thumbnail Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears the preview images Windows stores for your files. They'll rebuild automatically next time you browse." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -293,7 +293,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🌐" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE774;" FontSize="24" Foreground="#00a3ee" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="DNS Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Flushes your PC's memory of website addresses. Useful if websites aren't loading correctly." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -313,7 +313,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="⚡" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE945;" FontSize="24" Foreground="#feb800" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Prefetch Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes files Windows uses to speed up app launches. They'll be recreated automatically over time." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -333,7 +333,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="📋" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xF0E3;" FontSize="24" Foreground="#f14f21" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Windows Error Reports" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Deletes crash reports Windows saves when apps stop working. Safe to remove once you've resolved any issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -353,7 +353,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="💥" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE7BC;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Crash Dump Files" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Removes memory snapshots saved when your PC crashes. Only needed for diagnosing issues." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -373,7 +373,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🔄" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE895;" FontSize="24" Foreground="#00a3ee" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Windows Update Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears downloaded update files that have already been installed. Safe to remove anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -393,7 +393,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="📝" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE9F9;" FontSize="24" Foreground="#feb800" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Windows Event Logs" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Windows system and application logs. Skip this if your PC is managed by IT support." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -413,7 +413,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="🌍" FontSize="24" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE909;" FontSize="24" Foreground="#f14f21" Margin="0,0,16,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Microsoft Edge Cache" FontSize="15" FontWeight="SemiBold"/>
                                         <TextBlock Text="Clears Edge's temporary browsing cache. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
