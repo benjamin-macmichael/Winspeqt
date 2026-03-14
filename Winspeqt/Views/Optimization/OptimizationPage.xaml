@@ -27,7 +27,7 @@
             <!-- Header -->
             <Grid Grid.Row="0" Margin="0,0,0,32">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="64"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -134,9 +134,9 @@
                                     <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="16,10" Margin="0,0,0,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="64"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="64"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -240,8 +240,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanRecycleBin, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeRecycleBin}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -264,8 +264,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanTempFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeTempFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -288,8 +288,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanThumbnailCache, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeThumbnailCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -312,8 +312,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding FlushDnsCache, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -336,8 +336,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanPrefetch, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizePrefetch}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -360,8 +360,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanWindowsErrorReports, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeErrorReports}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -384,8 +384,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanCrashDumps, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeCrashDumps}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -408,8 +408,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanUpdateCache, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeUpdateCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -432,8 +432,8 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanEventLogs, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
@@ -456,20 +456,23 @@
                                     </StackPanel>
                                     <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
                                         </Grid.ColumnDefinitions>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding CleanBrowserCache, Mode=TwoWay}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="{Binding SizeEdgeCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Grid>
                             </Border>
-
                         </StackPanel>
                     </StackPanel>
-
                 </StackPanel>
             </Border>
         </Grid>
     </ScrollViewer>
 </Page>
+
+
+
+
+
