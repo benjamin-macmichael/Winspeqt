@@ -55,7 +55,6 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                     <Button
-                        Content="▶️ Start"
                         Command="{x:Bind ViewModel.StartMonitoringCommand}"
                         Style="{StaticResource AccentButtonStyle}"
                         FontSize="16"
@@ -64,14 +63,28 @@
                         <Button.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5"/>
                         </Button.KeyboardAccelerators>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="15"
+                                Glyph="&#xF5B0;"/>
+                            <TextBlock Text="Start"/>
+                        </StackPanel>
                     </Button>
 
                     <Button
-                        Content="⏸️ Stop"
                         Command="{x:Bind ViewModel.StopMonitoringCommand}"
                         FontSize="16"
                         Padding="16,8"
-                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="15"
+                                Glyph="&#xF8AE;"/>
+                            <TextBlock Text="Stop"/>
+                        </StackPanel>
+                    </Button>
 
                     <Button
                         Command="{x:Bind ViewModel.RefreshCommand}"
@@ -79,7 +92,7 @@
                         Padding="16,8"
                         ToolTipService.ToolTip="Refresh">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔄"/>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE895;" FontSize="15"/>
                             <TextBlock Text="Refresh"/>
                         </StackPanel>
                     </Button>
@@ -104,7 +117,12 @@
 
                     <!-- Active Connections -->
                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                        <TextBlock Text="🔗" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xF003;" 
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="-175,0,0,8"
+                            Foreground="#7eb900"/>
                         <TextBlock
                             Text="Active Connections"
                             FontSize="14"
@@ -119,7 +137,12 @@
 
                     <!-- Listening Ports -->
                     <StackPanel Grid.Column="1" Margin="20,0">
-                        <TextBlock Text="🚪" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xEC44;" 
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="-160,0,0,8"
+                            Foreground="#2196F3"/>
                         <TextBlock
                             Text="Listening Ports"
                             FontSize="14"
@@ -134,7 +157,12 @@
 
                     <!-- Risky Connections -->
                     <StackPanel Grid.Column="2" Margin="20,0,0,0">
-                        <TextBlock Text="⚠️" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xE7BA;" 
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="-180,0,0,8"
+                            Foreground="#D13438"/>
                         <TextBlock
                             Text="Risky Connections"
                             FontSize="14"
