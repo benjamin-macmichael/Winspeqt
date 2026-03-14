@@ -297,7 +297,8 @@
                                 </Grid>
                             </Border>
 
-                            <!-- DNS Cache -->
+                            <!-- This is currently unimplemented; hiding tile -->
+                            <!-- DNS Cache --><!--
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -319,7 +320,7 @@
                                         <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Grid>
-                            </Border>
+                            </Border>-->
 
                             <!-- Prefetch -->
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
@@ -417,7 +418,8 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Event Logs -->
+                            <!-- This is currently unimplemented; hiding tile -->
+                            <!-- Event Logs --><!--
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -439,7 +441,7 @@
                                         <TextBlock Grid.Column="1" Text="—" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Grid>
-                            </Border>
+                            </Border>-->
 
                             <!-- Edge Cache -->
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
