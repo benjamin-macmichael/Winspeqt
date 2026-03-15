@@ -684,12 +684,26 @@ namespace Winspeqt.ViewModels.Security
                     contentPanel.Children.Add(updateWarning);
 
                     var commandSection = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 8 };
-                    commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+
+                    var commandHeader = new Microsoft.UI.Xaml.Controls.StackPanel
                     {
-                        Text = "✨ Quick Update Command",
+                        Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                        Spacing = 8
+                    };
+                    commandHeader.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+                    {
+                        Glyph = "\uE945", // Sparkle/star icon
+                        FontSize = 14,
+                        Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                            Windows.UI.Color.FromArgb(255, 255, 193, 7)) // Gold color
+                    });
+                    commandHeader.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+                    {
+                        Text = "Quick Update Command",
                         FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                         FontSize = 14
                     });
+                    commandSection.Children.Add(commandHeader);
                     commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBox
                     {
                         Text = $"winget install --id {app.WinGetId} -e",
@@ -705,9 +719,24 @@ namespace Winspeqt.ViewModels.Security
                         TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
                     });
 
+                    var updateButtonContent = new Microsoft.UI.Xaml.Controls.StackPanel
+                    {
+                        Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                        Spacing = 8
+                    };
+                    updateButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+                    {
+                        Glyph = "\uEBE7", // Lightning/flash icon  
+                        FontSize = 14
+                    });
+                    updateButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+                    {
+                        Text = "Update for Me"
+                    });
+
                     var updateButton = new Microsoft.UI.Xaml.Controls.Button
                     {
-                        Content = "⚡ Update for Me",
+                        Content = updateButtonContent,
                         HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
                         Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12),
                         Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 0)
@@ -749,9 +778,24 @@ namespace Winspeqt.ViewModels.Security
                     contentPanel.Children.Add(commandSection);
                 }
 
+                var searchButtonContent = new Microsoft.UI.Xaml.Controls.StackPanel
+                {
+                    Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                    Spacing = 8
+                };
+                searchButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+                {
+                    Glyph = "\uE721", // Search/magnifying glass icon
+                    FontSize = 14
+                });
+                searchButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+                {
+                    Text = "Search How to Update Online"
+                });
+
                 var searchButton = new Microsoft.UI.Xaml.Controls.Button
                 {
-                    Content = "🔍 Search How to Update Online",
+                    Content = searchButtonContent,
                     HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
                     Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12)
                 };
