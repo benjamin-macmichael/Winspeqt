@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace Winspeqt.Models
 {
     public class AppSecurityInfo
@@ -30,7 +29,7 @@ namespace Winspeqt.Models
             >= 50 => "#F44336",
             _ => "#9E9E9E"
         };
-        public string DataSource { get; set; } = string.Empty; // "Direct Match", "Search Result", etc.
+        public string DataSource { get; set; } = string.Empty;
 
         // Package manager ID
         public string WinGetId { get; set; } = string.Empty;
@@ -42,23 +41,28 @@ namespace Winspeqt.Models
         public bool IsUnknown => Status == SecurityStatus.Unknown;
         public bool IsUpToDate => Status == SecurityStatus.UpToDate;
 
+        // Icon glyph (Unicode character for FontIcon)
         public string StatusIcon => Status switch
         {
-            SecurityStatus.UpToDate => "✓",
-            SecurityStatus.Outdated => "⚠️",
-            SecurityStatus.Unknown => "❓",
-            SecurityStatus.Critical => "🔴",
-            _ => "•"
+            SecurityStatus.UpToDate => "\uE73E",      // Checkmark
+            SecurityStatus.Outdated => "\uE7BA",      // Warning
+            SecurityStatus.Unknown => "\uE9CE",       // Help/Question
+            SecurityStatus.Critical => "\uE7BA",      // Error
+            _ => "\uE91F"                             // Dot
         };
 
-        public string StatusColor => Status switch
+        // Icon color
+        public string StatusIconColor => Status switch
         {
-            SecurityStatus.UpToDate => "#4CAF50",
-            SecurityStatus.Outdated => "#FF9800",
-            SecurityStatus.Unknown => "#9E9E9E",
-            SecurityStatus.Critical => "#F44336",
+            SecurityStatus.UpToDate => "#4CAF50",     // Green
+            SecurityStatus.Outdated => "#FF9800",     // Orange
+            SecurityStatus.Unknown => "#9E9E9E",      // Gray
+            SecurityStatus.Critical => "#F44336",     // Red
             _ => "#9E9E9E"
         };
+
+        // Keep StatusColor for backward compatibility
+        public string StatusColor => StatusIconColor;
 
         public string FormattedInstallDate => InstallDate?.ToString("MMM dd, yyyy") ?? "Unknown";
     }
