@@ -692,7 +692,7 @@ namespace Winspeqt.ViewModels.Security
                     });
                     commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBox
                     {
-                        Text = $"winget upgrade --id {app.WinGetId} -e",
+                        Text = $"winget install --id {app.WinGetId} -e",
                         IsReadOnly = true,
                         FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
                         FontSize = 13
@@ -720,7 +720,7 @@ namespace Winspeqt.ViewModels.Security
                             var startInfo = new System.Diagnostics.ProcessStartInfo
                             {
                                 FileName = "wt.exe",
-                                Arguments = $"-w 0 nt cmd /k \"winget upgrade --id {app.WinGetId} -e && pause\"",
+                                Arguments = $"-w 0 nt cmd /k \"winget install --id {app.WinGetId} -e && pause\"",
                                 UseShellExecute = true
                             };
 
@@ -728,7 +728,7 @@ namespace Winspeqt.ViewModels.Security
                             catch
                             {
                                 startInfo.FileName = "cmd.exe";
-                                startInfo.Arguments = $"/k winget upgrade --id {app.WinGetId} -e && pause";
+                                startInfo.Arguments = $"/k winget install --id {app.WinGetId} -e && pause";
                                 System.Diagnostics.Process.Start(startInfo);
                             }
                         }
