@@ -10,10 +10,10 @@ namespace Winspeqt.Models
 
         public string Icon => DeviceType switch
         {
-            "WiFi" => "📶",
-            "Bluetooth" => "🔷",
-            "Ethernet" => "🔌",
-            _ => "🌐"
+            "WiFi" => "\uE701",
+            "Bluetooth" => "\uE702",
+            "Ethernet" => "\uE839",
+            _ => "\uE774"
         };
 
         // Only WiFi interfaces can be disconnected via netsh
