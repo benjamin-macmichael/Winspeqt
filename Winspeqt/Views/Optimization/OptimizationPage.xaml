@@ -134,9 +134,9 @@
                                     <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="16,10" Margin="0,0,0,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="64"/>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="64"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <FontIcon Grid.Column="0" Glyph="{x:Bind Icon}" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center" Foreground="{x:Bind Color}"/>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -217,7 +217,6 @@
                                         FontSize="18"
                                         FontWeight="SemiBold" />
                                 </StackPanel>
-
                             </Button>
                             <TextBlock
                                 Text="Select what to clean"
@@ -298,7 +297,8 @@
                             </Border>
 
                             <!-- This is currently unimplemented; hiding tile -->
-                            <!-- DNS Cache --><!--
+                            <!-- DNS Cache -->
+                            <!--
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -419,7 +419,8 @@
                             </Border>
 
                             <!-- This is currently unimplemented; hiding tile -->
-                            <!-- Event Logs --><!--
+                            <!-- Event Logs -->
+                            <!--
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -473,8 +474,3 @@
         </Grid>
     </ScrollViewer>
 </Page>
-
-
-
-
-
