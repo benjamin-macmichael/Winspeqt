@@ -55,7 +55,6 @@
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
                     <Button
-                        Content="▶️ Start"
                         Command="{x:Bind ViewModel.StartMonitoringCommand}"
                         Style="{StaticResource AccentButtonStyle}"
                         FontSize="16"
@@ -64,14 +63,28 @@
                         <Button.KeyboardAccelerators>
                             <KeyboardAccelerator Key="F5"/>
                         </Button.KeyboardAccelerators>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="15"
+                                Glyph="&#xF5B0;"/>
+                            <TextBlock Text="Start"/>
+                        </StackPanel>
                     </Button>
 
                     <Button
-                        Content="⏸️ Stop"
                         Command="{x:Bind ViewModel.StopMonitoringCommand}"
                         FontSize="16"
                         Padding="16,8"
-                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        Visibility="{x:Bind ViewModel.IsMonitoring, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontFamily="Segoe MDL2 Assets"
+                                FontSize="15"
+                                Glyph="&#xF8AE;"/>
+                            <TextBlock Text="Stop"/>
+                        </StackPanel>
+                    </Button>
 
                     <Button
                         Command="{x:Bind ViewModel.RefreshCommand}"
@@ -79,7 +92,7 @@
                         Padding="16,8"
                         ToolTipService.ToolTip="Refresh">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔄"/>
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE895;" FontSize="15"/>
                             <TextBlock Text="Refresh"/>
                         </StackPanel>
                     </Button>
@@ -104,7 +117,13 @@
 
                     <!-- Active Connections -->
                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                        <TextBlock Text="🔗" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xF003;" 
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            Foreground="#7eb900"/>
                         <TextBlock
                             Text="Active Connections"
                             FontSize="14"
@@ -119,7 +138,13 @@
 
                     <!-- Listening Ports -->
                     <StackPanel Grid.Column="1" Margin="20,0">
-                        <TextBlock Text="🚪" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xEC44;" 
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            Foreground="#2196F3"/>
                         <TextBlock
                             Text="Listening Ports"
                             FontSize="14"
@@ -134,7 +159,13 @@
 
                     <!-- Risky Connections -->
                     <StackPanel Grid.Column="2" Margin="20,0,0,0">
-                        <TextBlock Text="⚠️" FontSize="32" Margin="0,0,0,8"/>
+                        <FontIcon 
+                            Glyph="&#xE7BA;"
+                            FontSize="32" 
+                            FontFamily="Segoe MDL2 Assets" 
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            Foreground="#D13438"/>
                         <TextBlock
                             Text="Risky Connections"
                             FontSize="14"
@@ -179,7 +210,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="🔗" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xF003;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#7eb900"/>
                             <StackPanel>
                                 <TextBlock
                                     Text="Active Connections"
@@ -287,7 +324,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
-                            <TextBlock Text="⚠️" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xE7BA;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#D13438"/>
                             <StackPanel>
                                 <TextBlock
                                     Text="Risky Open Ports"
@@ -405,7 +448,13 @@
 
                         <!-- Card Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                            <TextBlock Text="📡" FontSize="28" Margin="0,0,12,0"/>
+                            <FontIcon 
+                                Glyph="&#xE703;" 
+                                FontSize="22" 
+                                FontFamily="Segoe MDL2 Assets" 
+                                VerticalAlignment="Top"
+                                Margin="0,4,8,0"
+                                Foreground="#2196F3"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock
                                     Text="Connected Devices"
@@ -434,11 +483,12 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            Text="{x:Bind Icon}"
+                                        <FontIcon
+                                            Glyph="{x:Bind Icon}"
                                             FontSize="22"
-                                            VerticalAlignment="Center"/>
+                                            FontFamily="Segoe MDL2 Assets"
+                                            VerticalAlignment="Center"
+                                            Foreground="#007ab3"/>
 
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
                                             <TextBlock
@@ -492,7 +542,13 @@
                         <!-- Header -->
                         <Grid Grid.Row="0" Margin="0,0,0,12">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🛡️" FontSize="28" Margin="0,0,12,0"/>
+                                <FontIcon 
+                                    Glyph="&#xEA18;" 
+                                    FontSize="22" 
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    VerticalAlignment="Top"
+                                    Margin="0,4,8,0"
+                                    Foreground="#f14f21"/>
                                 <TextBlock
                                     Text="Security Alerts"
                                     FontSize="22"
@@ -500,7 +556,6 @@
                                     VerticalAlignment="Center"/>
                             </StackPanel>
                             <Button
-                                Content="🗑️"
                                 Command="{x:Bind ViewModel.ClearAlertsCommand}"
                                 Background="Transparent"
                                 BorderThickness="0"
@@ -508,7 +563,11 @@
                                 Padding="8"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                ToolTipService.ToolTip="Clear all alerts"/>
+                                ToolTipService.ToolTip="Clear all alerts">
+                                <FontIcon
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Glyph="&#xE74D;"/>
+                            </Button>
                         </Grid>
 
                         <!-- Alerts List -->
@@ -540,7 +599,12 @@
                         <StackPanel Grid.Row="2" Margin="0,16,0,8">
                             <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="0,0,0,12"/>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="📶" FontSize="18"/>
+                                <FontIcon 
+                                    Glyph="&#xE701;" 
+                                    FontSize="18" 
+                                    FontFamily="Segoe MDL2 Assets"
+                                    VerticalAlignment="Center"
+                                    Foreground="#007ab3"/>
                                 <TextBlock
                                     Text="WiFi Disconnect History"
                                     FontSize="16"
