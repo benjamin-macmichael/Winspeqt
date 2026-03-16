@@ -151,7 +151,7 @@
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="12,12,0,0"
+                    Margin="0,12,12,0"
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
@@ -188,7 +188,7 @@
                     BorderThickness="2"
                     CornerRadius="12"
                     Padding="28"
-                    Margin="0,12,12,0"
+                    Margin="12,12,0,0"
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
