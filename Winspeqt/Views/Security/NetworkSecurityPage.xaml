@@ -121,7 +121,8 @@
                             Glyph="&#xF003;" 
                             FontSize="32" 
                             FontFamily="Segoe MDL2 Assets" 
-                            Margin="-175,0,0,8"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
                             Foreground="#7eb900"/>
                         <TextBlock
                             Text="Active Connections"
@@ -141,7 +142,8 @@
                             Glyph="&#xEC44;" 
                             FontSize="32" 
                             FontFamily="Segoe MDL2 Assets" 
-                            Margin="-160,0,0,8"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
                             Foreground="#2196F3"/>
                         <TextBlock
                             Text="Listening Ports"
@@ -161,7 +163,8 @@
                             Glyph="&#xE7BA;"
                             FontSize="32" 
                             FontFamily="Segoe MDL2 Assets" 
-                            Margin="-180,0,0,8"
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
                             Foreground="#D13438"/>
                         <TextBlock
                             Text="Risky Connections"
