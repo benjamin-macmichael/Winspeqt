@@ -11,24 +11,27 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="AppTitleBar"  
-            Height="48" Grid.Row="0">
+        <Grid 
+            x:Name="AppTitleBar"  
+            Height="48" 
+            Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
                 <ColumnDefinition/>
                 <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
             </Grid.ColumnDefinitions>
-            <Image x:Name="TitleBarIcon" Source="ms-appx:///Assets/StoreLogo.png"
-                Grid.Column="1"
-                HorizontalAlignment="Left"
-                Width="24" Height="24"
-                Margin="12,0,0,0"/>
-            <TextBlock x:Name="TitleBarTextBlock" 
-                Text="Winspeqt - Windows System Inspector"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                Margin="52,0,0,0"/>
+            <StackPanel Margin="12,0,0,0" Orientation="Horizontal" Grid.Column="1">
+                <Image x:Name="TitleBarIcon" Source="ms-appx:///Assets/StoreLogo.png"
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    Width="24" Height="24"/>
+                <TextBlock x:Name="TitleBarTextBlock" 
+                    Text="Winspeqt - Windows System Inspector"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Margin="12,0,0,0"/>
+            </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
             <NavigationView 
