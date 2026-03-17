@@ -2,6 +2,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using WinRT.Interop;
@@ -65,6 +66,13 @@ namespace Winspeqt.Views
             Title = "Winspeqt - Windows System Inspector";
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
             RootFrame.Navigated += RootFrame_Navigated;
+            Activated += MainWindow_Activated;
+            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            if (AppWindow.TitleBar.ExtendsContentIntoTitleBar)
+            {
+                AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            }
+
 
             if (_appUsageService == null)
                 _appUsageService = new AppUsageService();
@@ -100,6 +108,20 @@ namespace Winspeqt.Views
                 });
                 _systemTrayHelper.HideToTray();
             };
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                TitleBarTextBlock.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            }
+            else
+            {
+                TitleBarTextBlock.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            }
         }
 
         public void NavigateToFeature(string feature)
