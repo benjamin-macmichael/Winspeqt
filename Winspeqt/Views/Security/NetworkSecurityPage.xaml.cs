@@ -14,6 +14,31 @@ namespace Winspeqt.Views.Security
         {
             this.InitializeComponent();
             ViewModel = new NetworkSecurityViewModel();
+            ViewModel.UnsecuredNetworkDetected += OnUnsecuredNetworkDetected;
+        }
+
+        private async void OnUnsecuredNetworkDetected(string networkName, string interfaceName)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "⚠️ Unsecured Network Detected",
+                Content = $"You are connected to \"{networkName}\", which is an open network with no password or encryption.\n\n" +
+                          "Risks on unsecured networks:\n" +
+                          "  • Anyone nearby can see your unencrypted traffic\n" +
+                          "  • Passwords and personal data may be exposed\n" +
+                          "  • You could be targeted by man-in-the-middle attacks\n\n" +
+                          "Consider using a VPN if you must stay connected, or disconnect and use mobile data instead.",
+                PrimaryButtonText = "Disconnect Now",
+                CloseButtonText = "Stay Connected",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                ViewModel.DisconnectUnsecuredNetworkCommand.Execute(null);
+            }
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

@@ -214,6 +214,86 @@ namespace Winspeqt.Services
 
         public Task TriggerCheckAsync() => CheckAndNotifyAsync();
 
+        // Tracked in-memory so we only toast once per network name per session
+        private readonly HashSet<string> _notifiedUnsecuredNetworks = new(StringComparer.OrdinalIgnoreCase);
+
+        // Throttle: don't re-notify about Quick Assist within 5 minutes
+        private DateTime _lastQuickAssistNotification = DateTime.MinValue;
+
+        public void SendUnsecuredNetworkNotification(string networkName)
+        {
+            if (!_notificationsAvailable) return;
+            if (!_notifiedUnsecuredNetworks.Add(networkName)) return; // already notified this session
+
+            try
+            {
+                var escapedName = System.Security.SecurityElement.Escape(networkName);
+                string xml = $@"
+                    <toast scenario='reminder'>
+                        <visual>
+                            <binding template='ToastGeneric'>
+                                <text>⚠️ Winspeqt: Unsecured Network Detected</text>
+                                <text>You are connected to ""{escapedName}"" — this network has no password or encryption.</text>
+                                <text>Your passwords and personal data may be visible to others nearby. Consider disconnecting or using a VPN.</text>
+                            </binding>
+                        </visual>
+                        <audio src='ms-winsoundevent:Notification.Looping.Alarm2' loop='false'/>
+                        <actions>
+                            <action content='Open Network Security' arguments='action=open&amp;feature=NetworkSecurity' activationType='foreground'/>
+                            <action content='Dismiss' arguments='dismiss' activationType='system' hint-buttonStyle='Success'/>
+                        </actions>
+                    </toast>";
+
+                var doc = new Windows.Data.Xml.Dom.XmlDocument();
+                doc.LoadXml(xml);
+                var toast = new ToastNotification(doc);
+                ToastNotificationManager.CreateToastNotifier().Show(toast);
+
+                System.Diagnostics.Debug.WriteLine($"[NotificationManager] Unsecured network toast shown for: {networkName}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NotificationManager] Failed to send unsecured network toast: {ex.Message}");
+            }
+        }
+
+        public void SendQuickAssistLaunchedNotification()
+        {
+            if (!_notificationsAvailable) return;
+            if (DateTime.Now - _lastQuickAssistNotification < TimeSpan.FromMinutes(5)) return;
+            _lastQuickAssistNotification = DateTime.Now;
+
+            try
+            {
+                string xml = @"
+                    <toast scenario='reminder'>
+                        <visual>
+                            <binding template='ToastGeneric'>
+                                <text>⚠️ Winspeqt: Quick Assist Session Started</text>
+                                <text>Someone now has remote access to your screen and files.</text>
+                                <text>Only continue if YOU made this call. If something feels off — close the session immediately.</text>
+                            </binding>
+                        </visual>
+                        <audio src='ms-winsoundevent:Notification.Looping.Alarm2' loop='false'/>
+                        <actions>
+                            <action content='Close Quick Assist' arguments='action=closeQuickAssist' activationType='foreground'/>
+                            <action content='Dismiss' arguments='dismiss' activationType='system' hint-buttonStyle='Success'/>
+                        </actions>
+                    </toast>";
+
+                var doc = new XmlDocument();
+                doc.LoadXml(xml);
+                var toast = new ToastNotification(doc);
+                ToastNotificationManager.CreateToastNotifier().Show(toast);
+
+                System.Diagnostics.Debug.WriteLine("[NotificationManager] Quick Assist launched toast shown");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[NotificationManager] Failed to send Quick Assist toast: {ex.Message}");
+            }
+        }
+
         private void OnTimerTick(object? state)
         {
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer tick fired");
