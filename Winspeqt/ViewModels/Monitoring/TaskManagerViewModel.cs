@@ -14,11 +14,38 @@ namespace Winspeqt.ViewModels.Monitoring
 {
     public class TaskManagerViewModel : ObservableObject
     {
+        private static readonly HashSet<string> NonOwningParentProcesses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "explorer",
+            "cmd",
+            "powershell",
+            "pwsh",
+            "windowsterminal",
+            "wt",
+            "conhost",
+            "rundll32",
+            "dllhost",
+            "taskhostw",
+            "backgroundtaskhost",
+            "runtimebroker",
+            "svchost",
+            "msiexec",
+            "setup",
+            "updater",
+            "update",
+            "launcher",
+            "startmenuexperiencehost",
+            "searchapp",
+            "searchhost",
+            "sihost"
+        };
+
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
         private System.Threading.Timer? _refreshTimer;
         private Microsoft.UI.Xaml.XamlRoot? _xamlRoot;
         private readonly SemaphoreSlim _refreshLock = new SemaphoreSlim(1, 1);
+        private readonly HashSet<int> _expandedGroupIds = new HashSet<int>();
 
         public void SetXamlRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
@@ -102,13 +129,6 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _isAutoRefreshEnabled, value);
         }
 
-        private string _refreshButtonText = "⏸ Pause";
-        public string RefreshButtonText
-        {
-            get => _refreshButtonText;
-            set => SetProperty(ref _refreshButtonText, value);
-        }
-
         private string _selectedSortOption = "Memory";
         public string SelectedSortOption
         {
@@ -136,6 +156,7 @@ namespace Winspeqt.ViewModels.Monitoring
         }
 
         public ObservableCollection<ProcessInfo> TopProcesses { get; set; }
+        public ObservableCollection<ProcessGroup> ProcessGroups { get; set; }
         public ObservableCollection<string> SortOptions { get; set; }
         public ObservableCollection<string> FilterOptions { get; set; }
 
@@ -148,6 +169,7 @@ namespace Winspeqt.ViewModels.Monitoring
             _monitorService = new SystemMonitorService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             TopProcesses = new ObservableCollection<ProcessInfo>();
+            ProcessGroups = new ObservableCollection<ProcessGroup>();
 
             SortOptions = new ObservableCollection<string> { "Memory", "CPU", "Name" };
             FilterOptions = new ObservableCollection<string> { "All", "Apps Only", "System Only" };
@@ -177,12 +199,10 @@ namespace Winspeqt.ViewModels.Monitoring
 
             if (IsAutoRefreshEnabled)
             {
-                RefreshButtonText = "⏸ Pause";
                 StartAutoRefresh();
             }
             else
             {
-                RefreshButtonText = "▶ Resume";
                 _refreshTimer?.Dispose();
                 _refreshTimer = null;
             }
@@ -240,7 +260,8 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 // Apply filtering and sorting
                 var filteredProcesses = ApplyFilter(processes);
-                var topProcesses = ApplySorting(filteredProcesses).Take(10).ToList();
+                var groupedProcesses = BuildProcessGroups(filteredProcesses);
+                var topProcessGroups = ApplySorting(groupedProcesses).Take(10).ToList();
 
                 // Update UI on dispatcher queue
                 await DispatchAsync(() =>
@@ -256,9 +277,12 @@ namespace Winspeqt.ViewModels.Monitoring
                     UpdateStatusMessages();
 
                     TopProcesses.Clear();
-                    foreach (var proc in topProcesses)
+                    ProcessGroups.Clear();
+                    foreach (var group in topProcessGroups)
                     {
-                        TopProcesses.Add(proc);
+                        AttachExpansionTracking(group);
+                        ProcessGroups.Add(group);
+                        TopProcesses.Add(group.RootProcess);
                     }
 
                     if (isInitialLoad)
@@ -341,13 +365,176 @@ namespace Winspeqt.ViewModels.Monitoring
             return processes;
         }
 
-        private IEnumerable<ProcessInfo> ApplySorting(List<ProcessInfo> processes)
+        private List<ProcessGroup> BuildProcessGroups(List<ProcessInfo> processes)
+        {
+            var processesById = processes.ToDictionary(p => p.ProcessId);
+            var groupsByRootId = new Dictionary<int, ProcessGroup>();
+
+            foreach (var process in processes)
+            {
+                var rootProcess = GetGroupRoot(process, processesById);
+                if (!groupsByRootId.TryGetValue(rootProcess.ProcessId, out var group))
+                {
+                    group = new ProcessGroup
+                    {
+                        RootProcess = rootProcess,
+                        IsExpanded = _expandedGroupIds.Contains(rootProcess.ProcessId)
+                    };
+                    groupsByRootId[rootProcess.ProcessId] = group;
+                }
+
+                if (process.ProcessId != rootProcess.ProcessId)
+                {
+                    group.ChildProcesses.Add(process);
+                }
+            }
+
+            foreach (var group in groupsByRootId.Values)
+            {
+                var orderedChildren = group.ChildProcesses
+                    .OrderByDescending(p => p.MemoryUsageMB)
+                    .ToList();
+
+                group.ChildProcesses.Clear();
+                foreach (var child in orderedChildren)
+                {
+                    group.ChildProcesses.Add(child);
+                }
+            }
+
+            return groupsByRootId.Values.ToList();
+        }
+
+        private ProcessInfo GetGroupRoot(ProcessInfo process, IReadOnlyDictionary<int, ProcessInfo> processesById)
+        {
+            var current = process;
+            var visited = new HashSet<int> { process.ProcessId };
+
+            while (current.ParentProcessId > 0 &&
+                   processesById.TryGetValue(current.ParentProcessId, out var parent) &&
+                   visited.Add(parent.ProcessId))
+            {
+                if (!CanInheritParent(current, parent))
+                {
+                    break;
+                }
+
+                current = parent;
+            }
+
+            return current;
+        }
+
+        private static bool CanInheritParent(ProcessInfo process, ProcessInfo parent)
+        {
+            if (IsNonOwningParent(parent))
+            {
+                return false;
+            }
+
+            if (BelongsToSameAppFamily(process, parent))
+            {
+                return true;
+            }
+
+            // If the child has its own visible window, bias toward making it its own root.
+            if (process.HasVisibleWindow)
+            {
+                return false;
+            }
+
+            return false;
+        }
+
+        private static bool BelongsToSameAppFamily(ProcessInfo process, ProcessInfo parent)
+        {
+            if (string.Equals(process.ProcessName, parent.ProcessName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(process.ExecutablePath) &&
+                !string.IsNullOrWhiteSpace(parent.ExecutablePath) &&
+                string.Equals(process.ExecutablePath, parent.ExecutablePath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var processDirectory = GetDirectoryName(process.ExecutablePath);
+            var parentDirectory = GetDirectoryName(parent.ExecutablePath);
+
+            if (!string.IsNullOrWhiteSpace(processDirectory) &&
+                !string.IsNullOrWhiteSpace(parentDirectory) &&
+                string.Equals(processDirectory, parentDirectory, StringComparison.OrdinalIgnoreCase) &&
+                !process.HasVisibleWindow &&
+                !parent.HasVisibleWindow)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsNonOwningParent(ProcessInfo process)
+        {
+            if (NonOwningParentProcesses.Contains(process.ProcessName))
+            {
+                return true;
+            }
+
+            var executableName = System.IO.Path.GetFileNameWithoutExtension(process.ExecutablePath);
+            if (!string.IsNullOrWhiteSpace(executableName) && NonOwningParentProcesses.Contains(executableName))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string GetDirectoryName(string executablePath)
+        {
+            if (string.IsNullOrWhiteSpace(executablePath))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                return System.IO.Path.GetDirectoryName(executablePath) ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private void AttachExpansionTracking(ProcessGroup group)
+        {
+            group.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName != nameof(ProcessGroup.IsExpanded))
+                {
+                    return;
+                }
+
+                if (group.IsExpanded)
+                {
+                    _expandedGroupIds.Add(group.RootProcess.ProcessId);
+                }
+                else
+                {
+                    _expandedGroupIds.Remove(group.RootProcess.ProcessId);
+                }
+            };
+        }
+
+        private IEnumerable<ProcessGroup> ApplySorting(List<ProcessGroup> groups)
         {
             return SelectedSortOption switch
             {
-                "CPU" => processes.OrderByDescending(p => p.CpuUsagePercent),
-                "Name" => processes.OrderBy(p => p.Description),
-                _ => processes.OrderByDescending(p => p.MemoryUsageMB)
+                "CPU" => groups.OrderByDescending(g => g.CpuUsagePercent),
+                "Name" => groups.OrderBy(g => g.DisplayName),
+                _ => groups.OrderByDescending(g => g.MemoryUsageMB)
             };
         }
 

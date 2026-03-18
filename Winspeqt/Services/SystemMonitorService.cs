@@ -98,6 +98,7 @@ namespace Winspeqt.Services
             {
                 var processes = Process.GetProcesses();
                 var processInfoList = new List<ProcessInfo>();
+                var parentProcessMap = GetParentProcessMap();
 
                 // First pass: just get memory usage for sorting
                 foreach (var process in processes)
@@ -111,11 +112,14 @@ namespace Winspeqt.Services
 
                         // Only track processes using more than 10MB to reduce overhead
                         if (memoryMB < 10) continue;
+                        string executablePath = TryGetExecutablePath(process);
 
                         var processInfo = new ProcessInfo
                         {
                             ProcessId = process.Id,
+                            ParentProcessId = parentProcessMap.TryGetValue(process.Id, out var parentId) ? parentId : 0,
                             ProcessName = process.ProcessName,
+                            ExecutablePath = executablePath,
                             Description = GetFriendlyName(process.ProcessName),
                             MemoryUsageMB = memoryMB,
                             CpuUsagePercent = 0, // Will calculate for top processes only
@@ -123,6 +127,7 @@ namespace Winspeqt.Services
                             FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
                             Icon = GetProcessIcon(process.ProcessName),
                             IsProtected = IsProtectedProcess(process.ProcessName),
+                            HasVisibleWindow = HasVisibleWindow(process),
                         };
 
                         processInfoList.Add(processInfo);
@@ -174,9 +179,10 @@ namespace Winspeqt.Services
                 var processes = Process.GetProcesses();
                 var processInfoList = new List<ProcessInfo>();
                 var now = DateTime.Now;
+                var parentProcessMap = GetParentProcessMap();
 
-                // Quick first pass - just memory
-                var quickList = new List<(Process proc, long memory)>();
+                // Return a full enough snapshot for grouping, then let the view model
+                // decide which groups to surface.
                 foreach (var process in processes)
                 {
                     try
@@ -184,25 +190,16 @@ namespace Winspeqt.Services
                         if (process.Id == 0) continue;
                         var memoryMB = process.WorkingSet64 / 1024 / 1024;
                         if (memoryMB < 10) continue;
-                        quickList.Add((process, memoryMB));
-                    }
-                    catch { }
-                }
+                        string executablePath = TryGetExecutablePath(process);
 
-                // Sort by memory and take top processes
-                var topProcesses = quickList.OrderByDescending(x => x.memory).Take(count * 2).ToList();
-
-                // Now calculate CPU only for top processes
-                foreach (var (process, memoryMB) in topProcesses)
-                {
-                    try
-                    {
                         double cpuUsage = CalculateProcessCpuUsage(process, now);
 
                         var processInfo = new ProcessInfo
                         {
                             ProcessId = process.Id,
+                            ParentProcessId = parentProcessMap.TryGetValue(process.Id, out var parentId) ? parentId : 0,
                             ProcessName = process.ProcessName,
+                            ExecutablePath = executablePath,
                             Description = GetFriendlyName(process.ProcessName),
                             MemoryUsageMB = memoryMB,
                             CpuUsagePercent = cpuUsage,
@@ -210,6 +207,7 @@ namespace Winspeqt.Services
                             FriendlyExplanation = GetFriendlyExplanation(process.ProcessName, memoryMB),
                             Icon = GetProcessIcon(process.ProcessName),
                             IsProtected = IsProtectedProcess(process.ProcessName),
+                            HasVisibleWindow = HasVisibleWindow(process),
                         };
 
                         processInfoList.Add(processInfo);
@@ -217,8 +215,56 @@ namespace Winspeqt.Services
                     catch { }
                 }
 
-                return processInfoList.OrderByDescending(p => p.MemoryUsageMB).Take(count).ToList();
+                return processInfoList.OrderByDescending(p => p.MemoryUsageMB).ToList();
             });
+        }
+
+        private Dictionary<int, int> GetParentProcessMap()
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT ProcessId, ParentProcessId FROM Win32_Process");
+                using var results = searcher.Get();
+                var parentMap = new Dictionary<int, int>();
+
+                foreach (ManagementObject obj in results)
+                {
+                    var processId = Convert.ToInt32(obj["ProcessId"]);
+                    var parentProcessId = Convert.ToInt32(obj["ParentProcessId"]);
+                    parentMap[processId] = parentProcessId;
+                }
+
+                return parentMap;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error building parent process map: {ex.Message}");
+                return new Dictionary<int, int>();
+            }
+        }
+
+        private static string TryGetExecutablePath(Process process)
+        {
+            try
+            {
+                return process.MainModule?.FileName ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static bool HasVisibleWindow(Process process)
+        {
+            try
+            {
+                return process.MainWindowHandle != IntPtr.Zero && !string.IsNullOrWhiteSpace(process.MainWindowTitle);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<double> GetTotalCpuUsageAsync()
