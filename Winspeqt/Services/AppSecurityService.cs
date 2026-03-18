@@ -624,6 +624,17 @@ namespace Winspeqt.Services
 
         private void CompareAndSetStatus(AppSecurityInfo app)
         {
+            // If we couldn't determine the latest version, mark as unknown
+            if (string.IsNullOrEmpty(app.LatestVersion) ||
+                app.LatestVersion == "Unable to check" ||
+                app.LatestVersion == "Unknown")
+            {
+                app.Status = SecurityStatus.Unknown;
+                app.StatusMessage = "Unable to check version online right now.";
+                app.UpdateInstructions = "We couldn't verify if this app is up to date. Please check manually.";
+                return;
+            }
+
             var comparison = CompareVersions(app.InstalledVersion, app.LatestVersion);
 
             if (comparison < 0)
@@ -637,21 +648,21 @@ namespace Winspeqt.Services
                     // Option 3: Apps where ANY outdated version is critical (browsers, security software)
                     var alwaysCriticalApps = new[]
                     {
-                        "google chrome",
-                        "mozilla firefox",
-                        "microsoft edge",
-                        "brave",
-                        "opera",
-                        "safari",
-                        "windows defender",
-                        "malwarebytes",
-                        "avg antivirus",
-                        "avast",
-                        "norton",
-                        "mcafee",
-                        "bitdefender",
-                        "kaspersky"
-                    };
+                "google chrome",
+                "mozilla firefox",
+                "microsoft edge",
+                "brave",
+                "opera",
+                "safari",
+                "windows defender",
+                "malwarebytes",
+                "avg antivirus",
+                "avast",
+                "norton",
+                "mcafee",
+                "bitdefender",
+                "kaspersky"
+            };
 
                     var appNameLower = app.AppName.ToLower();
                     if (alwaysCriticalApps.Any(critical => appNameLower.Contains(critical)))

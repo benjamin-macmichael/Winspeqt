@@ -27,14 +27,11 @@ namespace Winspeqt.Views.Security
                 Frame.Navigate(typeof(DashboardPage));
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.IsScanning))
             {
                 ScanButton.IsEnabled = !ViewModel.IsScanning;
-                ScanningProgress.Visibility = Visibility.Collapsed;
-                ScanProgressBar.Visibility = ViewModel.IsScanning ? Visibility.Visible : Visibility.Collapsed;
-                StatusText.Visibility = Visibility.Visible;
             }
             else if (e.PropertyName == nameof(ViewModel.HasScanned))
             {

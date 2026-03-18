@@ -12,6 +12,8 @@ namespace Winspeqt.Models
         public string StatusMessage { get; set; } = "";
         public bool IsOptional { get; set; }
 
+        public string Color { get; set; } = "#000000";
+
         public string FormattedBytesFreed
         {
             get
@@ -52,14 +54,14 @@ namespace Winspeqt.Models
         public bool CleanRecycleBin { get; set; } = true;
         public bool CleanTempFiles { get; set; } = true;
         public bool CleanThumbnailCache { get; set; } = true;
-        public bool FlushDnsCache { get; set; } = true;
+        public bool FlushDnsCache { get; set; } = false;
         public bool CleanPrefetch { get; set; } = true;
         public bool CleanWindowsErrorReports { get; set; } = true;
         public bool CleanCrashDumps { get; set; } = true;
 
         // Optional toggles (on by default)
         public bool CleanWindowsUpdateCache { get; set; } = true;
-        public bool CleanEventLogs { get; set; } = true;
+        public bool CleanEventLogs { get; set; } = false;
         public bool CleanBrowserCache { get; set; } = true;
     }
 }

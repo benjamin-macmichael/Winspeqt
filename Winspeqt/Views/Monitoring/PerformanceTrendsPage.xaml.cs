@@ -43,13 +43,13 @@ namespace Winspeqt.Views.Monitoring
                 Grid.SetColumn(MemoryCard, 0);
                 MemoryCard.Margin = new Thickness(0, 0, 0, 12);
 
-                Grid.SetRow(DiskCard, 2);
-                Grid.SetColumn(DiskCard, 0);
-                DiskCard.Margin = new Thickness(0, 0, 0, 12);
-
-                Grid.SetRow(NetworkCard, 3);
+                Grid.SetRow(NetworkCard, 2);
                 Grid.SetColumn(NetworkCard, 0);
-                NetworkCard.Margin = new Thickness(0);
+                NetworkCard.Margin = new Thickness(0, 0, 0, 12);
+
+                Grid.SetRow(DiskCard, 3);
+                Grid.SetColumn(DiskCard, 0);
+                DiskCard.Margin = new Thickness(0);
             }
             else
             {
@@ -62,13 +62,13 @@ namespace Winspeqt.Views.Monitoring
                 Grid.SetColumn(MemoryCard, 1);
                 MemoryCard.Margin = new Thickness(12, 0, 0, 0);
 
-                Grid.SetRow(DiskCard, 1);
-                Grid.SetColumn(DiskCard, 0);
-                DiskCard.Margin = new Thickness(0, 12, 12, 0);
-
                 Grid.SetRow(NetworkCard, 1);
-                Grid.SetColumn(NetworkCard, 1);
-                NetworkCard.Margin = new Thickness(12, 12, 0, 0);
+                Grid.SetColumn(NetworkCard, 0);
+                NetworkCard.Margin = new Thickness(0, 12, 12, 0);
+
+                Grid.SetRow(DiskCard, 1);
+                Grid.SetColumn(DiskCard, 1);
+                DiskCard.Margin = new Thickness(12, 12, 0, 0);
             }
         }
 
