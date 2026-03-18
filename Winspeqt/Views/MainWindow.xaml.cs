@@ -2,8 +2,10 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
+using Windows.UI;
 using WinRT.Interop;
 using Winspeqt.Helpers;
 using Winspeqt.Services;
@@ -65,6 +67,15 @@ namespace Winspeqt.Views
             Title = "Winspeqt - Windows System Inspector";
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
             RootFrame.Navigated += RootFrame_Navigated;
+            Activated += MainWindow_Activated;
+            ((FrameworkElement)Content).ActualThemeChanged += MainWindow_ActualThemeChanged;
+            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            ApplyThemeChrome();
+            if (AppWindow.TitleBar.ExtendsContentIntoTitleBar)
+            {
+                AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            }
+
 
             if (_appUsageService == null)
                 _appUsageService = new AppUsageService();
@@ -100,6 +111,34 @@ namespace Winspeqt.Views
                 });
                 _systemTrayHelper.HideToTray();
             };
+        }
+
+        private void MainWindow_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            ApplyThemeChrome();
+        }
+
+        private void ApplyThemeChrome()
+        {
+            Color chromeColor = ((SolidColorBrush)Application.Current.Resources["AppChromeBrush"]).Color;
+            AppWindow.TitleBar.ButtonBackgroundColor = chromeColor;
+            AppWindow.TitleBar.ButtonInactiveBackgroundColor = chromeColor;
+            nvCategories.Background = new SolidColorBrush(chromeColor);
+            AppTitleBar.Background = new SolidColorBrush(chromeColor);
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                TitleBarTextBlock.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
+            }
+            else
+            {
+                TitleBarTextBlock.Foreground =
+                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+            }
         }
 
         public void NavigateToFeature(string feature)
