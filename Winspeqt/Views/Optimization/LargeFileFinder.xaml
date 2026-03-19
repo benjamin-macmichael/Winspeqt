@@ -89,16 +89,9 @@
                     TextWrapping="WrapWholeWords"/>
             </Grid>
             <StackPanel Grid.Row="1" MaxWidth="750">
-                <TextBlock FontSize="18" Margin="0,0,0,8" TextWrapping="WrapWholeWords">
-                    <Run Text="You are using "/>
-                    <Run Text="{x:Bind ViewModel.DriveUsageHighlight, Mode=OneWay}"
-                         Foreground="{x:Bind ViewModel.DriveUsageColor, Mode=OneWay}"
-                         FontWeight="SemiBold"/>
-                    <Run Text="{x:Bind ViewModel.DriveUsageSuffix, Mode=OneWay}"/>
-                </TextBlock>
                 <controls:WrapPanel
                     Orientation="Horizontal"
-                    Margin="0,0,0,12">
+                    Margin="0,0,0,8">
                     <Button Content="Hidden files" Margin="0,0,10,10">
                         <Button.Flyout>
                             <Flyout Placement="Bottom">
@@ -142,6 +135,13 @@
                         </Button.Flyout>
                     </Button>
                 </controls:WrapPanel>
+                <TextBlock FontSize="18" Margin="0,0,0,16" TextWrapping="WrapWholeWords">
+                    <Run Text="You are using "/>
+                    <Run Text="{x:Bind ViewModel.DriveUsageHighlight, Mode=OneWay}"
+                         Foreground="{x:Bind ViewModel.DriveUsageColor, Mode=OneWay}"
+                         FontWeight="SemiBold"/>
+                    <Run Text="{x:Bind ViewModel.DriveUsageSuffix, Mode=OneWay}"/>
+                </TextBlock>
                 <!-- Global status area for blocking errors and background-loading state. -->
                 <TextBlock
                     Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
