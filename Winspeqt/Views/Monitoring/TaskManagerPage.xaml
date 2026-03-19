@@ -31,8 +31,13 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
                 <Button
+                    Grid.Row="0"
                     Grid.Column="0"
                     Click="BackButton_Click"
                     Background="Transparent"
@@ -45,19 +50,35 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="12"
+                    Margin="0,0,0,4"
+                    VerticalAlignment="Center">
+                    <FontIcon
+                        Glyph="&#xE7C4;"
+                        FontSize="40"
+                        Foreground="#FF9800"
+                        VerticalAlignment="Center"/>
                     <TextBlock
                         Text="Friendly Task Manager"
                         FontSize="36"
-                        FontWeight="Bold"/>
-                    <TextBlock
-                        Text="See what's using your computer's resources"
-                        FontSize="18"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
+                        FontWeight="Bold"
+                        VerticalAlignment="Center"/>
                 </StackPanel>
 
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="See what's using your computer's resources"
+                    FontSize="18"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Margin="0,4,0,0"/>
+
                 <Button
+                    Grid.Row="0"
                     Grid.Column="2"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
