@@ -54,25 +54,30 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel
+                <Grid
                     Grid.Row="0"
                     Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="12"
                     Margin="0,0,0,4"
                     VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <FontIcon
+                        Grid.Column="0"
                         Glyph="&#xE8B7;"
                         FontSize="40"
                         Foreground="#F44336"
+                        Margin="0,0,12,0"
                         VerticalAlignment="Center"/>
                     <TextBlock 
+                        Grid.Column="1"
                         Text="Large File Finder" 
                         FontSize="36" 
                         FontWeight="Bold"
                         TextWrapping="WrapWholeWords"
                         VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
 
                 <TextBlock
                     Grid.Row="1"

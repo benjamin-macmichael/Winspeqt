@@ -42,24 +42,30 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel
+                <Grid
                     Grid.Row="0"
                     Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="12"
                     Margin="0,0,0,4"
                     VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <FontIcon
+                        Grid.Column="0"
                         Glyph="&#xEC4A;"
                         FontSize="40"
                         Foreground="#2196F3"
+                        Margin="0,0,12,0"
                         VerticalAlignment="Center"/>
                     <TextBlock 
+                        Grid.Column="1"
                         Text="System Optimization &amp; Cleanup" 
                         FontSize="36" 
                         FontWeight="Bold"
+                        TextWrapping="WrapWholeWords"
                         VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
 
                 <TextBlock
                     Grid.Row="1"
@@ -67,6 +73,7 @@
                     Text="Free up space and improve performance safely"
                     FontSize="18"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="WrapWholeWords"
                     Margin="0,4,0,0"/>
             </Grid>
 

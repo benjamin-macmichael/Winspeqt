@@ -108,26 +108,35 @@
                     </StackPanel>
                 </Button>
 
-                    <StackPanel 
-                        Orientation="Horizontal" 
-                        Spacing="12" 
-                        Margin="0,0,0,4" 
-                        Grid.Row="0" Grid.Column="1">
+                    <Grid
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,4"
+                        VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
                         <FontIcon
+                            Grid.Column="0"
                             Glyph="&#xE74D;"
                             FontSize="40"
                             Foreground="#FF9800"
+                            Margin="0,0,12,0"
                             VerticalAlignment="Center"/>
                         <TextBlock
+                            Grid.Column="1"
                             Text="Safe AppData Cleanup"
                             FontSize="36"
                             FontWeight="Bold"
+                            TextWrapping="WrapWholeWords"
                             VerticalAlignment="Center"/>
-                    </StackPanel>
+                    </Grid>
                 <TextBlock
                     Text="Find and remove leftover folders from apps you've already uninstalled."
                     FontSize="18"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="WrapWholeWords"
                     Margin="0,4,0,0"
                     Grid.Row="1" Grid.Column="1"/>
 

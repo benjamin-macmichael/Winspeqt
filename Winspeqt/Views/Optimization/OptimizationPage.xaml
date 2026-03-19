@@ -50,24 +50,30 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel
+                <Grid
                     Grid.Row="0"
                     Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="12"
                     Margin="0,0,0,4"
                     VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <FontIcon
+                        Grid.Column="0"
                         Glyph="&#xEA99;"
                         FontSize="40"
                         Foreground="#4CAF50"
+                        Margin="0,0,12,0"
                         VerticalAlignment="Center"/>
                     <TextBlock
+                        Grid.Column="1"
                         Text="One-Click Optimization"
                         FontSize="36"
                         FontWeight="Bold"
+                        TextWrapping="WrapWholeWords"
                         VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
 
                 <TextBlock
                     Grid.Row="1"
@@ -75,6 +81,7 @@
                     Text="Clean up junk files and free up space with a single click"
                     FontSize="18"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="WrapWholeWords"
                     Margin="0,4,0,0"/>
             </Grid>
 
