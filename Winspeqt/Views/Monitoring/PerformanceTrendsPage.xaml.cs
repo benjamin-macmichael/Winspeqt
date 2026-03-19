@@ -76,11 +76,7 @@ namespace Winspeqt.Views.Monitoring
         {
             // Stop auto-refresh when leaving page
             ViewModel.StopAutoRefresh();
-
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(MonitoringDashboardPage));
         }
     }
 }

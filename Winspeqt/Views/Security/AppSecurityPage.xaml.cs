@@ -21,10 +21,7 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-                Frame.GoBack();
-            else
-                Frame.Navigate(typeof(DashboardPage));
+            Frame.Navigate(typeof(SecurityDashboardPage));
         }
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
