@@ -119,6 +119,7 @@
                                 Text="Security Status Dashboard" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Monitor your PC's security at a glance and spot anything that needs attention"
@@ -172,6 +173,7 @@
                                 Text="App Update Checker" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Discover outdated apps on your PC and update them right from this page"
@@ -225,6 +227,7 @@
                                 Text="Network Security Monitor" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See what's connecting to the internet from your PC and detect suspicious network activity"

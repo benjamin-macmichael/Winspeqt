@@ -120,6 +120,7 @@
                                 Text="Large File Finder" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Scan your folders to find the largest files taking up space on your PC"
@@ -173,6 +174,7 @@
                                 Text="App Usage Tracker" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Track your screen-time across apps, and see how long apps have been unused."
@@ -226,6 +228,7 @@
                                 Text="Safe AppData Cleanup" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Identify and remove outdated cache, temp files, and unneeded data safely"
@@ -279,6 +282,7 @@
                                 Text="One-Click Optimization" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Run a complete cleanup: temp files, recycle bin, logs, and more in one click"

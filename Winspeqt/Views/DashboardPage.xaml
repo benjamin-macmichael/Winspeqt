@@ -254,6 +254,7 @@
                                 Text="Security"
                                 FontSize="32"
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,16"/>
                             <TextBlock
@@ -314,6 +315,7 @@
                                 Text="Optimization"
                                 FontSize="32"
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,16"/>
                             <TextBlock
@@ -374,6 +376,7 @@
                                 Text="Monitoring"
                                 FontSize="32"
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,16"/>
                             <TextBlock

@@ -120,6 +120,7 @@
                                 Text="Friendly Task Manager" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See which apps are using CPU, RAM, Disk, and Network with easy-to-understand explanations"
@@ -173,6 +174,7 @@
                                 Text="Resource Trends" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="View graphs showing how your CPU, memory, and disk usage change over time"
@@ -226,6 +228,7 @@
                                 Text="Startup Applications" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="See which apps run on your PC's startup"
@@ -279,6 +282,7 @@
                                 Text="Background Process Insights" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Discover hidden apps running in the background that use significant resources"
