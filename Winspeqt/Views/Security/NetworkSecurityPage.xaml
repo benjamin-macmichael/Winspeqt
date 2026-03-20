@@ -738,7 +738,7 @@
                                 Padding="16,12">
                                 <StackPanel Spacing="8">
                                     <StackPanel Orientation="Horizontal">
-                                        <FontIcon Glyph="&#xE7BA;" FontFamily="Segoe MDL2 Assets" />
+                                        <FontIcon Glyph="&#xE7BA;" FontFamily="Segoe MDL2 Assets" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
                                         <TextBlock
                                             Text="Only use Quick Assist with someone YOU contacted first"
                                             FontSize="13"
