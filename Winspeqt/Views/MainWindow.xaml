@@ -16,11 +16,12 @@
             Height="48" 
             Grid.Row="0">
             <TitleBar
+                x:Name="titleBar"
                 BackRequested="TitleBar_BackRequested"
                 IsBackButtonVisible="{x:Bind RootFrame.CanGoBack, Mode=OneWay}"
                 IsPaneToggleButtonVisible="True"
                 PaneToggleRequested="TitleBar_PaneToggleRequested"
-                Title="Winspeqt  -  Windows System Inspector">
+                Title="Winspeqt - Windows System Inspector">
                 <TitleBar.IconSource>
                     <ImageIconSource ImageSource="/Assets/StoreLogo.png" />
                 </TitleBar.IconSource>
