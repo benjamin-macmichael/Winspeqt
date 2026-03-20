@@ -70,6 +70,7 @@ namespace Winspeqt.Views
             Activated += MainWindow_Activated;
             ((FrameworkElement)Content).ActualThemeChanged += MainWindow_ActualThemeChanged;
             AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            AppWindow.SetIcon("Assets/StoreLogo.png");
             ApplyThemeChrome();
             if (AppWindow.TitleBar.ExtendsContentIntoTitleBar)
             {
@@ -226,24 +227,18 @@ namespace Winspeqt.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void NavView_BackRequested(NavigationView sender,
-                                   NavigationViewBackRequestedEventArgs args)
+        private void TitleBar_BackRequested(TitleBar sender,
+                                   object args)
         {
-            TryGoBack();
-            nvCategories.IsBackEnabled = RootFrame.CanGoBack;
+            if (this.RootFrame.CanGoBack)
+            {
+                this.RootFrame.GoBack();
+            }
         }
 
-        /// <summary>
-        /// Checks if able to go back to prevent error. Will go back if it can.
-        /// </summary>
-        /// <returns></returns>
-        private bool TryGoBack()
+        private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
         {
-            if (!RootFrame.CanGoBack)
-                return false;
-
-            RootFrame.GoBack();
-            return true;
+            nvCategories.IsPaneOpen = !nvCategories.IsPaneOpen;
         }
 
         /// <summary>
