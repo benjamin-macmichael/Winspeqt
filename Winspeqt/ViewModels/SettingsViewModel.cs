@@ -42,7 +42,9 @@ namespace Winspeqt.ViewModels
             }
         }
 
-        public string StartupButtonText => _launchAtStartup ? "⏸ Disable Startup" : "▶ Enable Startup";
+        public string StartupButtonText => _launchAtStartup ? "Disable Startup" : "Enable Startup";
+
+        public string StartupButtonGlyph => _launchAtStartup ? "\uE769" : "\uE768";
 
         public ICommand NavigateBackCommand { get; }
 

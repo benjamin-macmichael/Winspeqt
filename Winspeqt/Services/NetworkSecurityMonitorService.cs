@@ -503,7 +503,7 @@ namespace Winspeqt.Services
                 var key = "risky_ports:" + string.Join(",", riskyOpenPorts.Select(p => p.Port).OrderBy(p => p));
                 if (_firedAlerts.Add(key))
                 {
-                    var alert = $"⚠️ {riskyOpenPorts.Count} potentially risky port(s) open: " +
+                    var alert = $"\uE7BA {riskyOpenPorts.Count} potentially risky port(s) open: " +
                                string.Join(", ", riskyOpenPorts.Select(p => $"{p.Port} ({p.ServiceName})"));
                     SecurityAlertRaised?.Invoke(this, alert);
                 }
@@ -513,7 +513,7 @@ namespace Winspeqt.Services
             {
                 const string key = "high_connection_count";
                 if (_firedAlerts.Add(key))
-                    SecurityAlertRaised?.Invoke(this, $"⚠️ High number of active connections: {connections.Count}");
+                    SecurityAlertRaised?.Invoke(this, $"\uE7BA High number of active connections: {connections.Count}");
             }
 
             var unusualConnections = connections.Where(c =>
@@ -526,7 +526,7 @@ namespace Winspeqt.Services
             {
                 const string key = "unusual_low_ports";
                 if (_firedAlerts.Add(key))
-                    SecurityAlertRaised?.Invoke(this, "⚠️ Multiple connections to unusual low-numbered ports detected");
+                    SecurityAlertRaised?.Invoke(this, "\uE7BA Multiple connections to unusual low-numbered ports detected");
             }
         }
 

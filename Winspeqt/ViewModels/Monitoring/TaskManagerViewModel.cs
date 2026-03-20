@@ -545,7 +545,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 // CPU status message
                 if (TotalCpuUsage > 80)
                 {
-                    CpuStatusMessage = "⚠️ Your CPU is working very hard. Try closing apps you're not using to speed things up.";
+                    CpuStatusMessage = "\uE7BA Your CPU is working very hard. Try closing apps you're not using to speed things up.";
                 }
                 else if (TotalCpuUsage > 50)
                 {
@@ -553,11 +553,11 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
                 else if (TotalCpuUsage > 20)
                 {
-                    CpuStatusMessage = "✓ Your CPU usage is normal. Your PC is running well.";
+                    CpuStatusMessage = "\uE73E Your CPU usage is normal. Your PC is running well.";
                 }
                 else
                 {
-                    CpuStatusMessage = "✓ Your CPU is barely being used. Your PC has plenty of power available.";
+                    CpuStatusMessage = "\uE73E Your CPU is barely being used. Your PC has plenty of power available.";
                 }
 
                 // Memory status message
@@ -566,7 +566,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     var memoryPercent = (double)UsedMemoryMB / TotalMemoryMB * 100;
                     if (memoryPercent > 90)
                     {
-                        MemoryStatusMessage = $"⚠️ You're using {memoryPercent:F0}% of your memory. Your PC might slow down. Try closing some apps.";
+                        MemoryStatusMessage = $"\uE7BA You're using {memoryPercent:F0}% of your memory. Your PC might slow down. Try closing some apps.";
                     }
                     else if (memoryPercent > 80)
                     {
@@ -578,7 +578,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     }
                     else
                     {
-                        MemoryStatusMessage = $"✓ You're using {memoryPercent:F0}% of your memory. Plenty of space available.";
+                        MemoryStatusMessage = $"\uE73E You're using {memoryPercent:F0}% of your memory. Plenty of space available.";
                     }
                 }
                 else
@@ -589,7 +589,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 // Network status message
                 if (NetworkUsage > 100)
                 {
-                    NetworkStatusMessage = "⚠️ High network activity detected. Multiple apps are using your internet connection.";
+                    NetworkStatusMessage = "\uE7BA High network activity detected. Multiple apps are using your internet connection.";
                 }
                 else if (NetworkUsage > 50)
                 {
@@ -597,17 +597,17 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
                 else if (NetworkUsage > 10)
                 {
-                    NetworkStatusMessage = "✓ Light network activity. Normal internet usage.";
+                    NetworkStatusMessage = "\uE73E Light network activity. Normal internet usage.";
                 }
                 else
                 {
-                    NetworkStatusMessage = "✓ Minimal network activity. Your connection is mostly idle.";
+                    NetworkStatusMessage = "\uE73E Minimal network activity. Your connection is mostly idle.";
                 }
 
                 // Disk status message
                 if (DiskUsage > 80)
                 {
-                    DiskStatusMessage = "⚠️ Your disk is very busy. This might slow down your computer.";
+                    DiskStatusMessage = "\uE7BA Your disk is very busy. This might slow down your computer.";
                 }
                 else if (DiskUsage > 50)
                 {
@@ -615,11 +615,11 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
                 else if (DiskUsage > 20)
                 {
-                    DiskStatusMessage = "✓ Normal disk activity. Your storage is working as expected.";
+                    DiskStatusMessage = "\uE73E Normal disk activity. Your storage is working as expected.";
                 }
                 else
                 {
-                    DiskStatusMessage = "✓ Your disk is mostly idle. Very light read/write activity.";
+                    DiskStatusMessage = "\uE73E Your disk is mostly idle. Very light read/write activity.";
                 }
             }
             catch (Exception ex)
@@ -797,7 +797,7 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
-                    Title = "⚠️ Cannot End This Process",
+                    Title = "\uE7BA Cannot End This Process",
                     Content = $"'{processName}' is a critical Windows system process.\n\n" +
                               "Ending it would crash your computer and you would lose any unsaved work.\n\n" +
                               "This process is essential for Windows to run properly.",
@@ -820,7 +820,7 @@ namespace Winspeqt.ViewModels.Monitoring
             {
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
-                    Title = "⚠️ Warning: Service Host Process",
+                    Title = "\uE7BA Warning: Service Host Process",
                     Content = $"'{processName}' hosts important Windows services.\n\n" +
                               "Ending this process might:\n" +
                               "• Stop network connectivity\n" +

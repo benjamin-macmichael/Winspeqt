@@ -57,7 +57,7 @@
 
                 <!--<Button 
                     Grid.Column="2"
-                    Content="🔄 Refresh"
+                    Content="Refresh"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
                     Padding="16,8"/>-->

@@ -143,12 +143,12 @@ namespace Winspeqt.ViewModels.Security
             _securityService = new SecurityService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-            DefenderStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
-            FirewallStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
-            UpdateStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
-            BitLockerStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
-            DriveHealthStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
-            SecureBootStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "⏳", Color = "#9E9E9E" };
+            DefenderStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
+            FirewallStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
+            UpdateStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
+            BitLockerStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
+            DriveHealthStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
+            SecureBootStatus = new SecurityComponentStatus { Status = "Checking...", Message = "Please wait...", Icon = "\uE721", Color = "#9E9E9E" };
 
             OverallStatus = "Checking security status...";
             OverallScore = 0;

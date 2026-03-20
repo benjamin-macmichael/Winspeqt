@@ -163,7 +163,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding DefenderStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding DefenderStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>
@@ -233,7 +233,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding FirewallStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding FirewallStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>
@@ -303,7 +303,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding UpdateStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding UpdateStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>
@@ -373,7 +373,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding BitLockerStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding BitLockerStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>
@@ -443,7 +443,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding DriveHealthStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding DriveHealthStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>
@@ -513,7 +513,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock 
                                 Text="{Binding SecureBootStatus.Icon, Mode=OneWay}"
-                                FontFamily="Segoe Fluent Icons"
+                                FontFamily="Segoe MDL2 Assets"
                                 FontSize="32"
                                 Foreground="{Binding SecureBootStatus.Color, Mode=OneWay}"
                                 Margin="0,0,12,0"/>

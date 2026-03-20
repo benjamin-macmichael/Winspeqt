@@ -21,12 +21,12 @@ namespace Winspeqt.Views.Security
         {
             var dialog = new ContentDialog
             {
-                Title = "⚠️ Unsecured Network Detected",
+                Title = "\uE7BA Unsecured Network Detected",
                 Content = $"You are connected to \"{networkName}\", which is an open network with no password or encryption.\n\n" +
                           "Risks on unsecured networks:\n" +
-                          "  • Anyone nearby can see your unencrypted traffic\n" +
-                          "  • Passwords and personal data may be exposed\n" +
-                          "  • You could be targeted by man-in-the-middle attacks\n\n" +
+                          "  - Anyone nearby can see your unencrypted traffic\n" +
+                          "  - Passwords and personal data may be exposed\n" +
+                          "  - You could be targeted by man-in-the-middle attacks\n\n" +
                           "Consider using a VPN if you must stay connected, or disconnect and use mobile data instead.",
                 PrimaryButtonText = "Disconnect Now",
                 CloseButtonText = "Stay Connected",

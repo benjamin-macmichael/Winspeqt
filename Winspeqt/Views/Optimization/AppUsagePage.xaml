@@ -14,6 +14,7 @@
         <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         <local:FirstLetterConverter x:Key="FirstLetterConverter"/>
         <local:TrackingButtonTextConverter x:Key="TrackingButtonTextConverter"/>
+        <local:TrackingButtonGlyphConverter x:Key="TrackingButtonGlyphConverter"/>
     </Page.Resources>
 
     <Grid>
@@ -68,13 +69,17 @@
                             Padding="20,10"
                             CornerRadius="6"/>
 
-                    <Button Content="{Binding IsTrackingEnabled, Converter={StaticResource TrackingButtonTextConverter}}" 
-                            Command="{Binding ToggleTrackingCommand}"
+                    <Button Command="{Binding ToggleTrackingCommand}"
                             Background="#007ACC"
                             Foreground="White"
                             Padding="20,10"
                             CornerRadius="6"
-                            Visibility="{Binding HasOptedIn, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            Visibility="{Binding HasOptedIn, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="{Binding IsTrackingEnabled, Converter={StaticResource TrackingButtonGlyphConverter}}" FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="{Binding IsTrackingEnabled, Converter={StaticResource TrackingButtonTextConverter}}"/>
+                        </StackPanel>
+                    </Button>
 
                     <Button Content="Refresh" 
                             Command="{Binding RefreshCommand}"
@@ -134,10 +139,13 @@
                                 Padding="16,12"
                                 Margin="0,0,0,20">
                             <StackPanel Spacing="8">
-                                <TextBlock Text="🔒 Your Privacy" 
-                                           FontSize="14" 
-                                           FontWeight="SemiBold" 
-                                           Foreground="#16C60C"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon Glyph="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#16C60C"/>
+                                    <TextBlock Text="Your Privacy" 
+                                               FontSize="14" 
+                                               FontWeight="SemiBold" 
+                                               Foreground="#16C60C"/>
+                                </StackPanel>
                                 <TextBlock TextWrapping="Wrap"
                                            FontSize="13"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
@@ -153,7 +161,6 @@
                         </Border>
 
                         <Button Grid.Row="3"
-                                Content="✓ Enable App Usage Tracking"
                                 Command="{Binding OptInCommand}"
                                 Background="#007ACC"
                                 Foreground="White"
@@ -161,7 +168,12 @@
                                 FontSize="16"
                                 FontWeight="SemiBold"
                                 CornerRadius="6"
-                                HorizontalAlignment="Center"/>
+                                HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE73E;" FontFamily="Segoe MDL2 Assets"/>
+                                <TextBlock Text="Enable App Usage Tracking"/>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Border>
             </Border>
