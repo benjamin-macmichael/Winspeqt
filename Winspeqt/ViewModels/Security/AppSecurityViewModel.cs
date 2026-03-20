@@ -150,10 +150,10 @@ namespace Winspeqt.ViewModels.Security
                 if (!HasScanned || TotalAppsScanned == 0)
                     return "Click 'Check for Updates' to check for outdated software.";
                 if (CriticalAppsCount > 0)
-                    return $"⚠️ {CriticalAppsCount} critical update{(CriticalAppsCount == 1 ? "" : "s")} needed! Update these apps immediately.";
+                    return $"\uE7BA {CriticalAppsCount} critical update{(CriticalAppsCount == 1 ? "" : "s")} needed. Update these apps immediately.";
                 if (OutdatedAppsCount > 0)
                     return $"Found {OutdatedAppsCount} outdated app{(OutdatedAppsCount == 1 ? "" : "s")}. Consider updating when you have time.";
-                return $"✓ Great! All {TotalAppsScanned} checked apps are up to date.";
+                return $"\uE73E Great! All {TotalAppsScanned} checked apps are up to date.";
             }
         }
 
@@ -318,20 +318,20 @@ namespace Winspeqt.ViewModels.Security
         // Health score computation
         // -----------------------------------------------------------------------
 
-        private (int score, string emoji, string message) ComputeHealthScore()
+        private (int score, string glyph, string message) ComputeHealthScore()
         {
-            if (TotalAppsScanned == 0) return (100, "✅", "No apps tracked yet.");
+            if (TotalAppsScanned == 0) return (100, "\uE73E", "No apps tracked yet.");
 
             int weightedIssues = CriticalAppsCount * 2 + OutdatedAppsCount;
             int maxWeight = TotalAppsScanned * 2;
             int score = Math.Max(0, 100 - (int)Math.Round(weightedIssues * 100.0 / maxWeight));
 
-            string emoji = score switch
+            string glyph = score switch
             {
-                >= 90 => "✅",
-                >= 70 => "🟡",
-                >= 50 => "🟠",
-                _ => "🔴"
+                >= 90 => "\uE73E",
+                >= 70 => "\uE783",
+                >= 50 => "\uE7BA",
+                _ => "\uEA39"
             };
 
             string message = score switch
@@ -342,7 +342,7 @@ namespace Winspeqt.ViewModels.Security
                 _ => $"Your app health is low — {CriticalAppsCount} critical and {OutdatedAppsCount} outdated apps found. Update them soon!"
             };
 
-            return (score, emoji, message);
+            return (score, glyph, message);
         }
 
         private void UpdateHealthScore()

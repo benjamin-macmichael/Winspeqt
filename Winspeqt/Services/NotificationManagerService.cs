@@ -232,7 +232,7 @@ namespace Winspeqt.Services
                     <toast scenario='reminder'>
                         <visual>
                             <binding template='ToastGeneric'>
-                                <text>⚠️ Winspeqt: Unsecured Network Detected</text>
+                                <text>\uE7BA Winspeqt: Unsecured Network Detected</text>
                                 <text>You are connected to ""{escapedName}"" — this network has no password or encryption.</text>
                                 <text>Your passwords and personal data may be visible to others nearby. Consider disconnecting or using a VPN.</text>
                             </binding>
@@ -269,7 +269,7 @@ namespace Winspeqt.Services
                     <toast scenario='reminder'>
                         <visual>
                             <binding template='ToastGeneric'>
-                                <text>⚠️ Winspeqt: Quick Assist Session Started</text>
+                                <text>\uE7BA Winspeqt: Quick Assist Session Started</text>
                                 <text>Someone now has remote access to your screen and files.</text>
                                 <text>Only continue if YOU made this call. If something feels off — close the session immediately.</text>
                             </binding>
@@ -369,14 +369,14 @@ namespace Winspeqt.Services
 
             try
             {
-                var (emoji, label) = featureKey switch
+                var (icon, label) = featureKey switch
                 {
-                    "AppUpdateChecker" => ("🔄", "App Updates"),
-                    "SecurityStatus" => ("🛡️", "Security"),
-                    "Optimization" => ("🧹", "Optimization"),
-                    "LargeFileFinder" => ("💾", "Drive Storage"),
-                    "SystemMonitoring" => ("📊", "System Health"),
-                    _ => ("💡", featureKey)
+                    "AppUpdateChecker" => ("\uE895", "App Updates"),
+                    "SecurityStatus" => ("\uEA18", "Security"),
+                    "Optimization" => ("\uEA99", "Optimization"),
+                    "LargeFileFinder" => ("\uE74E", "Drive Storage"),
+                    "SystemMonitoring" => ("\uE9D2", "System Health"),
+                    _ => ("\uEA80", featureKey)
                 };
 
                 var scoreBar = BuildScoreBar(score);
@@ -388,7 +388,7 @@ namespace Winspeqt.Services
                     <toast scenario='reminder'>
                         <visual>
                             <binding template='ToastGeneric'>
-                                <text>{emoji} Winspeqt: {label} Health Check</text>
+                                <text>{icon} Winspeqt: {label} Health Check</text>
                                 {scoreLine}
                                 <text>{SecurityElement.Escape(message)}</text>
                             </binding>

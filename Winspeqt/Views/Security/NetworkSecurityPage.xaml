@@ -616,7 +616,7 @@
                             CornerRadius="8"
                             Padding="20,16">
                             <StackPanel HorizontalAlignment="Center" Spacing="6">
-                                <TextBlock Text="✅" FontSize="32" HorizontalAlignment="Center"/>
+                                <FontIcon Glyph="&#xE73E;" FontFamily="Segoe MDL2 Assets" FontSize="32" HorizontalAlignment="Center" Foreground="#107C10"/>
                                 <TextBlock
                                     Text="No risky ports detected"
                                     FontSize="14"
@@ -737,11 +737,14 @@
                                 CornerRadius="8"
                                 Padding="16,12">
                                 <StackPanel Spacing="8">
-                                    <TextBlock
-                                        Text="⚠️  Only use Quick Assist with someone YOU contacted first"
-                                        FontSize="13"
-                                        FontWeight="SemiBold"
-                                        TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <FontIcon Glyph="&#xE7BA;" FontFamily="Segoe MDL2 Assets" Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <TextBlock
+                                            Text="Only use Quick Assist with someone YOU contacted first"
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            TextWrapping="Wrap"/>
+                                    </StackPanel>
                                     <TextBlock
                                         FontSize="12"
                                         TextWrapping="Wrap"

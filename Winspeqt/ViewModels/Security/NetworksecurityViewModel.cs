@@ -323,7 +323,7 @@ namespace Winspeqt.ViewModels.Security
                     _unsecuredNetworkInterface = iface;
 
                     // Add to security alerts (only if not already present)
-                    var alertText = $"[{DateTime.Now:HH:mm:ss}] ⚠️ Open (unsecured) network: \"{ssid}\" — traffic is unencrypted";
+                    var alertText = $"[{DateTime.Now:HH:mm:ss}] \uE7BA Open (unsecured) network: \"{ssid}\" — traffic is unencrypted";
                     if (!SecurityAlerts.Any(a => a.Contains(ssid) && a.Contains("unsecured")))
                         SecurityAlerts.Insert(0, alertText);
 

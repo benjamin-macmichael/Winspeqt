@@ -102,14 +102,18 @@
 
                         <!-- End Task button — only shown for non-protected processes -->
                         <Button Grid.Column="1"
-                                Content="🛑 End Task"
                                 Click="EndProcess_Click"
                                 Tag="{x:Bind}"
                                 Visibility="{x:Bind IsEndable, Converter={StaticResource BoolToVisibilityConverter}}"
                                 Background="#F44336"
                                 Foreground="White"
                                 Padding="12,8"
-                                FontSize="12"/>
+                                FontSize="12">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE71A;" FontFamily="Segoe MDL2 Assets" FontSize="12"/>
+                                <TextBlock Text="End Task"/>
+                            </StackPanel>
+                        </Button>
 
                         <!-- Protected badge — shown instead of End for system processes -->
                         <Border Grid.Column="1"
@@ -190,7 +194,10 @@
             <!-- Battery Status (if any) -->
             <StackPanel Grid.Row="1" Margin="0,0,0,32" 
                         Visibility="{x:Bind ViewModel.BatteryDevices.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                <TextBlock Text="🔋 Battery Status" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
+                    <FontIcon Glyph="&#xE850;" FontFamily="Segoe MDL2 Assets" FontSize="20"/>
+                    <TextBlock Text="Battery Status" FontSize="20" FontWeight="SemiBold"/>
+                </StackPanel>
                 <ItemsControl ItemsSource="{x:Bind ViewModel.BatteryDevices, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -243,7 +250,10 @@
 
                     <!-- Browsers -->
                     <StackPanel Visibility="{x:Bind ViewModel.BrowserProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="🌐 Browsers" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE774;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#2196F3"/>
+                            <TextBlock Text="Browsers" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.BrowserProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -262,7 +272,10 @@
 
                     <!-- Gaming -->
                     <StackPanel Visibility="{x:Bind ViewModel.GamingProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="🎮 Gaming" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE7FC;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#9C27B0"/>
+                            <TextBlock Text="Gaming" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.GamingProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -281,7 +294,10 @@
 
                     <!-- Communication -->
                     <StackPanel Visibility="{x:Bind ViewModel.CommunicationProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="💬 Communication" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE8BD;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#FF9800"/>
+                            <TextBlock Text="Communication" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.CommunicationProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -300,7 +316,10 @@
 
                     <!-- Cloud Storage -->
                     <StackPanel Visibility="{x:Bind ViewModel.CloudStorageProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="☁️ Cloud Storage" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE753;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#4CAF50"/>
+                            <TextBlock Text="Cloud Storage" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.CloudStorageProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -319,7 +338,10 @@
 
                     <!-- Media -->
                     <StackPanel Visibility="{x:Bind ViewModel.MediaProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="🎵 Media" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xEC4F;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#2196F3"/>
+                            <TextBlock Text="Media" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.MediaProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -338,7 +360,10 @@
 
                     <!-- Development -->
                     <StackPanel Visibility="{x:Bind ViewModel.DevelopmentProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="💻 Development" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE943;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#9C27B0"/>
+                            <TextBlock Text="Development" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.DevelopmentProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -357,7 +382,10 @@
 
                     <!-- System Services -->
                     <StackPanel Visibility="{x:Bind ViewModel.SystemServicesProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="⚙️ System Services" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#FF9800"/>
+                            <TextBlock Text="System Services" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.SystemServicesProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -376,7 +404,10 @@
 
                     <!-- Other -->
                     <StackPanel Visibility="{x:Bind ViewModel.OtherProcesses.Count, Mode=OneWay, Converter={StaticResource CollectionCountToVisibilityConverter}}">
-                        <TextBlock Text="📦 Other" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,20">
+                            <FontIcon Glyph="&#xE8A5;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#4CAF50"/>
+                            <TextBlock Text="Other" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.OtherProcesses, Mode=OneWay}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>

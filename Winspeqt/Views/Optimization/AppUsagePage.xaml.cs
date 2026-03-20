@@ -33,9 +33,27 @@ namespace Winspeqt.Views.Optimization
         {
             if (value is bool isTracking)
             {
-                return isTracking ? "⏸ Pause Tracking" : "▶ Resume Tracking";
+                return isTracking ? "Pause Tracking" : "Resume Tracking";
             }
-            return "▶ Resume Tracking";
+            return "Resume Tracking";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class TrackingButtonGlyphConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool isTracking)
+            {
+                return isTracking ? "\uE769" : "\uE768";
+            }
+
+            return "\uE768";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

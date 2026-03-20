@@ -125,7 +125,7 @@ namespace Winspeqt.Services
                     return new OptimizationTaskResult
                     {
                         TaskName = "Recycle Bin",
-                        Icon = "🗑️",
+                        Icon = "\uE74D",
                         Success = true,
                         BytesFreed = freed,
                         StatusMessage = "Emptied successfully"
