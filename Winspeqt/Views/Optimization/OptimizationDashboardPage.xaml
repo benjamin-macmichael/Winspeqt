@@ -22,31 +22,59 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
                 <Button 
+                    Grid.Row="0"
                     Grid.Column="0"
                     Click="BackButton_Click"
                     Background="Transparent"
                     BorderThickness="0"
                     Padding="8"
-                    Margin="0,0,20,0">
+                    Margin="0,0,20,0"
+                    VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon Glyph="&#xE76B;" FontSize="16"/>
                         <TextBlock Text="Home" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="0,0,0,4"
+                    VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Grid.Column="0"
+                        Glyph="&#xEC4A;"
+                        FontSize="40"
+                        Foreground="#2196F3"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"/>
                     <TextBlock 
+                        Grid.Column="1"
                         Text="System Optimization &amp; Cleanup" 
                         FontSize="36" 
-                        FontWeight="Bold"/>
-                    <TextBlock 
-                        Text="Free up space and improve performance safely" 
-                        FontSize="18" 
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
-                </StackPanel>
+                        FontWeight="Bold"
+                        TextWrapping="WrapWholeWords"
+                        VerticalAlignment="Center"/>
+                </Grid>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="Free up space and improve performance safely"
+                    FontSize="18"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="WrapWholeWords"
+                    Margin="0,4,0,0"/>
             </Grid>
 
             <!-- Feature Cards Grid -->
@@ -92,6 +120,7 @@
                                 Text="Large File Finder" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Scan your folders to find the largest files taking up space on your PC"
@@ -145,6 +174,7 @@
                                 Text="App Usage Tracker" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Track your screen-time across apps, and see how long apps have been unused."
@@ -198,6 +228,7 @@
                                 Text="Safe AppData Cleanup" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Identify and remove outdated cache, temp files, and unneeded data safely"
@@ -251,6 +282,7 @@
                                 Text="One-Click Optimization" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
                                 Text="Run a complete cleanup: temp files, recycle bin, logs, and more in one click"
