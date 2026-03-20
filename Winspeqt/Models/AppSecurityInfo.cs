@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Winspeqt.Models
 {
     public class AppSecurityInfo
@@ -36,6 +38,31 @@ namespace Winspeqt.Models
 
         // Package name as found by the API (for display)
         public string WinGetPackageName { get; set; } = string.Empty;
+
+        // Multiple installs detection
+        public bool HasMultipleInstalls { get; set; } = false;
+        public int InstallCount { get; set; } = 1;
+
+        // The display names of the other detected versions of this app
+        public List<string> OtherVersions { get; set; } = new();
+
+        // Human-readable summary of other versions for display e.g. "3.10.0, 3.11.2, 3.12.1"
+        public string OtherVersionsSummary => OtherVersions.Count > 0
+            ? string.Join(", ", OtherVersions)
+            : string.Empty;
+
+        // Full warning message shown on the card
+        public string MultipleInstallsMessage
+        {
+            get
+            {
+                if (!HasMultipleInstalls) return string.Empty;
+                var versionList = OtherVersions.Count > 0
+                    ? $" Found: {OtherVersionsSummary}."
+                    : string.Empty;
+                return $"{InstallCount} versions installed.{versionList} Multiple versions can waste disk space and cause conflicts. Uninstall versions you no longer need via Windows Settings > Apps > Installed apps.";
+            }
+        }
 
         public bool IsOutdated => Status == SecurityStatus.Outdated || Status == SecurityStatus.Critical;
         public bool IsUnknown => Status == SecurityStatus.Unknown;
