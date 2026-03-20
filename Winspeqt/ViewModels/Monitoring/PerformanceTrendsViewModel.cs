@@ -9,6 +9,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Winspeqt.Helpers;
@@ -37,9 +38,15 @@ namespace Winspeqt.ViewModels.Monitoring
         public ObservableCollection<double> CpuUsageValues
         {
             get => _cpuUsageValues;
-            set => SetProperty(ref _cpuUsageValues, value);
+            set {
+                System.Diagnostics.Debug.WriteLine("Hello");
+
+                SetProperty(ref _cpuUsageValues, value); 
+                OnPropertyChanged(nameof(TotalCpuUsage)); }
         }
 
+        private double _totalCpuUsage = 0;
+        public double TotalCpuUsage { get => _totalCpuUsage; set => SetProperty(ref _totalCpuUsage, value); }
         public ISeries[] CpuSeries { get; }
         public IEnumerable<ICartesianAxis> CpuYAxes { get; }
         public IEnumerable<ICartesianAxis> XAxes { get; }
@@ -307,7 +314,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 double networkReceivedMbps = 0;
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
+                    //System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
@@ -317,7 +324,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting memory...");
+                    //System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
                     var totalMb = await _monitorService.GetTotalMemoryMBAsync();
                     if (totalMb > 0)
@@ -332,7 +339,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting disk usage...");
+                    //System.Diagnostics.Debug.WriteLine("Getting disk usage...");
                     diskActivePercent = await _monitorService.GetDiskActiveTimePercentAsync();
                 }
                 catch (Exception ex)
@@ -346,7 +353,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting network throughput...");
+                    //System.Diagnostics.Debug.WriteLine("Getting network throughput...");
                     var network = await _monitorService.GetNetworkThroughputMbpsAsync();
                     networkSentMbps = Math.Max(0, network.SentMbps);
                     networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
@@ -361,6 +368,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     // update your rolling buffer
                     _cpuUsage.Dequeue();
                     _cpuUsage.Enqueue(cpu);
+                    TotalCpuUsage = cpu;
 
                     // update bindable collection
                     CpuUsageValues.Clear();
