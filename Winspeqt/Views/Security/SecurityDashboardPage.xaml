@@ -6,7 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
     <ScrollViewer>
         <Grid Padding="60">
             <Grid.RowDefinitions>
@@ -15,21 +14,26 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Back Button -->
-            <Grid Grid.Row="0" Margin="0,0,0,20">
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,32">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Button 
                     Grid.Column="0"
-                    Content="← Back to Dashboard"
                     Click="BackButton_Click"
-                    Margin="0,0,20,0"
                     Background="Transparent"
                     BorderThickness="0"
-                    FontSize="16"/>
+                    Padding="8"
+                    Margin="0,0,20,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE76B;" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="Home" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
@@ -40,7 +44,7 @@
                         Text="Make your system safer without needing technical knowledge" 
                         FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,8,0,0"/>
+                        Margin="0,4,0,0"/>
                 </StackPanel>
             </Grid>
 

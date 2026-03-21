@@ -137,9 +137,10 @@ namespace Winspeqt.Services
                     return new OptimizationTaskResult
                     {
                         TaskName = "Recycle Bin",
-                        Icon = "🗑️",
+                        Icon = "\uE74D",
                         Success = false,
-                        StatusMessage = "Could not empty Recycle Bin"
+                        StatusMessage = "Could not empty Recycle Bin",
+                        Color = "#feb800"
                     };
                 }
             });
@@ -159,12 +160,13 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Temp Files",
-                    Icon = "📁",
+                    Icon = "\uE8B7",
                     Success = true,
                     BytesFreed = freed,
                     StatusMessage = errors > 0
                         ? $"Cleaned ({errors} files in use, skipped)"
-                        : "Cleaned successfully"
+                        : "Cleaned successfully",
+                    Color = "#f14f21"
                 };
             });
         }
@@ -203,10 +205,11 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Thumbnail Cache",
-                    Icon = "🖼️",
+                    Icon = "\uE91B",
                     Success = true,
                     BytesFreed = freed,
-                    StatusMessage = errors > 0 ? $"Cleared ({errors} files in use, skipped)" : "Cleared successfully"
+                    StatusMessage = errors > 0 ? $"Cleared ({errors} files in use, skipped)" : "Cleared successfully",
+                    Color = "#7eb900"
                 };
             });
         }
@@ -230,10 +233,11 @@ namespace Winspeqt.Services
                     return new OptimizationTaskResult
                     {
                         TaskName = "DNS Cache",
-                        Icon = "🌐",
+                        Icon = "\uE774",
                         Success = true,
                         BytesFreed = 0,
-                        StatusMessage = "Flushed successfully"
+                        StatusMessage = "Flushed successfully",
+                        Color = "#00a3ee"
                     };
                 }
                 catch (Exception ex)
@@ -242,9 +246,10 @@ namespace Winspeqt.Services
                     return new OptimizationTaskResult
                     {
                         TaskName = "DNS Cache",
-                        Icon = "🌐",
+                        Icon = "\uE774",
                         Success = false,
-                        StatusMessage = "Could not flush DNS cache"
+                        StatusMessage = "Could not flush DNS cache",
+                        Color = "#00a3ee"
                     };
                 }
             });
@@ -260,10 +265,11 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Prefetch Files",
-                    Icon = "⚡",
+                    Icon = "\uE945",
                     Success = true,
                     BytesFreed = freed,
-                    StatusMessage = "Cleaned successfully"
+                    StatusMessage = "Cleaned successfully",
+                    Color = "#feb800"
                 };
             });
         }
@@ -286,10 +292,11 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Error Reports",
-                    Icon = "📋",
+                    Icon = "\uF0E3",
                     Success = true,
                     BytesFreed = freed,
-                    StatusMessage = "Cleaned successfully"
+                    StatusMessage = "Cleaned successfully",
+                    Color = "#f14f21"
                 };
             });
         }
@@ -320,10 +327,11 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Crash Dumps",
-                    Icon = "💥",
+                    Icon = "\uE7BC",
                     Success = true,
                     BytesFreed = freed,
-                    StatusMessage = "Cleaned successfully"
+                    StatusMessage = "Cleaned successfully",
+                    Color = "#7eb900"
                 };
             });
         }
@@ -340,11 +348,12 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Windows Update Cache",
-                    Icon = "🔄",
+                    Icon = "\uE895",
                     Success = true,
                     BytesFreed = freed,
                     IsOptional = true,
-                    StatusMessage = "Cleaned successfully"
+                    StatusMessage = "Cleaned successfully",
+                    Color = "#00a3ee"
                 };
             });
         }
@@ -381,11 +390,12 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Event Logs",
-                    Icon = "📝",
+                    Icon = "\uE9F9",
                     Success = cleared > 0,
                     BytesFreed = freed,
                     IsOptional = true,
-                    StatusMessage = cleared > 0 ? $"Cleared {cleared} logs" : "Could not clear event logs"
+                    StatusMessage = cleared > 0 ? $"Cleared {cleared} logs" : "Could not clear event logs",
+                    Color = "#feb800"
                 };
             });
         }
@@ -403,11 +413,12 @@ namespace Winspeqt.Services
                 return new OptimizationTaskResult
                 {
                     TaskName = "Edge Cache",
-                    Icon = "🌍",
+                    Icon = "\uE909",
                     Success = true,
                     BytesFreed = freed,
                     IsOptional = true,
-                    StatusMessage = "Cleared successfully"
+                    StatusMessage = "Cleared successfully",
+                    Color = "#f14f21",
                 };
             });
         }

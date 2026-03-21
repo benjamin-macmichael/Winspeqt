@@ -241,7 +241,6 @@ namespace Winspeqt.ViewModels.Security
 
             StatusMessage = "Ready to scan your installed applications.";
 
-            // Restore last scan from cache
             _ = RestoreCachedScanAsync();
         }
 
@@ -366,7 +365,6 @@ namespace Winspeqt.ViewModels.Security
 
             try
             {
-                // Show the scanning dialog
                 await ShowScanningDialogAsync();
             }
             finally
@@ -381,14 +379,12 @@ namespace Winspeqt.ViewModels.Security
 
             await DispatchAsync(async () =>
             {
-                // Create dialog content
                 var dialogContent = new Microsoft.UI.Xaml.Controls.StackPanel
                 {
                     Spacing = 16,
                     MinWidth = 400
                 };
 
-                // Warning message
                 var warningBox = new Microsoft.UI.Xaml.Controls.InfoBar
                 {
                     Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Warning,
@@ -398,7 +394,6 @@ namespace Winspeqt.ViewModels.Security
                 };
                 dialogContent.Children.Add(warningBox);
 
-                // Status text
                 var statusText = new Microsoft.UI.Xaml.Controls.TextBlock
                 {
                     Text = "Initializing scan...",
@@ -407,7 +402,6 @@ namespace Winspeqt.ViewModels.Security
                 };
                 dialogContent.Children.Add(statusText);
 
-                // Progress bar
                 var progressBar = new Microsoft.UI.Xaml.Controls.ProgressBar
                 {
                     Minimum = 0,
@@ -417,7 +411,6 @@ namespace Winspeqt.ViewModels.Security
                 };
                 dialogContent.Children.Add(progressBar);
 
-                // WinGet check progress (indeterminate)
                 var wingetProgressBar = new Microsoft.UI.Xaml.Controls.ProgressBar
                 {
                     IsIndeterminate = true,
@@ -426,7 +419,6 @@ namespace Winspeqt.ViewModels.Security
                 };
                 dialogContent.Children.Add(wingetProgressBar);
 
-                // Create dialog
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
                     Title = "Scanning Applications",
@@ -435,24 +427,18 @@ namespace Winspeqt.ViewModels.Security
                     IsPrimaryButtonEnabled = false
                 };
 
-                // Start the scan in the background
                 var scanTask = PerformScanAsync(statusText, progressBar, wingetProgressBar);
-
-                // Show dialog
                 var dialogTask = dialog.ShowAsync().AsTask();
 
-                // Wait for scan to complete
                 await scanTask;
-
-                // Close the dialog
                 dialog.Hide();
             });
         }
 
         private async Task PerformScanAsync(
-    Microsoft.UI.Xaml.Controls.TextBlock statusText,
-    Microsoft.UI.Xaml.Controls.ProgressBar progressBar,
-    Microsoft.UI.Xaml.Controls.ProgressBar wingetProgressBar)
+            Microsoft.UI.Xaml.Controls.TextBlock statusText,
+            Microsoft.UI.Xaml.Controls.ProgressBar progressBar,
+            Microsoft.UI.Xaml.Controls.ProgressBar wingetProgressBar)
         {
             try
             {
@@ -460,7 +446,6 @@ namespace Winspeqt.ViewModels.Security
                 ScannedApps.Clear();
                 FilteredApps.Clear();
 
-                // Update status helper
                 async Task UpdateStatus(string message, double progress, bool showWingetProgress = false, bool showMainProgress = true)
                 {
                     await DispatchAsync(() =>
@@ -476,7 +461,6 @@ namespace Winspeqt.ViewModels.Security
                     });
                 }
 
-                // Show WinGet progress bar during version check, hide main bar
                 await UpdateStatus("Checking WinGet version and updating package sources...", 0, showWingetProgress: true, showMainProgress: false);
 
                 var isOutdated = await CheckWinGetOutdatedAsync();
@@ -490,7 +474,6 @@ namespace Winspeqt.ViewModels.Security
                     }
                 }
 
-                // Hide WinGet progress bar, show main progress bar
                 await UpdateStatus("Preparing to scan...", 5, showWingetProgress: false, showMainProgress: true);
 
                 bool shouldUpdateSources = !_lastSourceUpdate.HasValue ||
@@ -547,7 +530,6 @@ namespace Winspeqt.ViewModels.Security
                     try
                     {
                         await _securityService.CheckSingleAppVersionAsync(app);
-
                         Interlocked.Increment(ref checkedCount);
                         var progress = 10 + (checkedCount * 90.0 / total);
                         await UpdateStatus($"Checking for updates... ({checkedCount} of {total})", progress);
@@ -573,9 +555,7 @@ namespace Winspeqt.ViewModels.Security
                 await DispatchAsync(() =>
                 {
                     foreach (var app in _allApps)
-                    {
                         ScannedApps.Add(app);
-                    }
 
                     TotalAppsScanned = totalApps;
                     OutdatedAppsCount = outdated;
@@ -591,11 +571,10 @@ namespace Winspeqt.ViewModels.Security
                     StatusMessage = $"Scan complete! Found {totalApps} applications.";
                 });
 
-                // Save results to cache
                 await SaveCacheAsync(_allApps, scanTime);
 
                 await UpdateStatus($"Scan complete! Found {totalApps} applications.", 100);
-                await Task.Delay(1000); // Let user see completion message
+                await Task.Delay(1000);
             }
             catch (Exception ex)
             {
@@ -644,11 +623,13 @@ namespace Winspeqt.ViewModels.Security
             {
                 var contentPanel = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 12 };
 
+                // Version info
                 var versionPanel = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 12 };
                 versionPanel.Children.Add(CreateInfoBlock("Current Version:", app.InstalledVersion));
                 versionPanel.Children.Add(CreateInfoBlock("Latest Version:", app.LatestVersion));
                 contentPanel.Children.Add(versionPanel);
 
+                // Confidence warnings
                 if (app.ConfidenceScore >= 70 && app.ConfidenceScore < 90)
                 {
                     contentPanel.Children.Add(new Microsoft.UI.Xaml.Controls.InfoBar
@@ -665,102 +646,86 @@ namespace Winspeqt.ViewModels.Security
                     {
                         Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Error,
                         IsOpen = true,
-                        Message = "Low confidence match - version info may not be accurate. Please verify manually.",
+                        Message = "Low confidence match — version info may not be accurate. We recommend searching online to verify before installing.",
                         IsClosable = false
                     });
                 }
 
+                // High-confidence: full update section
                 if (app.ConfidenceScore >= 90 && !string.IsNullOrEmpty(app.WinGetId))
                 {
-                    // Add general warning about WinGet updates
-                    var updateWarning = new Microsoft.UI.Xaml.Controls.InfoBar
+                    contentPanel.Children.Add(new Microsoft.UI.Xaml.Controls.InfoBar
                     {
                         Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                         IsOpen = true,
                         Title = "How this works",
                         Message = "This will download and run the latest installer. Apps originally installed with WinGet will upgrade smoothly. For other apps, the installer usually replaces the old version automatically, but occasionally you may need to uninstall the old version manually (in Windows settings, go to Apps > Installed apps). Your settings and data will be preserved.",
                         IsClosable = false
-                    };
-                    contentPanel.Children.Add(updateWarning);
+                    });
 
-                    var commandSection = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 8 };
-                    commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+                    AddCommandSection(contentPanel, app);
+                }
+
+                // Google search button (always visible)
+                var searchButtonContent = new Microsoft.UI.Xaml.Controls.StackPanel
+                {
+                    Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                    Spacing = 8
+                };
+                searchButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+                {
+                    Glyph = "\uE721",
+                    FontSize = 14
+                });
+                searchButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+                {
+                    Text = "Search How to Update Online"
+                });
+
+                var searchButton = new Microsoft.UI.Xaml.Controls.Button
+                {
+                    Content = searchButtonContent,
+                    HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                    Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12)
+                };
+
+                // Low-confidence: "Install Anyway" section (hidden until search is clicked)
+                Microsoft.UI.Xaml.Controls.StackPanel? installAnywaySection = null;
+
+                if (app.ConfidenceScore < 70 && !string.IsNullOrEmpty(app.WinGetId))
+                {
+                    installAnywaySection = new Microsoft.UI.Xaml.Controls.StackPanel
                     {
-                        Text = "✨ Quick Update Command",
-                        FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                        FontSize = 14
-                    });
-                    commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBox
+                        Spacing = 8,
+                        Margin = new Microsoft.UI.Xaml.Thickness(0, 4, 0, 0),
+                        Visibility = Microsoft.UI.Xaml.Visibility.Collapsed
+                    };
+
+                    installAnywaySection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
                     {
-                        Text = $"winget install --id {app.WinGetId} -e",
-                        IsReadOnly = true,
-                        FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
-                        FontSize = 13
-                    });
-                    commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
-                    {
-                        Text = "Copy and paste this into Windows Terminal or PowerShell to update",
+                        Text = "If you've confirmed this is the right package, you can still install it:",
                         FontSize = 12,
                         Opacity = 0.7,
                         TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
                     });
 
-                    var updateButton = new Microsoft.UI.Xaml.Controls.Button
-                    {
-                        Content = "⚡ Update for Me",
-                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
-                        Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12),
-                        Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 0)
-                    };
-
-                    updateButton.Click += async (s, e) =>
-                    {
-                        try
-                        {
-                            var startInfo = new System.Diagnostics.ProcessStartInfo
-                            {
-                                FileName = "wt.exe",
-                                Arguments = $"-w 0 nt cmd /k \"winget install --id {app.WinGetId} -e && pause\"",
-                                UseShellExecute = true
-                            };
-
-                            try { System.Diagnostics.Process.Start(startInfo); }
-                            catch
-                            {
-                                startInfo.FileName = "cmd.exe";
-                                startInfo.Arguments = $"/k winget install --id {app.WinGetId} -e && pause";
-                                System.Diagnostics.Process.Start(startInfo);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var errorDialog = new Microsoft.UI.Xaml.Controls.ContentDialog
-                            {
-                                Title = "Unable to Launch Update",
-                                Content = $"Could not open terminal. Please copy and paste the command manually.\n\nError: {ex.Message}",
-                                CloseButtonText = "OK",
-                                XamlRoot = _xamlRoot
-                            };
-                            await errorDialog.ShowAsync();
-                        }
-                    };
-
-                    commandSection.Children.Add(updateButton);
-                    contentPanel.Children.Add(commandSection);
+                    AddCommandSection(installAnywaySection, app);
                 }
 
-                var searchButton = new Microsoft.UI.Xaml.Controls.Button
-                {
-                    Content = "🔍 Search How to Update Online",
-                    HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
-                    Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12)
-                };
                 searchButton.Click += async (s, e) =>
                 {
                     var q = Uri.EscapeDataString($"how to update {app.AppName} to latest version");
                     await Windows.System.Launcher.LaunchUriAsync(new Uri($"https://www.google.com/search?q={q}"));
+
+                    // Reveal the "Install Anyway" section after the user has searched
+                    if (installAnywaySection != null)
+                        installAnywaySection.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 };
+
                 contentPanel.Children.Add(searchButton);
+
+                if (installAnywaySection != null)
+                    contentPanel.Children.Add(installAnywaySection);
 
                 var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
                 {
@@ -776,6 +741,106 @@ namespace Winspeqt.ViewModels.Security
 
                 await dialog.ShowAsync();
             });
+        }
+
+        // Builds the WinGet command box + launch button, appended to any parent panel
+        private void AddCommandSection(Microsoft.UI.Xaml.Controls.Panel parent, AppSecurityInfo app)
+        {
+            var commandSection = new Microsoft.UI.Xaml.Controls.StackPanel { Spacing = 8 };
+
+            var commandHeader = new Microsoft.UI.Xaml.Controls.StackPanel
+            {
+                Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                Spacing = 8
+            };
+            commandHeader.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+            {
+                Glyph = "\uE945",
+                FontSize = 14,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 255, 193, 7))
+            });
+            commandHeader.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+            {
+                Text = "Quick Update Command",
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                FontSize = 14
+            });
+            commandSection.Children.Add(commandHeader);
+
+            commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBox
+            {
+                Text = $"winget install --id {app.WinGetId} -e",
+                IsReadOnly = true,
+                FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
+                FontSize = 13
+            });
+
+            commandSection.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+            {
+                Text = "Copy and paste this into Windows Terminal or PowerShell to update",
+                FontSize = 12,
+                Opacity = 0.7,
+                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+            });
+
+            var updateButtonContent = new Microsoft.UI.Xaml.Controls.StackPanel
+            {
+                Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
+                Spacing = 8
+            };
+            updateButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.FontIcon
+            {
+                Glyph = "\uEBE7",
+                FontSize = 14
+            });
+            updateButtonContent.Children.Add(new Microsoft.UI.Xaml.Controls.TextBlock
+            {
+                Text = app.ConfidenceScore < 70 ? "Install Anyway" : "Run Update Command"
+            });
+
+            var updateButton = new Microsoft.UI.Xaml.Controls.Button
+            {
+                Content = updateButtonContent,
+                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                Padding = new Microsoft.UI.Xaml.Thickness(16, 12, 16, 12),
+                Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 0)
+            };
+
+            updateButton.Click += async (s, e) =>
+            {
+                try
+                {
+                    var startInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "wt.exe",
+                        Arguments = $"-w 0 nt cmd /k \"winget install --id {app.WinGetId} -e && pause\"",
+                        UseShellExecute = true
+                    };
+
+                    try { System.Diagnostics.Process.Start(startInfo); }
+                    catch
+                    {
+                        startInfo.FileName = "cmd.exe";
+                        startInfo.Arguments = $"/k winget install --id {app.WinGetId} -e && pause";
+                        System.Diagnostics.Process.Start(startInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var errorDialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                    {
+                        Title = "Unable to Launch Update",
+                        Content = $"Could not open terminal. Please copy and paste the command manually.\n\nError: {ex.Message}",
+                        CloseButtonText = "OK",
+                        XamlRoot = _xamlRoot
+                    };
+                    await errorDialog.ShowAsync();
+                }
+            };
+
+            commandSection.Children.Add(updateButton);
+            parent.Children.Add(commandSection);
         }
 
         private Microsoft.UI.Xaml.Controls.StackPanel CreateInfoBlock(string label, string value)
@@ -800,38 +865,32 @@ namespace Winspeqt.ViewModels.Security
         {
             try
             {
-                // Get local WinGet version
                 var localVersion = await GetLocalWinGetVersionAsync();
                 if (string.IsNullOrEmpty(localVersion))
                 {
                     System.Diagnostics.Debug.WriteLine("Could not get local WinGet version");
-                    return false; // Can't determine, assume it's fine
+                    return false;
                 }
 
                 System.Diagnostics.Debug.WriteLine($"Local WinGet version: {localVersion}");
 
-                // Get latest WinGet version from GitHub API
                 var latestVersion = await GetLatestWinGetVersionAsync();
                 if (string.IsNullOrEmpty(latestVersion))
                 {
                     System.Diagnostics.Debug.WriteLine("Could not get latest WinGet version from GitHub");
-                    return false; // Can't determine, assume it's fine
+                    return false;
                 }
 
                 System.Diagnostics.Debug.WriteLine($"Latest WinGet version: {latestVersion}");
 
-                // Compare versions (both should be like "v1.7.10861" or "1.7.10861")
                 var localClean = localVersion.TrimStart('v');
                 var latestClean = latestVersion.TrimStart('v');
 
                 var localParts = localClean.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
                 var latestParts = latestClean.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
 
-                // Only warn if MAJOR version is behind (e.g., 0.x vs 1.x, or 1.x vs 2.x)
-                // Ignore minor and patch versions - those don't matter much
                 if (localParts.Length >= 1 && latestParts.Length >= 1)
                 {
-                    // If major version is behind
                     if (localParts[0] < latestParts[0])
                     {
                         System.Diagnostics.Debug.WriteLine($"WinGet is seriously outdated (major version {localParts[0]} vs {latestParts[0]})");
@@ -845,7 +904,7 @@ namespace Winspeqt.ViewModels.Security
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error checking WinGet version: {ex.Message}");
-                return false; // On error, assume it's fine and continue
+                return false;
             }
         }
 

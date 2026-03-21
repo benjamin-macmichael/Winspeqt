@@ -27,14 +27,11 @@ namespace Winspeqt.Views.Monitoring
         }
 
         /// <summary>
-        /// Navigates back to the previous page when possible.
+        /// Navigates to the monitoring dashboard page.
         /// </summary>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(MonitoringDashboardPage));
         }
 
         /// <summary>

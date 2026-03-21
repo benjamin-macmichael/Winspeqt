@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using System;
+using System.Diagnostics;
 using Winspeqt.Services;
 
 namespace Winspeqt
@@ -48,7 +49,17 @@ namespace Winspeqt
             {
                 var toastArgs = currentArgs.Data as Windows.ApplicationModel.Activation.IToastNotificationActivatedEventArgs;
                 if (toastArgs != null)
-                    toastFeature = ParseFeature(toastArgs.Argument);
+                {
+                    if (ParseArgValue(toastArgs.Argument, "action") == "closeQuickAssist")
+                    {
+                        CloseQuickAssist();
+                        toastFeature = "NetworkSecurity";
+                    }
+                    else
+                    {
+                        toastFeature = ParseFeature(toastArgs.Argument);
+                    }
+                }
             }
 
             _window = new Views.MainWindow(toastFeature);
@@ -63,7 +74,17 @@ namespace Winspeqt
             {
                 var toastArgs = args.Data as Windows.ApplicationModel.Activation.IToastNotificationActivatedEventArgs;
                 if (toastArgs != null)
-                    feature = ParseFeature(toastArgs.Argument);
+                {
+                    if (ParseArgValue(toastArgs.Argument, "action") == "closeQuickAssist")
+                    {
+                        CloseQuickAssist();
+                        feature = "NetworkSecurity";
+                    }
+                    else
+                    {
+                        feature = ParseFeature(toastArgs.Argument);
+                    }
+                }
             }
 
             // Marshal back to UI thread
@@ -76,13 +97,23 @@ namespace Winspeqt
             }
         }
 
-        private static string? ParseFeature(string argument)
+        private static void CloseQuickAssist()
+        {
+            foreach (var proc in Process.GetProcessesByName("QuickAssist"))
+            {
+                try { proc.Kill(); } catch { }
+            }
+        }
+
+        private static string? ParseFeature(string argument) => ParseArgValue(argument, "feature");
+
+        private static string? ParseArgValue(string argument, string key)
         {
             if (string.IsNullOrEmpty(argument)) return null;
             foreach (var part in argument.Split('&'))
             {
                 var kv = part.Split('=');
-                if (kv.Length == 2 && kv[0] == "feature")
+                if (kv.Length == 2 && kv[0] == key)
                     return kv[1];
             }
             return null;

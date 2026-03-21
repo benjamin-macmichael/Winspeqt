@@ -29,6 +29,17 @@ namespace Winspeqt.ViewModels.Security
         // Expand/collapse state
         private bool _showAllConnections = false;
         private bool _showAllRiskyPorts = false;
+        private bool _isConnectionsExpanded = false;
+
+        // Unsecured network state
+        private bool _isOnUnsecuredNetwork;
+        private string _unsecuredNetworkName = "";
+        private string _unsecuredNetworkInterface = "";
+        private readonly HashSet<string> _popupShownNetworks = new();
+
+        // Quick Assist acknowledgement
+        private bool _isQuickAssistAcknowledged;
+        private string _quickAssistConfirmText = "";
 
         // Public collections bound to the UI
         public ObservableCollection<NetworkConnection> DisplayedConnections { get; } = new();
@@ -76,6 +87,71 @@ namespace Winspeqt.ViewModels.Security
         // ── Connections expand/collapse ──────────────────────────────────────
         public bool HasMoreConnections { get; private set; }
 
+        public bool IsConnectionsExpanded
+        {
+            get => _isConnectionsExpanded;
+            set
+            {
+                _isConnectionsExpanded = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ConnectionsChevronGlyph));
+                OnPropertyChanged(nameof(ShowConnectionsMoreButton));
+            }
+        }
+
+        public string ConnectionsChevronGlyph => _isConnectionsExpanded ? "\uE70E" : "\uE70D";
+
+        public bool ShowConnectionsMoreButton => _isConnectionsExpanded && HasMoreConnections;
+
+        public bool IsOnUnsecuredNetwork
+        {
+            get => _isOnUnsecuredNetwork;
+            set { _isOnUnsecuredNetwork = value; OnPropertyChanged(); }
+        }
+
+        public string UnsecuredNetworkName
+        {
+            get => _unsecuredNetworkName;
+            set { _unsecuredNetworkName = value; OnPropertyChanged(); OnPropertyChanged(nameof(UnsecuredNetworkWarningMessage)); }
+        }
+
+        public string UnsecuredNetworkWarningMessage =>
+            string.IsNullOrEmpty(_unsecuredNetworkName)
+                ? "You are connected to an open WiFi network. Your data is not encrypted — anyone nearby could intercept it."
+                : $"You are connected to \"{_unsecuredNetworkName}\", which has no password or encryption. Anyone nearby could intercept your traffic.";
+
+        // Fired once per unique network per session — page subscribes to show the popup
+        public event Action<string, string>? UnsecuredNetworkDetected;
+
+        // ── Quick Assist ─────────────────────────────────────────────────────
+        public bool IsQuickAssistAcknowledged
+        {
+            get => _isQuickAssistAcknowledged;
+            set
+            {
+                _isQuickAssistAcknowledged = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanLaunchQuickAssist));
+                (_launchQuickAssistCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+
+        public string QuickAssistConfirmText
+        {
+            get => _quickAssistConfirmText;
+            set
+            {
+                _quickAssistConfirmText = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanLaunchQuickAssist));
+                (_launchQuickAssistCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool CanLaunchQuickAssist =>
+            _isQuickAssistAcknowledged &&
+            _quickAssistConfirmText.Trim().Equals("I understand", StringComparison.OrdinalIgnoreCase);
+
         public string ConnectionsToggleText =>
             _showAllConnections
                 ? "Show less"
@@ -96,7 +172,12 @@ namespace Winspeqt.ViewModels.Security
         public ICommand RefreshCommand { get; }
         public ICommand ClearAlertsCommand { get; }
         public ICommand ToggleConnectionsCommand { get; }
+        public ICommand ToggleConnectionsExpandedCommand { get; }
         public ICommand ToggleRiskyPortsCommand { get; }
+        public ICommand DisconnectUnsecuredNetworkCommand { get; }
+
+        private readonly ICommand _launchQuickAssistCommand;
+        public ICommand LaunchQuickAssistCommand => _launchQuickAssistCommand;
         public ICommand DisconnectDeviceCommand { get; }
 
         public NetworkSecurityViewModel()
@@ -109,7 +190,26 @@ namespace Winspeqt.ViewModels.Security
             RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
             ClearAlertsCommand = new RelayCommand(ClearAlerts);
             ToggleConnectionsCommand = new RelayCommand(ToggleConnections);
+            ToggleConnectionsExpandedCommand = new RelayCommand(() => IsConnectionsExpanded = !IsConnectionsExpanded);
             ToggleRiskyPortsCommand = new RelayCommand(ToggleRiskyPorts);
+            DisconnectUnsecuredNetworkCommand = new RelayCommand(async () =>
+            {
+                if (!string.IsNullOrEmpty(_unsecuredNetworkInterface))
+                {
+                    StatusMessage = $"Disconnecting from \"{UnsecuredNetworkName}\"...";
+                    await _monitor.DisconnectWifiAsync(_unsecuredNetworkInterface);
+                    StatusMessage = "Disconnected from unsecured network";
+                    IsOnUnsecuredNetwork = false;
+                }
+            });
+
+            _launchQuickAssistCommand = new RelayCommand(
+                async () =>
+                {
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-quick-assist:"));
+                    _ = WatchForQuickAssistAsync();
+                },
+                () => CanLaunchQuickAssist);
             DisconnectDeviceCommand = new RelayCommand<ConnectedDevice>(async d => await DisconnectDeviceAsync(d));
 
             _monitor.ConnectionsUpdated += OnConnectionsUpdated;
@@ -119,13 +219,14 @@ namespace Winspeqt.ViewModels.Security
 
             StatusMessage = "Ready to monitor network security";
 
-            // Load WiFi disconnect history on startup
+            // Load WiFi disconnect history and check network security on startup
             _ = LoadWifiEventsAsync();
+            _ = CheckUnsecuredNetworkAsync();
         }
 
         private void StartMonitoring()
         {
-            _monitor.StartMonitoring(3000);
+            _monitor.StartMonitoring(300_000); // 5 minutes
             IsMonitoring = true;
             StatusMessage = "Network monitoring started...";
         }
@@ -150,6 +251,7 @@ namespace Winspeqt.ViewModels.Security
             OnConnectedDevicesUpdated(this, devices);
 
             await LoadWifiEventsAsync();
+            await CheckUnsecuredNetworkAsync();
 
             StatusMessage = "Data refreshed";
         }
@@ -175,6 +277,20 @@ namespace Winspeqt.ViewModels.Security
             _dispatcherQueue.TryEnqueue(() => RefreshDisplayedRiskyPorts());
         }
 
+        private async System.Threading.Tasks.Task WatchForQuickAssistAsync()
+        {
+            // Poll up to ~45 seconds (15 × 3s) for QuickAssist.exe to appear
+            for (int i = 0; i < 15; i++)
+            {
+                await System.Threading.Tasks.Task.Delay(3000);
+                if (System.Diagnostics.Process.GetProcessesByName("QuickAssist").Length > 0)
+                {
+                    NotificationManagerService.Instance.SendQuickAssistLaunchedNotification();
+                    return;
+                }
+            }
+        }
+
         private async System.Threading.Tasks.Task DisconnectDeviceAsync(ConnectedDevice? device)
         {
             if (device == null || !device.CanDisconnect) return;
@@ -191,6 +307,39 @@ namespace Winspeqt.ViewModels.Security
                 WifiEvents.Clear();
                 foreach (var ev in events)
                     WifiEvents.Add(ev);
+            });
+        }
+
+        private async System.Threading.Tasks.Task CheckUnsecuredNetworkAsync()
+        {
+            var unsecuredNets = await _monitor.GetUnsecuredWifiConnectionsAsync();
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                if (unsecuredNets.Count > 0)
+                {
+                    var (ssid, iface) = unsecuredNets[0];
+                    IsOnUnsecuredNetwork = true;
+                    UnsecuredNetworkName = ssid;
+                    _unsecuredNetworkInterface = iface;
+
+                    // Add to security alerts (only if not already present)
+                    var alertText = $"[{DateTime.Now:HH:mm:ss}] ⚠️ Open (unsecured) network: \"{ssid}\" — traffic is unencrypted";
+                    if (!SecurityAlerts.Any(a => a.Contains(ssid) && a.Contains("unsecured")))
+                        SecurityAlerts.Insert(0, alertText);
+
+                    // Fire popup event and toast once per network per session
+                    if (_popupShownNetworks.Add(ssid))
+                    {
+                        UnsecuredNetworkDetected?.Invoke(ssid, iface);
+                        NotificationManagerService.Instance.SendUnsecuredNetworkNotification(ssid);
+                    }
+                }
+                else
+                {
+                    IsOnUnsecuredNetwork = false;
+                    UnsecuredNetworkName = "";
+                    _unsecuredNetworkInterface = "";
+                }
             });
         }
 
@@ -241,7 +390,13 @@ namespace Winspeqt.ViewModels.Security
             _dispatcherQueue.TryEnqueue(() =>
             {
                 ConnectedDevices.Clear();
-                foreach (var d in devices) ConnectedDevices.Add(d);
+                // Deduplicate by display name — keep first occurrence per unique device
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var d in devices)
+                {
+                    if (seen.Add(d.Name))
+                        ConnectedDevices.Add(d);
+                }
             });
         }
 
@@ -249,12 +404,30 @@ namespace Winspeqt.ViewModels.Security
         {
             _dispatcherQueue.TryEnqueue(() =>
             {
-                var timestamped = $"[{DateTime.Now:HH:mm:ss}] {alert}";
-                SecurityAlerts.Insert(0, timestamped);
+                // Deduplicate: remove existing entry with same core text before re-inserting with fresh timestamp
+                for (int i = SecurityAlerts.Count - 1; i >= 0; i--)
+                {
+                    var core = StripTimestamp(SecurityAlerts[i]);
+                    if (string.Equals(core, alert, StringComparison.OrdinalIgnoreCase))
+                        SecurityAlerts.RemoveAt(i);
+                }
+
+                SecurityAlerts.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {alert}");
 
                 while (SecurityAlerts.Count > 50)
                     SecurityAlerts.RemoveAt(SecurityAlerts.Count - 1);
             });
+        }
+
+        private static string StripTimestamp(string alert)
+        {
+            // Alerts are formatted as "[HH:mm:ss] text"
+            if (alert.Length > 11 && alert[0] == '[')
+            {
+                var end = alert.IndexOf("] ", StringComparison.Ordinal);
+                if (end >= 0) return alert.Substring(end + 2);
+            }
+            return alert;
         }
 
         // ── Display refresh helpers ───────────────────────────────────────────
@@ -271,6 +444,7 @@ namespace Winspeqt.ViewModels.Security
             HasMoreConnections = _allNotableConnections.Count > 10;
             OnPropertyChanged(nameof(HasMoreConnections));
             OnPropertyChanged(nameof(ConnectionsToggleText));
+            OnPropertyChanged(nameof(ShowConnectionsMoreButton));
         }
 
         private void RefreshDisplayedRiskyPorts()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Winspeqt.Models
 {
@@ -30,7 +31,7 @@ namespace Winspeqt.Models
             >= 50 => "#F44336",
             _ => "#9E9E9E"
         };
-        public string DataSource { get; set; } = string.Empty; // "Direct Match", "Search Result", etc.
+        public string DataSource { get; set; } = string.Empty;
 
         // Package manager ID
         public string WinGetId { get; set; } = string.Empty;
@@ -38,27 +39,57 @@ namespace Winspeqt.Models
         // Package name as found by the API (for display)
         public string WinGetPackageName { get; set; } = string.Empty;
 
+        // Multiple installs detection
+        public bool HasMultipleInstalls { get; set; } = false;
+        public int InstallCount { get; set; } = 1;
+
+        // The display names of the other detected versions of this app
+        public List<string> OtherVersions { get; set; } = new();
+
+        // Human-readable summary of other versions for display e.g. "3.10.0, 3.11.2, 3.12.1"
+        public string OtherVersionsSummary => OtherVersions.Count > 0
+            ? string.Join(", ", OtherVersions)
+            : string.Empty;
+
+        // Full warning message shown on the card
+        public string MultipleInstallsMessage
+        {
+            get
+            {
+                if (!HasMultipleInstalls) return string.Empty;
+                var versionList = OtherVersions.Count > 0
+                    ? $" Found: {OtherVersionsSummary}."
+                    : string.Empty;
+                return $"{InstallCount} versions installed.{versionList} Multiple versions can waste disk space and cause conflicts. Uninstall versions you no longer need via Windows Settings > Apps > Installed apps.";
+            }
+        }
+
         public bool IsOutdated => Status == SecurityStatus.Outdated || Status == SecurityStatus.Critical;
         public bool IsUnknown => Status == SecurityStatus.Unknown;
         public bool IsUpToDate => Status == SecurityStatus.UpToDate;
 
+        // Icon glyph (Unicode character for FontIcon)
         public string StatusIcon => Status switch
         {
-            SecurityStatus.UpToDate => "✓",
-            SecurityStatus.Outdated => "⚠️",
-            SecurityStatus.Unknown => "❓",
-            SecurityStatus.Critical => "🔴",
-            _ => "•"
+            SecurityStatus.UpToDate => "\uE73E",      // Checkmark
+            SecurityStatus.Outdated => "\uE7BA",      // Warning
+            SecurityStatus.Unknown => "\uE9CE",       // Help/Question
+            SecurityStatus.Critical => "\uE7BA",      // Error
+            _ => "\uE91F"                             // Dot
         };
 
-        public string StatusColor => Status switch
+        // Icon color
+        public string StatusIconColor => Status switch
         {
-            SecurityStatus.UpToDate => "#4CAF50",
-            SecurityStatus.Outdated => "#FF9800",
-            SecurityStatus.Unknown => "#9E9E9E",
-            SecurityStatus.Critical => "#F44336",
+            SecurityStatus.UpToDate => "#4CAF50",     // Green
+            SecurityStatus.Outdated => "#FF9800",     // Orange
+            SecurityStatus.Unknown => "#9E9E9E",      // Gray
+            SecurityStatus.Critical => "#F44336",     // Red
             _ => "#9E9E9E"
         };
+
+        // Keep StatusColor for backward compatibility
+        public string StatusColor => StatusIconColor;
 
         public string FormattedInstallDate => InstallDate?.ToString("MMM dd, yyyy") ?? "Unknown";
     }
