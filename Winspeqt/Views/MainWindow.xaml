@@ -109,7 +109,7 @@
                                     <FontIcon Glyph="&#xE9D9;" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
-                            <NavigationViewItem Content="Startup Applications" Tag="StartupImpact">
+                            <NavigationViewItem Content="What's Slowing Down My PC?" Tag="StartupImpact">
                                 <NavigationViewItem.Icon>
                                     <FontIcon Glyph="&#xE7E8;" />
                                 </NavigationViewItem.Icon>
