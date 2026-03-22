@@ -42,16 +42,13 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Navigates back to the previous page when possible.
+        /// Navigates to the optimization dashboard page.
         /// </summary>
         /// <param name="sender">The back button control.</param>
         /// <param name="e">Routed event data.</param>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(OptimizationDashboardPage));
         }
 
         /// <summary>

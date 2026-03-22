@@ -19,10 +19,7 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(SecurityDashboardPage));
         }
 
         private void LinkButton_Click(object sender, RoutedEventArgs e)

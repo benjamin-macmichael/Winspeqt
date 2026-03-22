@@ -18,14 +18,11 @@ namespace Winspeqt.Views.Optimization
         }
 
         /// <summary>
-        /// Navigates back when possible.
+        /// Navigates to the parent dashboard page.
         /// </summary>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(DashboardPage));
         }
 
         /// <summary>

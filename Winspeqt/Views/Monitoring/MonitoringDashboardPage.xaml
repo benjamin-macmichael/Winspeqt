@@ -15,18 +15,39 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Back Button -->
-            <StackPanel HorizontalAlignment="Center">
-                <TextBlock 
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button 
+                    Grid.Column="0"
+                    Click="BackButton_Click"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="8"
+                    Margin="0,0,20,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE76B;" FontSize="16"/>
+                        <TextBlock Text="Home" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock 
                         Text="System Monitoring" 
                         FontSize="36" 
                         FontWeight="Bold"/>
-                <TextBlock 
+                    <TextBlock 
                         Text="Understand what's slowing your PC down in plain English" 
                         FontSize="18" 
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,8,0,0"/>
-            </StackPanel>
+                        Margin="0,4,0,0"/>
+                </StackPanel>
+            </Grid>
 
             <!-- Feature Cards Grid -->
             <Grid Grid.Row="2" Margin="0,40,0,0">
@@ -174,12 +195,12 @@
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
                             <TextBlock 
-                                Text="Startup Applications" 
+                                Text="What's Slowing Down My PC?" 
                                 FontSize="24" 
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,12"/>
                             <TextBlock 
-                                Text="See which apps run on your PC's startup"
+                                Text="Find and fix common reasons your PC feels sluggish &#x2014; check startup apps, restart File Explorer, test your network speed, and more"
                                 FontSize="15"
                                 TextWrapping="Wrap"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -189,7 +210,7 @@
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
                             <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock 
-                                Text="Analyze Startup" 
+                                Text="Diagnose My PC" 
                                 FontSize="15"
                                 FontWeight="SemiBold"
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"

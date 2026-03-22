@@ -4,292 +4,371 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:helpers="using:Winspeqt.Helpers" xmlns:monitoring="using:Winspeqt.ViewModels.Monitoring" d:DataContext="{d:DesignInstance Type=monitoring:StartupImpactViewModel}"
+    xmlns:helpers="using:Winspeqt.Helpers"
+    xmlns:monitoring="using:Winspeqt.ViewModels.Monitoring"
+    d:DataContext="{d:DesignInstance Type=monitoring:StartupImpactViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <Style x:Key="StartupPageTitleStyle" TargetType="TextBlock">
+
+        <Style x:Key="PageTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="36"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        <Style x:Key="StartupPageSubtitleStyle" TargetType="TextBlock">
+        <Style x:Key="PageSubtitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
         </Style>
-        <Style x:Key="StartupSectionTitleStyle" TargetType="TextBlock">
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="22"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
-        <Style x:Key="StartupSectionIconStyle" TargetType="FontIcon">
+        <Style x:Key="SectionIconStyle" TargetType="FontIcon">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
             <Setter Property="Margin" Value="0,2,8,0"/>
         </Style>
-        <Style x:Key="StartupBodyTextStyle" TargetType="TextBlock">
+        <Style x:Key="BodyTextStyle" TargetType="TextBlock">
             <Setter Property="TextWrapping" Value="WrapWholeWords"/>
             <Setter Property="FontSize" Value="16"/>
         </Style>
-        <Style x:Key="StartupCardStyle" TargetType="Border">
+        <Style x:Key="CardStyle" TargetType="Border">
             <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="20"/>
         </Style>
-        <Style x:Key="StartupExampleCardBorderStyle" TargetType="Border">
+        <Style x:Key="TipCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style x:Key="ExampleCardStyle" TargetType="Border">
             <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="MinHeight" Value="140"/>
         </Style>
-        <Style x:Key="StartupExampleTextStyle" TargetType="TextBlock">
+        <Style x:Key="ExampleTextStyle" TargetType="TextBlock">
             <Setter Property="TextWrapping" Value="WrapWholeWords"/>
             <Setter Property="TextAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,12,0,0"/>
         </Style>
     </Page.Resources>
 
-    <ScrollViewer>
-        <StackPanel Padding="60" Spacing="24" MaxWidth="1200" HorizontalAlignment="Center">
+    <!-- Root grid holds both "screens"; only one is visible at a time -->
+    <Grid>
 
-            <!-- Header -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- ════════════════════════════════════════════════════════════
+             SCREEN 1 — What's Slowing Down My PC?
+             ════════════════════════════════════════════════════════════ -->
+        <ScrollViewer Visibility="{x:Bind ViewModel.ShowStartupDetail, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+            <StackPanel Padding="60" Spacing="24">
 
-                <Button 
-                    Grid.Column="0"
-                    Content="← Back"
-                    Click="BackButton_Click"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    FontSize="16"
-                    Margin="0,0,20,0"/>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock 
-                        Text="Startup Applications" 
-                        Style="{StaticResource StartupPageTitleStyle}"/>
-                    <TextBlock 
-                        Text="See which apps run on your PC's startup" 
-                        Style="{StaticResource StartupPageSubtitleStyle}"
-                        Margin="0,4,0,0"/>
-                </StackPanel>
-
-                <Button 
-                    Grid.Column="2"
-                    Content="🔄 Refresh"
-                    Command="{Binding RefreshCommand}"
-                    FontSize="16"
-                    Padding="16,8"/>
-            </Grid>
-            <!-- Intro and guidance -->
-            <Border Style="{StaticResource StartupCardStyle}">
-                <StackPanel Spacing="12">
-                    <StackPanel Orientation="Horizontal">
-                        <FontIcon Glyph="&#xEC4A;" Style="{StaticResource StartupSectionIconStyle}"/>
-                        <TextBlock
-                            Text="Understand what runs at startup"
-                            Style="{StaticResource StartupSectionTitleStyle}"/>
-                    </StackPanel>
-                    <!-- https://support.microsoft.com/en-us/windows/configure-startup-applications-in-windows-115a420a-0bff-4a6f-90e0-1934c844e473 -->
-                    <TextBlock
-                        Style="{StaticResource StartupBodyTextStyle}"
-                        Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
-                    <Border
-                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="12"
-                        Padding="12">
-                        <TextBlock
-                            Style="{StaticResource StartupBodyTextStyle}"
-                            Text="Tip: If your PC feels slow to start, disable any startup apps you don't need every day."/>
-                    </Border>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <FontIcon Glyph="&#xE8F1;" Style="{StaticResource StartupSectionIconStyle}"/>
-                        <TextBlock
-                            Text="Common Startup App Types"
-                            Style="{StaticResource StartupSectionTitleStyle}"/>
-                    </StackPanel>
-                    <!-- Example tiles -->
-                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource StartupExampleCardBorderStyle}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Image Source="/Assets/StartupApps/teams.png" Height="72" Width="72" Stretch="Uniform" />
-                                <TextBlock
-                                    Style="{StaticResource StartupExampleTextStyle}"
-                                    Text="Communications apps such as Microsoft Teams or Slack" />
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="1" Style="{StaticResource StartupExampleCardBorderStyle}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Image Source="/Assets/StartupApps/steam.png" Height="72" Width="72" Stretch="Uniform" />
-                                <TextBlock
-                                    Style="{StaticResource StartupExampleTextStyle}"
-                                    Text="Media and game launchers such as Steam or Spotify" />
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="2" Style="{StaticResource StartupExampleCardBorderStyle}">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Image Source="/Assets/StartupApps/dropbox.png" Height="72" Width="72" Stretch="Uniform" />
-                                <TextBlock
-                                    Style="{StaticResource StartupExampleTextStyle}"
-                                    Text="Cloud and sync clients such as Dropbox or OneDrive" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                    <Button 
-                        Content="View Startup Settings"
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Center"
-                        Click="OpenStartupSettings_Click"/>
-                </StackPanel>
-            </Border>
-            <!-- Advanced settings toggle -->
-            <Border>
-                <Button Click="ShowAdvancedSettings_Click" Content="{x:Bind ViewModel.AdvancedSettingsText, Mode=OneWay}" HorizontalAlignment="Center"/>
-            </Border>
-
-            <!-- Advanced settings content -->
-            <StackPanel Visibility="{x:Bind ViewModel.ShowAdvancedSettings, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Spacing="16">
-                <Border
-                    BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                    Background="{ThemeResource SystemControlErrorBackgroundColor}"
-                    BorderThickness="2"
-                    CornerRadius="16"
-                    Padding="10"
-                    MaxWidth="600">
-                    <StackPanel Margin="5,5,5,5" Spacing="8">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon
-                            Glyph="&#xE7BA;"
-                            FontSize="20"
-                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
-                            <TextBlock Text="WARNING:" FontSize="20" Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                <!-- Header -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Click="BackButton_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            Margin="0,0,20,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE76B;" FontSize="16"/>
+                            <TextBlock Text="Monitoring Home" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock 
-                        Style="{StaticResource StartupBodyTextStyle}"
-                        Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                        Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in the Windows Settings App unless you are sure that it will not otherwise affect how your system runs." />
+                    </Button>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="What's Slowing Down My PC?"
+                                   Style="{StaticResource PageTitleStyle}"/>
+                        <TextBlock Text="Diagnose common causes of slowdowns on your PC"
+                                   Style="{StaticResource PageSubtitleStyle}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Uptime banner -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xEC4A;" Style="{StaticResource SectionIconStyle}"/>
+                            <TextBlock Text="System Uptime" Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock Text="{x:Bind ViewModel.UptimeText, Mode=OneWay}"
+                                   Style="{StaticResource BodyTextStyle}"/>
+                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Visibility="{x:Bind ViewModel.UptimeWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE7BA;" FontSize="16"
+                                          Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                                <TextBlock Text="Restarting your PC can free up memory and apply pending updates, which often significantly improves performance."
+                                           Style="{StaticResource BodyTextStyle}"
+                                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Button Content="Restart Now"
+                                Visibility="{x:Bind ViewModel.UptimeWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Click="RestartNow_Click"
+                                Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
-                <ItemsRepeater ItemsSource="{Binding StartupAppGroups, Mode=OneWay}">
+
+                <!-- Things to Try -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE946;" Style="{StaticResource SectionIconStyle}"/>
+                            <TextBlock Text="Things to Try" Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="10"
+                                    Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ProgressRing IsActive="True" Width="18" Height="18"/>
+                            <TextBlock Text="Analyzing your PC…"
+                                       Style="{StaticResource BodyTextStyle}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.PcTips, Mode=OneWay}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="monitoring:PcTip">
+                                    <Border Style="{StaticResource TipCardStyle}">
+                                        <StackPanel Spacing="6">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon Glyph="&#xE7BA;" FontSize="16"
+                                                          Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                                          Visibility="{x:Bind IsWarning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <FontIcon Glyph="&#xE946;" FontSize="16"
+                                                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                          Visibility="{x:Bind IsWarning, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                                <TextBlock Text="{x:Bind Title}"
+                                                           FontSize="17"
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="WrapWholeWords"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{x:Bind Detail}"
+                                                       Style="{StaticResource BodyTextStyle}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                       Margin="24,0,0,0"/>
+                                            <Button Content="{x:Bind ActionLabel}"
+                                                    CommandParameter="{x:Bind ActionKey}"
+                                                    Click="TipAction_Click"
+                                                    Margin="24,4,0,0"
+                                                    Visibility="{x:Bind HasAction, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ════════════════════════════════════════════════════════════
+             SCREEN 2 — Startup Applications detail
+             ════════════════════════════════════════════════════════════ -->
+        <ScrollViewer Visibility="{x:Bind ViewModel.ShowStartupDetail, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Padding="60" Spacing="24">
+
+                <!-- Header -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Click="BackToMain_Click"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="8"
+                            Margin="0,0,20,0">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE76B;" FontSize="16"/>
+                            <TextBlock Text="Back" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Startup Applications"
+                                   Style="{StaticResource PageTitleStyle}"/>
+                        <TextBlock Text="See which apps run on your PC's startup"
+                                   Style="{StaticResource PageSubtitleStyle}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Intro card -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xEC4A;" Style="{StaticResource SectionIconStyle}"/>
+                            <TextBlock Text="Understand what runs at startup"
+                                       Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource BodyTextStyle}"
+                                   Text="The applications that run automatically when your device boots up can impact both the speed of your startup and the overall performance of your system. By customizing which applications launch on startup, you can streamline your routine, ensuring that only the tools you need for your daily tasks are ready and waiting for you. Startup applications can be edited using the Windows Settings App or by editing the appropriate source."/>
+                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="12">
+                            <TextBlock Style="{StaticResource BodyTextStyle}"
+                                       Text="Tip: If your PC feels slow to start, disable any startup apps you don't need every day."/>
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <FontIcon Glyph="&#xE8F1;" Style="{StaticResource SectionIconStyle}"/>
+                            <TextBlock Text="Common Startup App Types"
+                                       Style="{StaticResource SectionTitleStyle}"/>
+                        </StackPanel>
+                        <Grid HorizontalAlignment="Stretch" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource ExampleCardStyle}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Image Source="/Assets/StartupApps/teams.png" Height="72" Width="72" Stretch="Uniform"/>
+                                    <TextBlock Style="{StaticResource ExampleTextStyle}"
+                                               Text="Communications apps such as Microsoft Teams or Slack"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="1" Style="{StaticResource ExampleCardStyle}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Image Source="/Assets/StartupApps/steam.png" Height="72" Width="72" Stretch="Uniform"/>
+                                    <TextBlock Style="{StaticResource ExampleTextStyle}"
+                                               Text="Media and game launchers such as Steam or Spotify"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource ExampleCardStyle}">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Image Source="/Assets/StartupApps/dropbox.png" Height="72" Width="72" Stretch="Uniform"/>
+                                    <TextBlock Style="{StaticResource ExampleTextStyle}"
+                                               Text="Cloud and sync clients such as Dropbox or OneDrive"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <Button Content="View Startup Settings"
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Center"
+                                Click="OpenStartupSettings_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Warning banner -->
+                <Border BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                        Background="{ThemeResource SystemControlErrorBackgroundColor}"
+                        BorderThickness="2"
+                        CornerRadius="16"
+                        Padding="10"
+                        HorizontalAlignment="Left">
+                    <StackPanel Margin="5" Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE7BA;" FontSize="20"
+                                      Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                            <TextBlock Text="WARNING:" FontSize="20"
+                                       Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource BodyTextStyle}"
+                                   Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
+                                   Text="Modifying startup apps may result in unintended behavior. It is recommended that you change the startup status of an app in the Windows Settings App unless you are sure that it will not otherwise affect how your system runs."/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Loading indicator -->
+                <StackPanel Orientation="Horizontal" Spacing="10"
+                            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ProgressRing IsActive="True" Width="20" Height="20"/>
+                    <TextBlock Text="Loading startup apps…" FontSize="16" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Grouped startup items -->
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.StartupAppGroups, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                            <Expander Margin="0,0,0,12" HorizontalAlignment="Stretch" MaxHeight="500" HorizontalContentAlignment="Stretch">
+                            <Expander Margin="0,0,0,12"
+                                      HorizontalAlignment="Stretch"
+                                      MaxHeight="500"
+                                      HorizontalContentAlignment="Stretch">
                                 <Expander.Header>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock
-                                            Text="{Binding Title}"
-                                            FontSize="20"
-                                            FontWeight="SemiBold"
-                                            Margin="0,0,0,0"/>
+                                        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold"/>
                                         <Button Style="{StaticResource SubtleButtonStyle}" Margin="5,0,0,0">
-                                            <FontIcon
-                                                FontSize="18"
-                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                Glyph="&#xE946;" />
-                                            <!--Content="i" CornerRadius="100" BorderBrush="Blue">-->
+                                            <FontIcon FontSize="18"
+                                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                      Glyph="&#xE946;"/>
                                             <Button.Flyout>
                                                 <Flyout>
                                                     <StackPanel MaxHeight="500">
-                                                        <TextBlock
-                                                            Text="{Binding Description}" 
-                                                            Margin="0,0,0,12"
-                                                            TextWrapping="Wrap"
-                                                            MaxWidth="400"/>
-                                                        <Button Click="LinkButton_Click" Content="{Binding ButtonText}" CommandParameter="{Binding Link}" />
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   Margin="0,0,0,12"
+                                                                   TextWrapping="Wrap"
+                                                                   MaxWidth="400"/>
+                                                        <Button Click="LinkButton_Click"
+                                                                Content="{Binding ButtonText}"
+                                                                CommandParameter="{Binding Link}"/>
                                                     </StackPanel>
                                                 </Flyout>
                                             </Button.Flyout>
                                         </Button>
                                     </StackPanel>
-
                                 </Expander.Header>
                                 <Expander.Content>
                                     <ScrollView HorizontalAlignment="Stretch">
-                                        <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}" HorizontalAlignment="Stretch">
+                                        <ItemsRepeater ItemsSource="{Binding Items, Mode=OneWay}"
+                                                       HorizontalAlignment="Stretch">
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border
-                                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="8"
-                                                        Padding="20"
-                                                        Margin="0,0,0,12"
-                                                        HorizontalAlignment="Stretch">
+                                                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="8"
+                                                            Padding="20"
+                                                            Margin="0,0,0,12"
+                                                            HorizontalAlignment="Stretch">
                                                         <StackPanel>
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock
-                                                                    Text="Program:"
-                                                                    FontSize="18"
-                                                                    FontWeight="SemiBold"
-                                                                    TextWrapping="Wrap"
-                                                                    Padding="0, 0, 6, 0"/>
-                                                                <TextBlock
-                                                                    Text="{Binding Name}"
-                                                                    FontSize="18"
-                                                                    TextWrapping="Wrap"/>
+                                                                <TextBlock Text="Program:" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Padding="0,0,6,0"/>
+                                                                <TextBlock Text="{Binding Name}" FontSize="18" TextWrapping="Wrap"/>
                                                             </StackPanel>
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock
-                                                                    Text="Running command:"
-                                                                    FontSize="16"
-                                                                    FontWeight="SemiBold"
-                                                                    TextWrapping="Wrap"
-                                                                    Padding="0, 0, 6, 0"/>
-                                                                <TextBlock
-                                                                    Text="{Binding Command}"
-                                                                    FontSize="16"
-                                                                    TextWrapping="Wrap"/>
+                                                                <TextBlock Text="Running command:" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Padding="0,0,6,0"/>
+                                                                <TextBlock Text="{Binding Command}" FontSize="16" TextWrapping="Wrap"/>
                                                             </StackPanel>
                                                             <StackPanel Orientation="Horizontal">
-                                                                <TextBlock
-                                                                    Text="Source:"
-                                                                    FontSize="16"
-                                                                    FontWeight="SemiBold"
-                                                                    TextWrapping="Wrap"
-                                                                    Padding="0, 0, 6, 0"/>
-                                                                <TextBlock
-                                                                    Text="{Binding Location}"
-                                                                    FontSize="16"/>
+                                                                <TextBlock Text="Source:" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" Padding="0,0,6,0"/>
+                                                                <TextBlock Text="{Binding Location}" FontSize="16"/>
                                                             </StackPanel>
-
-
                                                         </StackPanel>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
                                     </ScrollView>
-
                                 </Expander.Content>
                             </Expander>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-                <!-- Loading Overlay -->
-                <Border
-                Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <ProgressRing 
-                        IsActive="True"
-                        Width="20"
-                        Height="20"/>
-                </Border>
+
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
+    </Grid>
 </Page>

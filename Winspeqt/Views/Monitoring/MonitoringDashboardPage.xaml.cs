@@ -13,10 +13,7 @@ namespace Winspeqt.Views.Monitoring
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(DashboardPage));
         }
 
         private async void TaskManagerCard_Click(object sender, RoutedEventArgs e)
