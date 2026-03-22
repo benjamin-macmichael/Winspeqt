@@ -15,6 +15,10 @@ namespace Winspeqt.ViewModels
         public ICommand MonitoringCommand { get; }
         public ICommand SettingsCommand { get; }
 
+        public ICommand SecurityScoreCommand { get; }
+        public ICommand DiskCommand { get; }
+        public ICommand RamCommand { get; }
+
         public event EventHandler<string>? NavigationRequested;
 
         private readonly SecurityService _securityService = new();
@@ -64,6 +68,10 @@ namespace Winspeqt.ViewModels
             OptimizationCommand = new RelayCommand(OnOptimizationClicked);
             MonitoringCommand = new RelayCommand(OnMonitoringClicked);
             SettingsCommand = new RelayCommand(OnSettingsClicked);
+
+            SecurityScoreCommand = new RelayCommand(OnSecurityClicked);
+            DiskCommand = new RelayCommand(OnOptimizationClicked);
+            RamCommand = new RelayCommand(() => NavigationRequested?.Invoke(this, "ResourceTrends"));
         }
 
         public void StartRefresh(DispatcherQueue dispatcher)
