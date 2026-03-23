@@ -98,51 +98,21 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Uptime banner -->
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel Spacing="8">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xEC4A;" Style="{StaticResource SectionIconStyle}"/>
-                            <TextBlock Text="System Uptime" Style="{StaticResource SectionTitleStyle}"/>
-                        </StackPanel>
-                        <TextBlock Text="{x:Bind ViewModel.UptimeText, Mode=OneWay}"
-                                   Style="{StaticResource BodyTextStyle}"/>
-                        <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                BorderBrush="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12"
-                                Visibility="{x:Bind ViewModel.UptimeWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <FontIcon Glyph="&#xE7BA;" FontSize="16"
-                                          Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"/>
-                                <TextBlock Text="Restarting your PC can free up memory and apply pending updates, which often significantly improves performance."
-                                           Style="{StaticResource BodyTextStyle}"
-                                           Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                        <Button Content="Restart Now"
-                                Visibility="{x:Bind ViewModel.UptimeWarning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Click="RestartNow_Click"
-                                Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- Things to Try -->
+                <!-- Analyzing Your PC — single unified card -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel Spacing="16">
-                        <StackPanel Orientation="Horizontal">
-                            <FontIcon Glyph="&#xE946;" Style="{StaticResource SectionIconStyle}"/>
-                            <TextBlock Text="Things to Try" Style="{StaticResource SectionTitleStyle}"/>
-                        </StackPanel>
+                        <TextBlock Text="Performance Tips" Style="{StaticResource SectionTitleStyle}"/>
+
+                        <!-- Loading state -->
                         <StackPanel Orientation="Horizontal" Spacing="10"
                                     Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                             <ProgressRing IsActive="True" Width="18" Height="18"/>
-                            <TextBlock Text="Analyzing your PC…"
+                            <TextBlock Text="Analyzing your PC&#x2026;"
                                        Style="{StaticResource BodyTextStyle}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- Tips list -->
                         <ItemsRepeater ItemsSource="{x:Bind ViewModel.PcTips, Mode=OneWay}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="monitoring:PcTip">
@@ -229,7 +199,7 @@
                                 CornerRadius="12"
                                 Padding="12">
                             <TextBlock Style="{StaticResource BodyTextStyle}"
-                                       Text="Tip: If your PC feels slow to start, disable any startup apps you don't need every day."/>
+                                       Text="If your PC feels slow to start, disable any startup apps you don't need every day."/>
                         </Border>
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <FontIcon Glyph="&#xE8F1;" Style="{StaticResource SectionIconStyle}"/>
@@ -295,7 +265,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="10"
                             Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <ProgressRing IsActive="True" Width="20" Height="20"/>
-                    <TextBlock Text="Loading startup apps…" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="Loading startup apps&#x2026;" FontSize="16" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Grouped startup items -->
