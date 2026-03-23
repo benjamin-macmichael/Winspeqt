@@ -2,8 +2,8 @@
 using StartupInventory;
 using System;
 using System.Collections.Generic;
+using System.Management;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 
@@ -44,40 +44,13 @@ namespace Winspeqt.ViewModels.Monitoring
 
         private IReadOnlyList<PcTip> _pcTips = [];
         /// <summary>
-        /// The list of actionable tips shown in the "Why is my PC slow?" section.
+        /// The list of actionable tips shown in the "Analyzing Your PC" section.
         /// </summary>
         public IReadOnlyList<PcTip> PcTips
         {
             get => _pcTips;
             private set => SetProperty(ref _pcTips, value);
         }
-
-        private TimeSpan _systemUptime;
-        public TimeSpan SystemUptime
-        {
-            get => _systemUptime;
-            private set
-            {
-                SetProperty(ref _systemUptime, value);
-                OnPropertyChanged(nameof(UptimeText));
-            }
-        }
-
-        public string UptimeText
-        {
-            get
-            {
-                var days = (int)_systemUptime.TotalDays;
-                if (days >= 1)
-                    return $"Your PC has been running for {days} day{(days == 1 ? "" : "s")} without a restart.";
-                var hours = (int)_systemUptime.TotalHours;
-                return hours >= 1
-                    ? $"Your PC has been running for {hours} hour{(hours == 1 ? "" : "s")}."
-                    : "Your PC was restarted recently.";
-            }
-        }
-
-        public bool UptimeWarning => _systemUptime.TotalDays >= 7;
 
         // ── Startup data ──────────────────────────────────────────────────────
 
@@ -108,8 +81,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
             ShowStartupDetail = false;
         }
-
-        // ── Public helpers ────────────────────────────────────────────────────
 
         // ── Private helpers ───────────────────────────────────────────────────
 
@@ -155,26 +126,148 @@ namespace Winspeqt.ViewModels.Monitoring
             catch { return TimeSpan.Zero; }
         }
 
+        /// <summary>
+        /// Formats a TimeSpan into a human-readable uptime string down to the minute.
+        /// e.g. "3 days, 4 hours, 12 minutes" or "45 minutes"
+        /// </summary>
+        public static string FormatUptime(TimeSpan uptime)
+        {
+            var days = (int)uptime.TotalDays;
+            var hours = uptime.Hours;
+            var minutes = uptime.Minutes;
+
+            if (days >= 1)
+            {
+                var parts = new List<string> { $"{days} day{(days == 1 ? "" : "s")}" };
+                if (hours > 0) parts.Add($"{hours} hour{(hours == 1 ? "" : "s")}");
+                if (minutes > 0) parts.Add($"{minutes} minute{(minutes == 1 ? "" : "s")}");
+                return $"Your PC has been running for {string.Join(", ", parts)} without a restart.";
+            }
+            if (hours >= 1)
+            {
+                var parts = new List<string> { $"{hours} hour{(hours == 1 ? "" : "s")}" };
+                if (minutes > 0) parts.Add($"{minutes} minute{(minutes == 1 ? "" : "s")}");
+                return $"Your PC has been running for {string.Join(", ", parts)}.";
+            }
+            if (minutes >= 1)
+                return $"Your PC has been running for {minutes} minute{(minutes == 1 ? "" : "s")}.";
+
+            return "Your PC was restarted very recently.";
+        }
+
+        /// <summary>
+        /// Attempts to get the BIOS release date via WMI. Returns null on failure.
+        /// </summary>
+        private static DateTime? GetBiosDate()
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT ReleaseDate FROM Win32_BIOS");
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    var raw = obj["ReleaseDate"]?.ToString();
+                    if (!string.IsNullOrEmpty(raw))
+                    {
+                        // WMI datetime format: yyyyMMddHHmmss.mmmmmm+UTC
+                        var dateStr = raw[..8]; // "20181204"
+                        if (DateTime.TryParseExact(dateStr, "yyyyMMdd",
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.None, out var biosDate))
+                            return biosDate;
+                    }
+                }
+            }
+            catch { /* WMI unavailable */ }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the Windows OS install date from the registry.
+        /// </summary>
+        private static DateTime? GetOsInstallDate()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine
+                    .OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                if (key?.GetValue("InstallDate") is int ts)
+                    return DateTimeOffset.FromUnixTimeSeconds(ts).LocalDateTime;
+            }
+            catch { }
+            return null;
+        }
+
         private static IReadOnlyList<PcTip> BuildTips(TimeSpan uptime, StartupApp apps)
         {
             var tips = new List<PcTip>();
 
             // ── Uptime ────────────────────────────────────────────────────────
             var uptimeDays = (int)uptime.TotalDays;
-            if (uptimeDays >= 14)
+            var uptimeFormatted = FormatUptime(uptime);
+
+            if (uptimeDays >= 7)
                 tips.Add(new PcTip(
                     PcTipSeverity.Warning,
-                    "Your PC hasn't been restarted in over 2 weeks",
-                    $"Your PC has been running for {uptimeDays} days. Restarting clears memory, installs pending updates, and can noticeably speed things up.",
+                    "Your PC hasn't been restarted in over a week",
+                    $"{uptimeFormatted} A restart is one of the quickest fixes you can try.",
                     "Restart Now",
                     "restart"));
-            else if (uptimeDays >= 7)
+            else if (uptimeDays >= 3)
                 tips.Add(new PcTip(
                     PcTipSeverity.Info,
                     "Consider restarting your PC",
-                    $"Your PC has been on for {uptimeDays} days. A restart can clear out background processes and free up memory.",
+                    $"{uptimeFormatted} If something is behaving strangely or feeling sluggish, this is always the first thing worth trying.",
                     "Restart Now",
                     "restart"));
+            else
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Restarting is always a good first troubleshooting step",
+                    $"{uptimeFormatted} Some hard-to-find background processes can only be cleared with a reboot. If your PC feels off, a restart is the quickest thing to try.",
+                    "Restart Now",
+                    "restart"));
+
+            // ── PC Age ────────────────────────────────────────────────────────
+            var biosDate = GetBiosDate();
+            var osDate = GetOsInstallDate();
+
+            if (biosDate.HasValue)
+            {
+                var ageYears = (DateTime.Now - biosDate.Value).TotalDays / 365.25;
+                var ageDesc = ageYears >= 1
+                    ? $"{(int)ageYears} year{((int)ageYears == 1 ? "" : "s")} old (BIOS date: {biosDate.Value:MMMM yyyy})"
+                    : $"less than a year old (BIOS date: {biosDate.Value:MMMM yyyy})";
+
+                if (ageYears >= 7)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Warning,
+                        $"Your PC hardware is approximately {ageDesc}",
+                        "Older hardware naturally becomes slower over time as software demands grow. You may want to consider a hardware upgrade or replacing the PC, especially if performance has been degrading gradually.",
+                        null, null));
+                else if (ageYears >= 4)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        $"Your PC hardware is approximately {ageDesc}",
+                        "Your PC is getting on in age. It should still run modern software well, but you may start noticing slowdowns with more demanding applications.",
+                        null, null));
+                else
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        $"Your PC hardware is relatively recent — {ageDesc}",
+                        "Hardware age is unlikely to be the cause of any slowdowns you're experiencing.",
+                        null, null));
+            }
+            else if (osDate.HasValue)
+            {
+                // Fallback: OS install date as a proxy
+                var ageYears = (DateTime.Now - osDate.Value).TotalDays / 365.25;
+                if (ageYears >= 5)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        "Your Windows installation is over 5 years old",
+                        $"Your current Windows installation dates back to around {osDate.Value:MMMM yyyy}. Older installations can accumulate software cruft over time. A clean reinstall can sometimes restore snappiness — though this is a big step.",
+                        null, null));
+            }
 
             // ── Startup apps ──────────────────────────────────────────────────
             var totalStartup = apps.RegistryRun.Count + apps.StartupFolder.Count;
@@ -201,18 +294,11 @@ namespace Winspeqt.ViewModels.Monitoring
                 "Restart File Explorer",
                 "restart-explorer"));
 
-            // ── Network ───────────────────────────────────────────────────────
-            tips.Add(new PcTip(
-                PcTipSeverity.Info,
-                "A slow internet connection can make your PC feel slow",
-                "If apps are taking a long time to load, streaming is choppy, or pages are sluggish, your network could be the bottleneck rather than your PC itself. Anything under 25 Mbps download may cause noticeable slowdowns for everyday tasks.",
-                "Run a Speed Test",
-                "speedtest"));
-
             // ── Disk space ────────────────────────────────────────────────────
             try
             {
-                var drive = new System.IO.DriveInfo(System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)) ?? "C:\\");
+                var drive = new System.IO.DriveInfo(
+                    System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)) ?? "C:\\");
                 var freeGb = drive.AvailableFreeSpace / (1024.0 * 1024 * 1024);
                 var totalGb = drive.TotalSize / (1024.0 * 1024 * 1024);
                 var freePct = freeGb / totalGb * 100;
@@ -234,31 +320,21 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             catch { /* skip if drive info unavailable */ }
 
-            // ── Hardware age (heuristic via OS install date) ──────────────────
-            try
-            {
-                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-                if (key?.GetValue("InstallDate") is int installTimestamp)
-                {
-                    var installDate = DateTimeOffset.FromUnixTimeSeconds(installTimestamp).LocalDateTime;
-                    var ageYears = (DateTime.Now - installDate).TotalDays / 365.25;
-                    if (ageYears >= 5)
-                        tips.Add(new PcTip(
-                            PcTipSeverity.Info,
-                            "Your Windows installation is over 5 years old",
-                            $"Your current Windows installation dates back to around {installDate:MMMM yyyy}. Older installations accumulate software cruft over time. A clean reinstall can sometimes restore snappiness — though this is a big step.",
-                            null, null));
-                }
-            }
-            catch { /* skip */ }
-
-            // ── Always-present general tip ────────────────────────────────────
+            // ── Windows Update ────────────────────────────────────────────────
             tips.Add(new PcTip(
                 PcTipSeverity.Info,
                 "Run Windows Update and check for driver updates",
                 "Outdated drivers (especially graphics and chipset) can cause slowdowns, stuttering, and instability. Keeping Windows and drivers up to date is one of the simplest performance maintenance steps.",
                 "Open Windows Update",
                 "windows-update"));
+
+            // ── Network ───────────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "A slow internet connection can make your PC feel slow",
+                "If apps are taking a long time to load, streaming is choppy, or pages are sluggish, your network could be the bottleneck rather than your PC itself. Anything under 25 Mbps download may cause noticeable slowdowns for everyday tasks.",
+                "Run a Speed Test",
+                "speedtest"));
 
             return tips;
         }
@@ -275,7 +351,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    SystemUptime = uptime;
                     StartupApp = fullStartupApp;
                     StartupAppGroups = BuildGroups(StartupApp, _groupDefinitions);
                     PcTips = BuildTips(uptime, fullStartupApp);

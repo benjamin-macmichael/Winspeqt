@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Winspeqt.ViewModels.Monitoring;
 
 namespace Winspeqt.Views.Monitoring
@@ -44,18 +45,18 @@ namespace Winspeqt.Views.Monitoring
 
         // ── Tip action dispatcher ─────────────────────────────────────────────
 
-        private void TipAction_Click(object sender, RoutedEventArgs e)
+        private async void TipAction_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { CommandParameter: string key })
-                ExecuteTipAction(key);
+                await ExecuteTipActionAsync(key);
         }
 
-        private void ExecuteTipAction(string key)
+        private async Task ExecuteTipActionAsync(string key)
         {
             switch (key)
             {
                 case "restart":
-                    TryStartProcess("shutdown.exe", "/r /t 0", "restart");
+                    await ConfirmAndRestartAsync();
                     break;
                 case "restart-explorer":
                     RestartExplorer();
@@ -75,11 +76,23 @@ namespace Winspeqt.Views.Monitoring
             }
         }
 
-        // ── Uptime ────────────────────────────────────────────────────────────
+        // ── Restart confirmation ──────────────────────────────────────────────
 
-        private void RestartNow_Click(object sender, RoutedEventArgs e)
+        private async Task ConfirmAndRestartAsync()
         {
-            ExecuteTipAction("restart");
+            var dialog = new ContentDialog
+            {
+                Title = "Restart your PC?",
+                Content = "If you confirm, your PC will restart in 10 seconds. Make sure you've saved any open work before continuing.",
+                PrimaryButtonText = "Restart Now",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+                TryStartProcess("shutdown.exe", "/r /g /t 10", "restart");
         }
 
         // ── Startup detail screen handlers ────────────────────────────────────
