@@ -219,6 +219,40 @@
                                 LegendPosition="Top"
                                 Background="#fbfbfb"/>
                         </Border>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="Upload" FontSize="16" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock 
+                                        Text="{x:Bind ViewModel.NetworkSentValue}" 
+                                        Margin="0,0,4,0" 
+                                        Foreground="#4CAF50"
+                                        FontSize="20"/>
+                                    <TextBlock 
+                                        Text="Mbps" 
+                                        Foreground="#4CAF50"
+                                        FontSize="20" />
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="Download" FontSize="16" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock 
+                                        Text="{x:Bind ViewModel.NetworkReceivedValue}" 
+                                        Margin="0,0,4,0" 
+                                        Foreground="#3F51B5"
+                                        FontSize="20" />
+                                    <TextBlock 
+                                        Text="Mbps" 
+                                        Foreground="#3F51B5"
+                                        FontSize="20" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </Border>
                 <Border 
