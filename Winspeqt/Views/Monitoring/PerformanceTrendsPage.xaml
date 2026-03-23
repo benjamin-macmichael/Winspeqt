@@ -106,8 +106,7 @@
                                 Text="Processor (CPU)"
                                 VerticalAlignment="Center"
                                 FontSize="20"
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,0"/>
+                                FontWeight="SemiBold"/>
                             <StackPanel Orientation="Horizontal" Grid.Column="2">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.TotalCpuUsage, Mode=OneWay}"
@@ -128,7 +127,8 @@
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.CpuSeries}"
                                 YAxes="{x:Bind ViewModel.CpuYAxes}"
-                                XAxes="{x:Bind ViewModel.XAxes}"/>
+                                XAxes="{x:Bind ViewModel.XAxes}"
+                                Background="#fbfbfb"/>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -158,13 +158,28 @@
                                 FontSize="20"
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,16"/>
+                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.MemoryPercent, Mode=OneWay}"
+                                    FontSize="28"
+                                    FontWeight="Bold"
+                                    Foreground="#FF9800"
+                                    VerticalAlignment="Center"/>
+                                <TextBlock
+                                    Text="%"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Margin="0,-8,0,16"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.MemorySeries}"
                                 YAxes="{x:Bind ViewModel.MemoryYAxes}"
-                                XAxes="{x:Bind ViewModel.XAxes}"/>
+                                XAxes="{x:Bind ViewModel.XAxes}"
+                                Background="#fbfbfb"/>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -201,7 +216,8 @@
                                 Series="{x:Bind ViewModel.NetworkSeries}"
                                 YAxes="{x:Bind ViewModel.NetworkYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"
-                                LegendPosition="Top"/>
+                                LegendPosition="Top"
+                                Background="#fbfbfb"/>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -217,27 +233,49 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <FontIcon 
+                                Grid.Column="0"
                                 Glyph="&#xE74E;" 
                                 FontFamily="Segoe MDL2 Assets" 
                                 VerticalAlignment="Center"
                                 Foreground="#9C27B0"
                                 FontWeight="SemiBold"
                                 FontSize="20"
-                                Margin="0,0,4,16"/>
+                                Margin="0,0,4,0"/>
                             <TextBlock
+                                Grid.Column="1"
                                 Text="Disk"
                                 FontSize="20"
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,16"/>
-                        </StackPanel>
+                                VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                <TextBlock
+                                    Text="{x:Bind ViewModel.DiskUsagePercent, Mode=OneWay}"
+                                    FontSize="28"
+                                    FontWeight="Bold"
+                                    Foreground="#9C27B0"
+                                    VerticalAlignment="Center"/>    
+                                <TextBlock
+                                    Text="%"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Margin="0,-8,0,16"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.DiskSeries}"
                                 YAxes="{x:Bind ViewModel.DiskYAxes}"
-                                XAxes="{x:Bind ViewModel.XAxes}"/>
+                                XAxes="{x:Bind ViewModel.XAxes}"
+                                Background="#fbfbfb"/>
                         </Border>
                     </StackPanel>
                 </Border>

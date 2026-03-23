@@ -58,6 +58,29 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryUsage, value);
         }
 
+        private long _maxMemory = 0;
+
+        public long MaxMemory { 
+            get => _maxMemory; 
+            set => SetProperty(ref _maxMemory, value); 
+        }
+
+        private long _currentMemory = 0;
+
+        public long CurrentMemory
+        {
+            get => _currentMemory;
+            set { 
+                SetProperty(ref _currentMemory, value);
+                OnPropertyChanged(nameof(MemoryPercent));
+            }
+        }
+
+        public float MemoryPercent
+        {
+            get => _maxMemory > 0 ? _currentMemory / _maxMemory * 100 : 0;
+        }
+
         private ObservableCollection<double> _memoryUsageValues = new();
 
         public ObservableCollection<double> MemoryUsageValues
@@ -84,6 +107,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _diskUsageValues, value);
         }
 
+        private double _diskUsagePercent = 0;
+
+        public double DiskUsagePercent
+        {
+            get => _diskUsagePercent;
+            set => SetProperty(ref _diskUsagePercent, value);
+        }
+
         public ISeries[] DiskSeries { get; }
         public IEnumerable<ICartesianAxis> DiskYAxes { get; }
 
@@ -102,6 +133,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _networkSentValues, value);
         }
 
+        private double _networkSentValue = 0;
+
+        public double NetworkSentValue
+        {
+            get => _networkSentValue;
+            set => SetProperty(ref _networkSentValue, value);
+        }
+
         private Queue<double> _networkReceived = new Queue<double>(new double[_secondsTracked]);
         public Queue<double> NetworkReceived
         {
@@ -115,6 +154,14 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             get => _networkReceivedValues;
             set => SetProperty(ref _networkReceivedValues, value);
+        }
+
+        private double _networkReceivedValue = 0;
+
+        public double NetworkReceivedValue
+        {
+            get => _networkReceivedValue;
+            set => SetProperty(ref _networkReceivedValue, value);
         }
 
         public ISeries[] NetworkSeries { get; }
@@ -327,9 +374,16 @@ namespace Winspeqt.ViewModels.Monitoring
                     //System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
                     var totalMb = await _monitorService.GetTotalMemoryMBAsync();
+                    var usedMb = totalMb - availableMb;
+                    System.Diagnostics.Debug.Print($"Used memory: {usedMb}");
                     if (totalMb > 0)
                     {
-                        memoryUsedPercent = (totalMb - availableMb) * 100.0 / totalMb;
+                        memoryUsedPercent = usedMb * 100.0 / totalMb;
+                        // one of these ought to become a constant set in the view model and the other ought to become a variable
+                        MaxMemory = totalMb;
+                        System.Diagnostics.Debug.Print($"Max memory: {MaxMemory}");
+                        //CurrentMemory = usedMb;
+                        //System.Diagnostics.Debug.Print($"Current memory: {CurrentMemory}");
                     }
                 }
                 catch (Exception ex)
@@ -384,6 +438,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _diskUsage.Dequeue();
                     _diskUsage.Enqueue(diskActivePercent);
+                    DiskUsagePercent = diskActivePercent;
 
                     DiskUsageValues.Clear();
                     foreach (var v in _diskUsage)
@@ -395,11 +450,15 @@ namespace Winspeqt.ViewModels.Monitoring
                     foreach (var v in _networkSent)
                         NetworkSentValues.Add(v);
 
+                    NetworkSentValue = networkReceivedMbps;
+
                     _networkReceived.Dequeue();
                     _networkReceived.Enqueue(networkReceivedMbps);
                     NetworkReceivedValues.Clear();
                     foreach (var v in _networkReceived)
                         NetworkReceivedValues.Add(v);
+
+                    NetworkReceivedValue = networkReceivedMbps;
 
                     IsLoading = false;
                 });
