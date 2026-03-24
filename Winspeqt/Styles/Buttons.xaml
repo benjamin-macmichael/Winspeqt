@@ -40,12 +40,26 @@
         <Setter Property="BorderBrush" Value="{StaticResource NeutralActionBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,8" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style x:Key="PrimaryActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource ActionPrimaryBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="20,10" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <Style x:Key="PageHeaderActionButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryActionButtonStyle}">
+        <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <Style x:Key="DangerActionButtonStyle" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource FeatureCriticalBrush}" />
+        <Setter Property="Background" Value="{StaticResource ActionDangerBrush}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="12,8" />
+        <Setter Property="CornerRadius" Value="6" />
     </Style>
 </ResourceDictionary>

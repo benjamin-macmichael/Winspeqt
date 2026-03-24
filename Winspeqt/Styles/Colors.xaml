@@ -9,6 +9,8 @@
     <SolidColorBrush x:Key="FeatureCriticalBrush" Color="#F44336" />
     <SolidColorBrush x:Key="FeatureHighlightBrush" Color="#9C27B0" />
     <SolidColorBrush x:Key="FeatureIndigoBrush" Color="#3F51B5" />
+    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#007ACC" />
+    <SolidColorBrush x:Key="ActionDangerBrush" Color="#BC2F32" />
     <SolidColorBrush x:Key="SoftInfoBackgroundBrush" Color="#DCEEFF" />
     <SolidColorBrush x:Key="SoftInfoForegroundBrush" Color="#1565C0" />
     <SolidColorBrush x:Key="NeutralActionBrush" Color="#616161" />

@@ -3,6 +3,7 @@
     x:Class="Winspeqt.Views.Optimization.AppDataCleanupCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Winspeqt.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Winspeqt.Models"
@@ -10,8 +11,17 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
+        <Style x:Key="CleanupStatusPanelStyle" TargetType="StackPanel">
+            <Setter Property="Spacing" Value="8"/>
+        </Style>
 
-        <!-- Row item template -->
+        <Style x:Key="CleanupEmptyStateStyle" TargetType="StackPanel">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Spacing" Value="12"/>
+            <Setter Property="Padding" Value="0,40"/>
+        </Style>
+
         <DataTemplate x:Key="OrphanRowTemplate" x:DataType="models:OrphanedAppDataEntry">
             <Grid Padding="0,10" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -22,13 +32,11 @@
                     <ColumnDefinition Width="80"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Checkbox -->
                 <CheckBox Grid.Column="0"
                           IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                           VerticalAlignment="Center"
                           MinWidth="0"/>
 
-                <!-- Folder name + path -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                     <TextBlock Text="{x:Bind FolderName}"
                                Style="{ThemeResource BodyStrongTextBlockStyle}"
@@ -39,10 +47,8 @@
                                TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 
-                <!-- Location badge -->
                 <Border Grid.Column="2"
-                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                        CornerRadius="4"
+                        Style="{StaticResource MetricTileBorderStyle}"
                         Padding="6,2"
                         VerticalAlignment="Center">
                     <TextBlock Text="{x:Bind LocationLabel}"
@@ -50,14 +56,12 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </Border>
 
-                <!-- Size -->
                 <TextBlock Grid.Column="3"
                            Text="{x:Bind SizeDisplay}"
                            Style="{ThemeResource BodyTextBlockStyle}"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"/>
 
-                <!-- Age -->
                 <TextBlock Grid.Column="4"
                            Text="{x:Bind LastModifiedDisplay}"
                            Style="{ThemeResource CaptionTextBlockStyle}"
@@ -66,98 +70,34 @@
                            VerticalAlignment="Center"/>
             </Grid>
         </DataTemplate>
-
     </Page.Resources>
 
     <ScrollViewer>
-        <Grid Padding="60">
+        <Grid Padding="{StaticResource PagePadding}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <!-- header -->
                 <RowDefinition Height="Auto"/>
-                <!-- progress / status -->
                 <RowDefinition Height="*"/>
-                <!-- results card -->
                 <RowDefinition Height="Auto"/>
-                <!-- footer actions -->
             </Grid.RowDefinitions>
 
-            <!-- ── Header ──────────────────────────────────────────────────── -->
-            <Grid Grid.Row="0" Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <controls:StandardPageHeader
+                Grid.Row="0"
+                BackText="Optimization Home"
+                BackRequested="BackButton_Click"
+                IconGlyph="&#xE74D;"
+                IconBrush="{StaticResource FeatureAttentionBrush}"
+                Title="Safe AppData Cleanup"
+                Subtitle="Find and remove leftover folders from apps you've already uninstalled."
+                ActionText="Scan Now"
+                ActionVisibility="Visible"
+                ActionIsEnabled="{x:Bind ViewModel.CanScan, Mode=OneWay}"
+                ActionRequested="ScanButton_Click"/>
 
-                <Button
-                    Grid.Row="0" Grid.Column="0"
-                    Click="BackButton_Click"
-                    Margin="0,0,20,0"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Padding="8"
-                    VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE76B;" FontSize="16"/>
-                        <TextBlock Text="Optimization Home" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                    <Grid
-                        Grid.Row="0"
-                        Grid.Column="1"
-                        Margin="0,0,0,4"
-                        VerticalAlignment="Center">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            Grid.Column="0"
-                            Glyph="&#xE74D;"
-                            FontSize="40"
-                            Foreground="#FF9800"
-                            Margin="0,0,12,0"
-                            VerticalAlignment="Center"/>
-                        <TextBlock
-                            Grid.Column="1"
-                            Text="Safe AppData Cleanup"
-                            FontSize="36"
-                            FontWeight="Bold"
-                            TextWrapping="WrapWholeWords"
-                            VerticalAlignment="Center"/>
-                    </Grid>
-                <TextBlock
-                    Text="Find and remove leftover folders from apps you've already uninstalled."
-                    FontSize="18"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="WrapWholeWords"
-                    Margin="0,4,0,0"
-                    Grid.Row="1" Grid.Column="1"/>
-
-                <Button
-                    x:Name="ScanButton"
-                    Grid.Row="0" Grid.Column="2"
-                    Content="Scan Now"
-                    Style="{ThemeResource AccentButtonStyle}"
-                    IsEnabled="{x:Bind ViewModel.CanScan, Mode=OneWay}"
-                    Click="ScanButton_Click"
-                    VerticalAlignment="Center"
-                    Padding="20,10"/>
-            </Grid>
-
-            <!-- ── Progress / Status strip ──────────────────────────────────── -->
             <Grid Grid.Row="1" Margin="0,0,0,16">
-
-                <!-- Scanning in progress -->
                 <StackPanel x:Name="ScanningPanel"
-                            Visibility="Collapsed"
-                            Spacing="8">
+                            Style="{StaticResource CleanupStatusPanelStyle}"
+                            Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <ProgressRing IsActive="True" Width="18" Height="18"/>
                         <TextBlock x:Name="ScanStatusText"
@@ -168,10 +108,9 @@
                     <ProgressBar IsIndeterminate="True"/>
                 </StackPanel>
 
-                <!-- Deleting in progress -->
                 <StackPanel x:Name="DeletingPanel"
-                            Visibility="Collapsed"
-                            Spacing="8">
+                            Style="{StaticResource CleanupStatusPanelStyle}"
+                            Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <ProgressRing IsActive="True" Width="18" Height="18"/>
                         <TextBlock x:Name="DeleteStatusText"
@@ -182,124 +121,106 @@
                     <ProgressBar x:Name="DeleteProgressBar" Value="0" Maximum="100"/>
                 </StackPanel>
 
-                <!-- Result / info message -->
                 <InfoBar x:Name="ResultInfoBar"
                          IsOpen="False"
                          IsClosable="True"/>
             </Grid>
 
-            <!-- ── Results card ─────────────────────────────────────────────── -->
             <Border Grid.Row="2"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
+                    Style="{StaticResource StandardCardBorderStyle}"
                     Padding="24"
                     MinHeight="260">
                 <Grid>
-
-                <!-- Not yet scanned -->
-                <StackPanel x:Name="PreScanState"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Spacing="12"
-                            Padding="0,40">
-                    <FontIcon Glyph="&#xE838;"
-                              FontSize="56"
-                              Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                              HorizontalAlignment="Center"/>
-                    <TextBlock Text="Click &quot;Scan Now&quot; to find leftover AppData folders from uninstalled apps."
-                               FontSize="16"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Scan ran, nothing found -->
-                <StackPanel x:Name="CleanState"
-                            Visibility="Collapsed"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Spacing="12"
-                            Padding="0,40">
-                    <FontIcon Glyph="&#xE73E;"
-                              FontSize="56"
-                              Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                              HorizontalAlignment="Center"/>
-                    <TextBlock Text="No orphaned folders found &#x2014; your AppData looks clean!"
-                               FontSize="16"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               HorizontalAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Results list -->
-                <Grid x:Name="ResultsPanel" Visibility="Collapsed" RowSpacing="8">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Column headers + select-all -->
-                    <Grid Grid.Row="0"
-                          Padding="0,0,0,8"
-                          BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                          BorderThickness="0,0,0,1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="80"/>
-                        </Grid.ColumnDefinitions>
-
-                        <CheckBox x:Name="SelectAllCheckBox"
-                                  Grid.Column="0"
-                                  MinWidth="0"
-                                  Click="SelectAllCheckBox_Click"
-                                  ToolTipService.ToolTip="Select / deselect all"/>
-
-                        <TextBlock Grid.Column="1"
-                                   Text="Folder"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                    <StackPanel x:Name="PreScanState"
+                                Style="{StaticResource CleanupEmptyStateStyle}">
+                        <FontIcon Glyph="&#xE838;"
+                                  FontSize="56"
+                                  Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="Click &quot;Scan Now&quot; to find leftover AppData folders from uninstalled apps."
+                                   Style="{StaticResource BodyTextStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   VerticalAlignment="Center"/>
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </StackPanel>
 
-                        <TextBlock Grid.Column="2"
-                                   Text="Location"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
+                    <StackPanel x:Name="CleanState"
+                                Style="{StaticResource CleanupEmptyStateStyle}"
+                                Visibility="Collapsed">
+                        <FontIcon Glyph="&#xE73E;"
+                                  FontSize="56"
+                                  Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="No orphaned folders found. Your AppData looks clean."
+                                   Style="{StaticResource BodyTextStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   VerticalAlignment="Center"/>
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </StackPanel>
 
-                        <TextBlock Grid.Column="3"
-                                   Text="Size"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center"/>
+                    <Grid x:Name="ResultsPanel" Visibility="Collapsed" RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Column="4"
-                                   Text="Last Used"
-                                   Style="{ThemeResource CaptionTextBlockStyle}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center"/>
+                        <Grid Grid.Row="0"
+                              Padding="0,0,0,8"
+                              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                              BorderThickness="0,0,0,1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox x:Name="SelectAllCheckBox"
+                                      Grid.Column="0"
+                                      MinWidth="0"
+                                      Click="SelectAllCheckBox_Click"
+                                      ToolTipService.ToolTip="Select / deselect all"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Folder"
+                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="Location"
+                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="3"
+                                       Text="Size"
+                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Column="4"
+                                       Text="Last Used"
+                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="1" MaxHeight="480" Margin="0,4,0,0">
+                            <ItemsRepeater x:Name="OrphanList"
+                                           ItemTemplate="{StaticResource OrphanRowTemplate}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="0"/>
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </ScrollViewer>
                     </Grid>
-
-                    <!-- Scrollable item list -->
-                    <ScrollViewer Grid.Row="1" MaxHeight="480" Margin="0,4,0,0">
-                        <ItemsRepeater x:Name="OrphanList"
-                                       ItemTemplate="{StaticResource OrphanRowTemplate}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Spacing="0"/>
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </ScrollViewer>
-                </Grid>
-
                 </Grid>
             </Border>
 
-            <!-- ── Footer actions ───────────────────────────────────────────── -->
             <Grid Grid.Row="3" x:Name="FooterBar" Visibility="Collapsed" Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -319,17 +240,10 @@
                 <Button x:Name="DeleteButton"
                         Grid.Column="1"
                         Content="Delete Selected"
+                        Style="{StaticResource DangerActionButtonStyle}"
                         IsEnabled="False"
-                        Click="DeleteButton_Click">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-                            <Setter Property="Background" Value="{ThemeResource SystemFillColorCriticalBrush}"/>
-                            <Setter Property="Foreground" Value="White"/>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                        Click="DeleteButton_Click"/>
             </Grid>
-
         </Grid>
     </ScrollViewer>
 </Page>

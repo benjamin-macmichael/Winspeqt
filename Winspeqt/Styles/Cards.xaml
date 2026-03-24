@@ -24,6 +24,11 @@
         <Setter Property="Padding" Value="{StaticResource CardPaddingLarge}" />
     </Style>
 
+    <Style x:Key="HeroCardBorderStyle" TargetType="Border" BasedOn="{StaticResource StandardCardBorderStyle}">
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+        <Setter Property="Padding" Value="40" />
+    </Style>
+
     <Style x:Key="CompactCardBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
@@ -35,6 +40,12 @@
     <Style x:Key="InfoTileBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SoftInfoBackgroundBrush}" />
         <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}" />
+    </Style>
+
+    <Style x:Key="MetricTileBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}" />
+        <Setter Property="Padding" Value="{StaticResource CardPaddingMedium}" />
     </Style>
 
     <Style x:Key="WarningBannerBorderStyle" TargetType="Border">

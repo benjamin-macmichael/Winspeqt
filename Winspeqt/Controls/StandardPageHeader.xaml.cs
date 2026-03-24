@@ -93,6 +93,15 @@ namespace Winspeqt.Controls
         public static readonly DependencyProperty ActionVisibilityProperty =
             DependencyProperty.Register(nameof(ActionVisibility), typeof(Visibility), typeof(StandardPageHeader), new PropertyMetadata(Visibility.Collapsed));
 
+        public bool ActionIsEnabled
+        {
+            get => (bool)GetValue(ActionIsEnabledProperty);
+            set => SetValue(ActionIsEnabledProperty, value);
+        }
+
+        public static readonly DependencyProperty ActionIsEnabledProperty =
+            DependencyProperty.Register(nameof(ActionIsEnabled), typeof(bool), typeof(StandardPageHeader), new PropertyMetadata(true));
+
         public Thickness HeaderMargin
         {
             get => (Thickness)GetValue(HeaderMarginProperty);
@@ -121,6 +130,7 @@ namespace Winspeqt.Controls
             DependencyProperty.Register(nameof(ActionGlyphVisibility), typeof(Visibility), typeof(StandardPageHeader), new PropertyMetadata(Visibility.Collapsed));
 
         public event RoutedEventHandler? BackRequested;
+        public event RoutedEventHandler? ActionRequested;
 
         private static void OnIconGlyphChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -141,6 +151,11 @@ namespace Winspeqt.Controls
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             BackRequested?.Invoke(this, e);
+        }
+
+        private void ActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            ActionRequested?.Invoke(this, e);
         }
     }
 }
