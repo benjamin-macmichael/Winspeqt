@@ -8,7 +8,8 @@
     xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     xmlns:helpers="using:Winspeqt.Helpers"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    SizeChanged="ChartsGrid_SizeChanged">
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
