@@ -31,8 +31,13 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
                 <Button
+                    Grid.Row="0"
                     Grid.Column="0"
                     Click="BackButton_Click"
                     Background="Transparent"
@@ -45,19 +50,42 @@
                     </StackPanel>
                 </Button>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="0,0,0,4"
+                    VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Grid.Column="0"
+                        Glyph="&#xE7C4;"
+                        FontSize="40"
+                        Foreground="#FF9800"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"/>
                     <TextBlock
+                        Grid.Column="1"
                         Text="Friendly Task Manager"
                         FontSize="36"
-                        FontWeight="Bold"/>
-                    <TextBlock
-                        Text="See what's using your computer's resources"
-                        FontSize="18"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Margin="0,4,0,0"/>
-                </StackPanel>
+                        FontWeight="Bold"
+                        TextWrapping="WrapWholeWords"
+                        VerticalAlignment="Center"/>
+                </Grid>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Text="See what's using your computer's resources"
+                    FontSize="18"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="WrapWholeWords"
+                    Margin="0,4,0,0"/>
 
                 <Button
+                    Grid.Row="0"
                     Grid.Column="2"
                     Command="{Binding RefreshCommand}"
                     FontSize="16"
