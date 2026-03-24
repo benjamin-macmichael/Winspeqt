@@ -52,32 +52,32 @@ namespace Winspeqt.Models
         /// <summary>Human-readable connection state.</summary>
         public string StateDisplay => State switch
         {
-            "Established" or "ESTABLISHED"         => "ESTABLISHED",
-            "CloseWait"   or "CLOSE_WAIT"          => "CLOSE WAIT",
-            "TimeWait"    or "TIME_WAIT"            => "TIME WAIT",
-            "SynSent"     or "SYN_SENT"            => "CONNECTING",
-            "SynReceived" or "SYN_RECEIVED"        => "INCOMING",
-            "FinWait1"    or "FIN_WAIT_1"          => "FIN WAIT 1",
-            "FinWait2"    or "FIN_WAIT_2"          => "FIN WAIT 2",
-            "LISTENING"                             => "LISTENING",
+            "Established" or "ESTABLISHED" => "ESTABLISHED",
+            "CloseWait" or "CLOSE_WAIT" => "CLOSE WAIT",
+            "TimeWait" or "TIME_WAIT" => "TIME WAIT",
+            "SynSent" or "SYN_SENT" => "CONNECTING",
+            "SynReceived" or "SYN_RECEIVED" => "INCOMING",
+            "FinWait1" or "FIN_WAIT_1" => "FIN WAIT 1",
+            "FinWait2" or "FIN_WAIT_2" => "FIN WAIT 2",
+            "LISTENING" => "LISTENING",
             _ => State.ToUpperInvariant()
         };
 
         /// <summary>Hex color representing risk level — use with StringToBrushConverter.</summary>
         public string RiskColor => RiskLevel switch
         {
-            "High"   => "#D13438",
+            "High" => "#D13438",
             "Medium" => "#FF9800",
-            "Low"    => "#7eb900",
-            _        => "#555555"
+            "Low" => "#7eb900",
+            _ => "#555555"
         };
 
         /// <summary>Hex color for state badge.</summary>
         public string StateColor => State switch
         {
             "Established" or "ESTABLISHED" => "#2196F3",
-            "LISTENING"                     => "#7eb900",
-            _                               => "#888888"
+            "LISTENING" => "#7eb900",
+            _ => "#888888"
         };
     }
 }

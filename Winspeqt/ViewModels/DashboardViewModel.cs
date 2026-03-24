@@ -1,3 +1,4 @@
+// NOTE: Change "Total Memory" label in DashboardPage.xaml to "Disk Usage"
 using Microsoft.UI.Dispatching;
 using System;
 using System.IO;
@@ -15,12 +16,14 @@ namespace Winspeqt.ViewModels
         public ICommand MonitoringCommand { get; }
         public ICommand SettingsCommand { get; }
 
+        public ICommand SecurityScoreCommand { get; }
+        public ICommand DiskCommand { get; }
+        public ICommand RamCommand { get; }
+
         public event EventHandler<string>? NavigationRequested;
 
-        private readonly SecurityService _securityService = new();
         private readonly SystemMonitorService _systemMonitor = new();
         private DispatcherQueueTimer? _fastTimer;
-        private DispatcherQueueTimer? _slowTimer;
 
         // Security Score
         private int _securityScore;
@@ -64,47 +67,68 @@ namespace Winspeqt.ViewModels
             OptimizationCommand = new RelayCommand(OnOptimizationClicked);
             MonitoringCommand = new RelayCommand(OnMonitoringClicked);
             SettingsCommand = new RelayCommand(OnSettingsClicked);
+
+            SecurityScoreCommand = new RelayCommand(OnSecurityClicked);
+            DiskCommand = new RelayCommand(OnOptimizationClicked);
+            RamCommand = new RelayCommand(() => NavigationRequested?.Invoke(this, "ResourceTrends"));
         }
 
         public void StartRefresh(DispatcherQueue dispatcher)
         {
-            _ = LoadSecurityAsync();
             _ = LoadSystemMetricsAsync();
+
+            // Delay security score load slightly so the ProgressRing animation plays
+            _ = Task.Delay(100).ContinueWith(_ =>
+            {
+                dispatcher.TryEnqueue(() => LoadSecurityScoreFromCache());
+            });
 
             // RAM + Disk refresh every 5 seconds
             _fastTimer = dispatcher.CreateTimer();
             _fastTimer.Interval = TimeSpan.FromSeconds(5);
             _fastTimer.Tick += async (s, e) => await LoadSystemMetricsAsync();
             _fastTimer.Start();
-
-            // Security score refresh every 60 seconds
-            _slowTimer = dispatcher.CreateTimer();
-            _slowTimer.Interval = TimeSpan.FromSeconds(60);
-            _slowTimer.Tick += async (s, e) => await LoadSecurityAsync();
-            _slowTimer.Start();
         }
 
         public void StopRefresh()
         {
             _fastTimer?.Stop();
             _fastTimer = null;
-            _slowTimer?.Stop();
-            _slowTimer = null;
         }
 
-        private async Task LoadSecurityAsync()
+        private void LoadSecurityScoreFromCache()
         {
             try
             {
-                var status = await _securityService.GetSecurityStatusAsync();
-                var score = status.OverallSecurityScore;
-                SecurityScore = score;
-                SecurityScoreText = $"{score}/100";
-                SecurityScoreColor = score >= 80 ? "#4CAF50" : score >= 60 ? "#FFC107" : "#F44336";
+                var c = Windows.Storage.ApplicationData.Current.LocalSettings.Values;
+
+                if (c.ContainsKey("SecurityStatus_HealthScore"))
+                {
+                    var score = (int)c["SecurityStatus_HealthScore"];
+                    SecurityScore = score;
+                    SecurityScoreText = $"{score}/100";
+                    SecurityScoreColor = score >= 80 ? "#4CAF50" : score >= 60 ? "#FFC107" : "#F44336";
+
+                    // Optionally show stale indicator if scan was a long time ago
+                    if (c.ContainsKey("SecurityStatus_LastScanTime"))
+                    {
+                        var ticks = (long)c["SecurityStatus_LastScanTime"];
+                        var lastScan = new DateTime(ticks, DateTimeKind.Local);
+                        var daysSince = (DateTime.Now - lastScan).TotalDays;
+                        if (daysSince > 7)
+                            SecurityScoreText = $"{score}/100*"; // asterisk hints the score may be stale
+                    }
+                }
+                else
+                {
+                    // No scan has been run yet
+                    SecurityScoreText = "No scan yet";
+                    SecurityScoreColor = "#808080";
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading security score: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error loading security score from cache: {ex.Message}");
                 SecurityScoreText = "Error";
                 SecurityScoreColor = "#808080";
             }
