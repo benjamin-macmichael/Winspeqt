@@ -13,6 +13,72 @@
 
     <Page.Resources>
         <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <SolidColorBrush x:Key="CpuAccentBrush" Color="#2196F3"/>
+        <SolidColorBrush x:Key="MemoryAccentBrush" Color="#FF9800"/>
+        <SolidColorBrush x:Key="DiskAccentBrush" Color="#9C27B0"/>
+        <SolidColorBrush x:Key="NetworkUploadBrush" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="NetworkDownloadBrush" Color="#3F51B5"/>
+        <SolidColorBrush x:Key="TrendChartBackgroundBrush" Color="#FBFBFB"/>
+
+        <Style x:Key="PerformancePageTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style x:Key="PerformancePageSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+
+        <Style x:Key="TrendCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="28"/>
+            <Setter Property="MinHeight" Value="300"/>
+            <Setter Property="MaxHeight" Value="600"/>
+        </Style>
+
+        <Style x:Key="TrendCardHeaderIconStyle" TargetType="FontIcon">
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+
+        <Style x:Key="TrendCardTitleStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="TrendMetricValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="TrendMetricSuffixStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="Margin" Value="0,-8,0,16"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="TrendDetailValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+        </Style>
+
+        <Style x:Key="TrendDetailSecondaryStyle" TargetType="TextBlock" BasedOn="{StaticResource TrendDetailValueStyle}">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </Style>
+
+        <Style x:Key="TrendChartHostStyle" TargetType="Border">
+            <Setter Property="MinHeight" Value="250"/>
+        </Style>
     </Page.Resources>
 
     <ScrollViewer>
@@ -47,12 +113,10 @@
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock 
                         Text="Resource Trends" 
-                        FontSize="36" 
-                        FontWeight="Bold"/>
+                        Style="{StaticResource PerformancePageTitleStyle}"/>
                     <TextBlock 
                         Text="See what's using your computer's resources over time" 
-                        FontSize="18" 
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource PerformancePageSubtitleStyle}"
                         Margin="0,4,0,0"/>
                 </StackPanel>
 
@@ -78,14 +142,9 @@
                 <Border 
                     x:Name="CpuCard"
                     Grid.Column="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
+                    Style="{StaticResource TrendCardStyle}"
                     Margin="0,0,12,0"
-                    MinHeight="300"
-                    MaxHeight="600">
+                    >
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
@@ -96,54 +155,37 @@
                             <FontIcon 
                                 Grid.Column="0"
                                 Glyph="&#xEC4E;" 
-                                FontFamily="Segoe MDL2 Assets" 
-                                VerticalAlignment="Center"
-                                Foreground="#2196F3"
-                                FontWeight="SemiBold"
-                                FontSize="20"
-                                Margin="0,0,4,0"/>
+                                Style="{StaticResource TrendCardHeaderIconStyle}"
+                                Foreground="{StaticResource CpuAccentBrush}"/>
                             <TextBlock
                                 Grid.Column="1"
                                 Text="Processor (CPU)"
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                FontWeight="SemiBold"/>
+                                Style="{StaticResource TrendCardTitleStyle}"/>
                             <StackPanel Orientation="Horizontal" Grid.Column="2">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.TotalCpuUsage, Mode=OneWay}"
-                                    FontSize="28"
-                                    FontWeight="Bold"
-                                    Foreground="#2196F3"
-                                    VerticalAlignment="Center"/>
+                                    Style="{StaticResource TrendMetricValueStyle}"
+                                    Foreground="{StaticResource CpuAccentBrush}"/>
                                 <TextBlock
                                     Text="%"
-                                    FontSize="14"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Margin="0,-8,0,16"
-                                    VerticalAlignment="Center"/>
+                                    Style="{StaticResource TrendMetricSuffixStyle}"/>
                             </StackPanel>
                         </Grid>
-                        <Border
-                            MinHeight="250">
+                        <Border Style="{StaticResource TrendChartHostStyle}">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.CpuSeries}"
                                 YAxes="{x:Bind ViewModel.CpuYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"
-                                Background="#fbfbfb"/>
+                                Background="{StaticResource TrendChartBackgroundBrush}"/>
                         </Border>
                     </StackPanel>
                 </Border>
                 <Border 
                     x:Name="MemoryCard"
                     Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
+                    Style="{StaticResource TrendCardStyle}"
                     Margin="0,0,12,0"
-                    MinHeight="300"
-                    MaxHeight="600">
+                    >
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
@@ -154,81 +196,56 @@
                             <FontIcon 
                                 Grid.Column="0"
                                 Glyph="&#xE7F1;" 
-                                FontFamily="Segoe MDL2 Assets" 
-                                VerticalAlignment="Center"
-                                Foreground="#FF9800"
-                                FontWeight="SemiBold"
-                                FontSize="20"
-                                Margin="0,0,4,0"/>
+                                Style="{StaticResource TrendCardHeaderIconStyle}"
+                                Foreground="{StaticResource MemoryAccentBrush}"/>
                             <TextBlock
                                 Grid.Column="1"
-                                VerticalAlignment="Center"
                                 Text="Memory (RAM)"
-                                FontSize="20"
-                                FontWeight="SemiBold"/>
+                                Style="{StaticResource TrendCardTitleStyle}"/>
                             <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.MemoryPercent, Mode=OneWay}"
-                                    FontSize="28"
-                                    FontWeight="Bold"
-                                    Foreground="#FF9800"
-                                    VerticalAlignment="Center"/>
+                                    Style="{StaticResource TrendMetricValueStyle}"
+                                    Foreground="{StaticResource MemoryAccentBrush}"/>
                                 <TextBlock
                                     Text="%"
-                                    FontSize="14"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Margin="0,-8,0,16"
-                                    VerticalAlignment="Center"/>
+                                    Style="{StaticResource TrendMetricSuffixStyle}"/>
                             </StackPanel>
                         </Grid>
-                        <Border
-                            MinHeight="250">
+                        <Border Style="{StaticResource TrendChartHostStyle}">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.MemorySeries}"
                                 YAxes="{x:Bind ViewModel.MemoryYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"
-                                Background="#fbfbfb"/>
+                                Background="{StaticResource TrendChartBackgroundBrush}"/>
                         </Border>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBlock 
                                 Text="{x:Bind ViewModel.CurrentMemory, Mode=OneWay}"
-                                Foreground="#FF9800"
-                                FontSize="20"
-                                Margin="0,0,4,0" />
+                                Style="{StaticResource TrendDetailValueStyle}"
+                                Foreground="{StaticResource MemoryAccentBrush}" />
                             <TextBlock 
                                 Text="MB"
-                                Foreground="#FF9800"
-                                FontSize="20"
-                                Margin="0,0,4,0" />
+                                Style="{StaticResource TrendDetailValueStyle}"
+                                Foreground="{StaticResource MemoryAccentBrush}" />
                             <TextBlock 
                                 Text="/"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                FontSize="20"
-                                Margin="0,0,4,0" />
+                                Style="{StaticResource TrendDetailSecondaryStyle}" />
                             <TextBlock 
                                 Text="{x:Bind ViewModel.MaxMemory, Mode=OneWay}"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                FontSize="20"
-                                Margin="0,0,4,0" />
+                                Style="{StaticResource TrendDetailSecondaryStyle}" />
                             <TextBlock 
                                 Text="MB"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                FontSize="20"
-                                Margin="0,0,4,0" />
+                                Style="{StaticResource TrendDetailSecondaryStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border 
                     x:Name="NetworkCard"
                     Grid.Column="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
+                    Style="{StaticResource TrendCardStyle}"
                     Margin="0,12,12,0"
-                    MinHeight="300"
-                    MaxHeight="600">
+                    >
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
@@ -240,29 +257,23 @@
                             <FontIcon 
                                 Grid.Column="0"
                                 Glyph="&#xE774;" 
-                                FontFamily="Segoe MDL2 Assets" 
-                                VerticalAlignment="Center"
-                                Foreground="#4CAF50"
-                                FontWeight="SemiBold"
-                                FontSize="20"
-                                Margin="0,0,4,0"/>
+                                Style="{StaticResource TrendCardHeaderIconStyle}"
+                                Foreground="{StaticResource NetworkUploadBrush}"/>
                             <TextBlock
                                 Grid.Column="1"
                                 Text="Network"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
+                                Style="{StaticResource TrendCardTitleStyle}"/>
                             <StackPanel Orientation="Vertical" Grid.Column="2" HorizontalAlignment="Left">
                                     <TextBlock Text="Upload" FontSize="16" />
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock 
                                         Text="{x:Bind ViewModel.NetworkSentValue, Mode=OneWay}" 
                                         Margin="0,0,4,0" 
-                                        Foreground="#4CAF50"
+                                        Foreground="{StaticResource NetworkUploadBrush}"
                                         FontSize="20"/>
                                         <TextBlock 
                                         Text="Mbps" 
-                                        Foreground="#4CAF50"
+                                        Foreground="{StaticResource NetworkUploadBrush}"
                                         FontSize="20" />
                                     </StackPanel>
                                 </StackPanel>
@@ -272,36 +283,30 @@
                                     <TextBlock 
                                         Text="{x:Bind ViewModel.NetworkReceivedValue, Mode=OneWay}" 
                                         Margin="0,0,4,0" 
-                                        Foreground="#3F51B5"
+                                        Foreground="{StaticResource NetworkDownloadBrush}"
                                         FontSize="20" />
                                     <TextBlock 
                                         Text="Mbps" 
-                                        Foreground="#3F51B5"
+                                        Foreground="{StaticResource NetworkDownloadBrush}"
                                         FontSize="20" />
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
-                        <Border
-                            MinHeight="250">
+                        <Border Style="{StaticResource TrendChartHostStyle}">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.NetworkSeries}"
                                 YAxes="{x:Bind ViewModel.NetworkYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"
-                                Background="#fbfbfb"/>
+                                Background="{StaticResource TrendChartBackgroundBrush}"/>
                         </Border>
                     </StackPanel>
                 </Border>
                 <Border 
                     x:Name="DiskCard"
                     Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Padding="28"
+                    Style="{StaticResource TrendCardStyle}"
                     Margin="12,12,0,0"
-                    MinHeight="300"
-                    MaxHeight="600">
+                    >
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
@@ -312,40 +317,28 @@
                             <FontIcon 
                                 Grid.Column="0"
                                 Glyph="&#xE74E;" 
-                                FontFamily="Segoe MDL2 Assets" 
-                                VerticalAlignment="Center"
-                                Foreground="#9C27B0"
-                                FontWeight="SemiBold"
-                                FontSize="20"
-                                Margin="0,0,4,0"/>
+                                Style="{StaticResource TrendCardHeaderIconStyle}"
+                                Foreground="{StaticResource DiskAccentBrush}"/>
                             <TextBlock
                                 Grid.Column="1"
                                 Text="Disk"
-                                FontSize="20"
-                                FontWeight="SemiBold"
-                                VerticalAlignment="Center"/>
+                                Style="{StaticResource TrendCardTitleStyle}"/>
                             <StackPanel Orientation="Horizontal" Grid.Column="2">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.DiskUsagePercent, Mode=OneWay}"
-                                    FontSize="28"
-                                    FontWeight="Bold"
-                                    Foreground="#9C27B0"
-                                    VerticalAlignment="Center"/>    
+                                    Style="{StaticResource TrendMetricValueStyle}"
+                                    Foreground="{StaticResource DiskAccentBrush}"/>    
                                 <TextBlock
                                     Text="%"
-                                    FontSize="14"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Margin="0,-8,0,16"
-                                    VerticalAlignment="Center"/>
+                                    Style="{StaticResource TrendMetricSuffixStyle}"/>
                             </StackPanel>
                         </Grid>
-                        <Border
-                            MinHeight="250">
+                        <Border Style="{StaticResource TrendChartHostStyle}">
                             <lvc:CartesianChart
                                 Series="{x:Bind ViewModel.DiskSeries}"
                                 YAxes="{x:Bind ViewModel.DiskYAxes}"
                                 XAxes="{x:Bind ViewModel.XAxes}"
-                                Background="#fbfbfb"/>
+                                Background="{StaticResource TrendChartBackgroundBrush}"/>
                         </Border>
                     </StackPanel>
                 </Border>
