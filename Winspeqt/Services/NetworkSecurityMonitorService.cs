@@ -630,16 +630,16 @@ namespace Winspeqt.Services
             // WLAN disconnect reason codes (from IEEE 802.11)
             var description = reasonCode switch
             {
-                "0"  => "Disconnected normally",
-                "1"  => "Disconnected for an unknown reason — try reconnecting",
-                "2"  => "Login credentials expired — forget the network and rejoin",
-                "3"  => "Kicked by the router — may be out of range or router restarted",
-                "4"  => "Dropped due to inactivity — the router timed out your idle connection",
-                "5"  => "Too many devices on the network — the router kicked you to free up space",
-                "6"  => "Network error — device tried to send data before fully logging in",
-                "7"  => "Network error — device sent data before fully joining the network",
-                "8"  => "Left the network's coverage area (roaming or out of range)",
-                "9"  => "Authentication failed — forget the network and try reconnecting",
+                "0" => "Disconnected normally",
+                "1" => "Disconnected for an unknown reason — try reconnecting",
+                "2" => "Login credentials expired — forget the network and rejoin",
+                "3" => "Kicked by the router — may be out of range or router restarted",
+                "4" => "Dropped due to inactivity — the router timed out your idle connection",
+                "5" => "Too many devices on the network — the router kicked you to free up space",
+                "6" => "Network error — device tried to send data before fully logging in",
+                "7" => "Network error — device sent data before fully joining the network",
+                "8" => "Left the network's coverage area (roaming or out of range)",
+                "9" => "Authentication failed — forget the network and try reconnecting",
                 "10" => "Power settings rejected by the router — check power adapter settings",
                 "11" => "WiFi channel conflict — device and router couldn't agree on a channel",
                 "12" => "Roamed to a better access point — normal on managed/enterprise networks",
@@ -658,7 +658,7 @@ namespace Winspeqt.Services
                 "34" => "Weak signal — direct device link dropped due to poor connection quality",
                 "36" => "Poor signal strength — move closer to the router or access point",
                 "45" => "The access point or connected device left the network",
-                _    => "Unknown reason — try reconnecting or restarting your router"
+                _ => "Unknown reason — try reconnecting or restarting your router"
             };
             return $"Code {reasonCode} — {description}";
         }

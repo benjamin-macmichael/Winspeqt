@@ -9,7 +9,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Winspeqt.Helpers;
@@ -56,9 +55,10 @@ namespace Winspeqt.ViewModels.Monitoring
 
         private long _maxMemory = 0;
 
-        public long MaxMemory { 
-            get => _maxMemory; 
-            set => SetProperty(ref _maxMemory, value); 
+        public long MaxMemory
+        {
+            get => _maxMemory;
+            set => SetProperty(ref _maxMemory, value);
         }
 
         private long _currentMemory = 0;
@@ -66,7 +66,8 @@ namespace Winspeqt.ViewModels.Monitoring
         public long CurrentMemory
         {
             get => _currentMemory;
-            set { 
+            set
+            {
                 SetProperty(ref _currentMemory, value);
                 OnPropertyChanged(nameof(MemoryPercent));
             }
@@ -74,7 +75,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
         public double MemoryPercent
         {
-            get => _maxMemory > 0 ? double.Round((double) _currentMemory / _maxMemory * 100, 1) : 0;
+            get => _maxMemory > 0 ? double.Round((double)_currentMemory / _maxMemory * 100, 1) : 0;
         }
 
         private ObservableCollection<double> _memoryUsageValues = new();
