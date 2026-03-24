@@ -70,9 +70,6 @@ namespace Winspeqt.Views.Monitoring
                 case "windows-update":
                     TryStartProcess("ms-settings:windowsupdate", null, "Windows Update");
                     break;
-                case "taskmgr":
-                    TryStartProcess("taskmgr.exe", null, "Task Manager");
-                    break;
                 case "power":
                     TryStartProcess("ms-settings:powersleep", null, "power settings");
                     break;

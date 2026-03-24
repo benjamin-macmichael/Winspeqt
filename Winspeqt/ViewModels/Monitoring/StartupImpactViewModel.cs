@@ -197,23 +197,6 @@ namespace Winspeqt.ViewModels.Monitoring
             return null;
         }
 
-        private static double GetRamUsagePercent()
-        {
-            try
-            {
-                using var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem");
-                foreach (ManagementObject obj in searcher.Get())
-                {
-                    var total = Convert.ToDouble(obj["TotalVisibleMemorySize"]);
-                    var free = Convert.ToDouble(obj["FreePhysicalMemory"]);
-                    if (total > 0)
-                        return (total - free) / total * 100.0;
-                }
-            }
-            catch { }
-            return -1;
-        }
-
         private static (bool isHdd, string driveName) GetSystemDriveType()
         {
             try
@@ -377,23 +360,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     "Startup apps can add time to your boot and consume memory in the background. Review them to see if any can be disabled.",
                     "Review Startup Apps",
                     "startup-section"));
-
-            // ── RAM usage ─────────────────────────────────────────────────────
-            var ramPct = GetRamUsagePercent();
-            if (ramPct >= 90)
-                tips.Add(new PcTip(
-                    PcTipSeverity.Warning,
-                    $"Your RAM is almost full ({ramPct:F0}% in use)",
-                    "With very little free memory, Windows is likely using your disk as overflow (virtual memory), which is significantly slower. Close apps you aren't using or consider upgrading your RAM.",
-                    "Open Task Manager",
-                    "taskmgr"));
-            else if (ramPct >= 80)
-                tips.Add(new PcTip(
-                    PcTipSeverity.Info,
-                    $"Your RAM usage is high ({ramPct:F0}% in use)",
-                    "High memory usage can cause slowdowns, especially when switching between apps. Check Task Manager to see what's using the most memory.",
-                    "Open Task Manager",
-                    "taskmgr"));
 
             // ── Windows Update ────────────────────────────────────────────────
             tips.Add(new PcTip(
