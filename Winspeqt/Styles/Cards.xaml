@@ -11,4 +11,41 @@
         <Setter Property="Padding" Value="{StaticResource DashboardSummaryCardPadding}" />
         <Setter Property="Margin" Value="{StaticResource DashboardSummaryCardMargin}" />
     </Style>
+
+    <Style x:Key="StandardCardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}" />
+        <Setter Property="Padding" Value="{StaticResource CardPaddingMedium}" />
+    </Style>
+
+    <Style x:Key="MetricCardBorderStyle" TargetType="Border" BasedOn="{StaticResource StandardCardBorderStyle}">
+        <Setter Property="Padding" Value="{StaticResource CardPaddingLarge}" />
+    </Style>
+
+    <Style x:Key="CompactCardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}" />
+        <Setter Property="Padding" Value="{StaticResource CardPaddingMedium}" />
+    </Style>
+
+    <Style x:Key="InfoTileBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SoftInfoBackgroundBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusMedium}" />
+    </Style>
+
+    <Style x:Key="WarningBannerBorderStyle" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlErrorTextForegroundBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SystemControlErrorBackgroundColor}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="{StaticResource RadiusLarge}" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+
+    <Style x:Key="LoadingOverlayBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource LoadingOverlayBrush}" />
+    </Style>
 </ResourceDictionary>
