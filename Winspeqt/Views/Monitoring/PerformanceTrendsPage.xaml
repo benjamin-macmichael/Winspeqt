@@ -144,8 +144,14 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
                             <FontIcon 
+                                Grid.Column="0"
                                 Glyph="&#xE7F1;" 
                                 FontFamily="Segoe MDL2 Assets" 
                                 VerticalAlignment="Center"
@@ -154,11 +160,13 @@
                                 FontSize="20"
                                 Margin="0,0,4,16"/>
                             <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
                                 Text="Memory (RAM)"
                                 FontSize="20"
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,16"/>
-                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                            <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.MemoryPercent, Mode=OneWay}"
                                     FontSize="28"
@@ -172,7 +180,7 @@
                                     Margin="0,-8,0,16"
                                     VerticalAlignment="Center"/>
                             </StackPanel>
-                        </StackPanel>
+                        </Grid>
                         <Border
                             MinHeight="250">
                             <lvc:CartesianChart
@@ -181,6 +189,28 @@
                                 XAxes="{x:Bind ViewModel.XAxes}"
                                 Background="#fbfbfb"/>
                         </Border>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock 
+                                Text="{x:Bind ViewModel.CurrentMemory, Mode=OneWay}"
+                                Foreground="#FF9800"
+                                Margin="0,0,4,0" />
+                            <TextBlock 
+                                Text="MB"
+                                Foreground="#FF9800"
+                                Margin="0,0,4,0" />
+                            <TextBlock 
+                                Text="/"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Margin="0,0,4,0" />
+                            <TextBlock 
+                                Text="{x:Bind ViewModel.MaxMemory, Mode=OneWay}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Margin="0,0,4,0" />
+                            <TextBlock 
+                                Text="MB"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Margin="0,0,4,0" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border 
@@ -228,7 +258,7 @@
                                 <TextBlock Text="Upload" FontSize="16" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock 
-                                        Text="{x:Bind ViewModel.NetworkSentValue}" 
+                                        Text="{x:Bind ViewModel.NetworkSentValue, Mode=OneWay}" 
                                         Margin="0,0,4,0" 
                                         Foreground="#4CAF50"
                                         FontSize="20"/>
@@ -242,7 +272,7 @@
                                 <TextBlock Text="Download" FontSize="16" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock 
-                                        Text="{x:Bind ViewModel.NetworkReceivedValue}" 
+                                        Text="{x:Bind ViewModel.NetworkReceivedValue, Mode=OneWay}" 
                                         Margin="0,0,4,0" 
                                         Foreground="#3F51B5"
                                         FontSize="20" />

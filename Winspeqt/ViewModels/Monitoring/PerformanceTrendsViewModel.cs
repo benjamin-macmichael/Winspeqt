@@ -38,11 +38,7 @@ namespace Winspeqt.ViewModels.Monitoring
         public ObservableCollection<double> CpuUsageValues
         {
             get => _cpuUsageValues;
-            set {
-                System.Diagnostics.Debug.WriteLine("Hello");
-
-                SetProperty(ref _cpuUsageValues, value); 
-                OnPropertyChanged(nameof(TotalCpuUsage)); }
+            set => SetProperty(ref _cpuUsageValues, value);
         }
 
         private double _totalCpuUsage = 0;
@@ -76,9 +72,9 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
-        public float MemoryPercent
+        public double MemoryPercent
         {
-            get => _maxMemory > 0 ? _currentMemory / _maxMemory * 100 : 0;
+            get => _maxMemory > 0 ? double.Round((double) _currentMemory / _maxMemory * 100, 1) : 0;
         }
 
         private ObservableCollection<double> _memoryUsageValues = new();
@@ -359,6 +355,8 @@ namespace Winspeqt.ViewModels.Monitoring
                 double diskActivePercent = 0;
                 double networkSentMbps = 0;
                 double networkReceivedMbps = 0;
+                long totalMb = 0;
+                long usedMb = 0;
                 try
                 {
                     //System.Diagnostics.Debug.WriteLine("Getting CPU...");
@@ -373,17 +371,11 @@ namespace Winspeqt.ViewModels.Monitoring
                 {
                     //System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
-                    var totalMb = await _monitorService.GetTotalMemoryMBAsync();
-                    var usedMb = totalMb - availableMb;
-                    System.Diagnostics.Debug.Print($"Used memory: {usedMb}");
+                    totalMb = await _monitorService.GetTotalMemoryMBAsync();
+                    usedMb = totalMb - availableMb;
                     if (totalMb > 0)
                     {
                         memoryUsedPercent = usedMb * 100.0 / totalMb;
-                        // one of these ought to become a constant set in the view model and the other ought to become a variable
-                        MaxMemory = totalMb;
-                        System.Diagnostics.Debug.Print($"Max memory: {MaxMemory}");
-                        //CurrentMemory = usedMb;
-                        //System.Diagnostics.Debug.Print($"Current memory: {CurrentMemory}");
                     }
                 }
                 catch (Exception ex)
@@ -431,6 +423,9 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _memoryUsage.Dequeue();
                     _memoryUsage.Enqueue(memoryUsedPercent);
+                    MaxMemory = totalMb;
+                    CurrentMemory = usedMb;
+                    System.Diagnostics.Debug.Print($"Memory Percent: {MemoryPercent}");
 
                     MemoryUsageValues.Clear();
                     foreach (var v in _memoryUsage)
