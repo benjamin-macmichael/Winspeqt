@@ -24,6 +24,14 @@ namespace Winspeqt.Views.Optimization
         {
             this.Frame.Navigate(typeof(OptimizationDashboardPage));
         }
+
+        private void InstalledBackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is AppUsageViewModel viewModel)
+            {
+                viewModel.ShowUsageViewCommand.Execute(null);
+            }
+        }
     }
 
     // Converter for tracking button text

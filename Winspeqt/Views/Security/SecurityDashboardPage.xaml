@@ -2,303 +2,161 @@
     x:Class="Winspeqt.Views.Security.SecurityDashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Winspeqt.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <ScrollViewer>
-        <Grid Padding="60">
+        <Grid Padding="{StaticResource DashboardPagePadding}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,32">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <controls:StandardDashboardHeader
+                Grid.Row="0"
+                BackRequested="BackButton_Click"
+                IconGlyph="&#xE72E;"
+                IconBrush="{StaticResource FeatureSuccessBrush}"
+                Title="Device Hardening &amp; Security"
+                Subtitle="Make your system safer without needing technical knowledge" />
 
-                <Button 
+            <Grid Grid.Row="2" Margin="{StaticResource DashboardFeatureGridMargin}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="{StaticResource DashboardFeatureCardMinHeight}" />
+                    <RowDefinition Height="*" MinHeight="{StaticResource DashboardFeatureCardMinHeight}" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button
                     Grid.Row="0"
                     Grid.Column="0"
-                    Click="BackButton_Click"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Padding="8"
-                    Margin="0,0,20,0"
-                    VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE76B;" FontSize="16" VerticalAlignment="Center"/>
-                        <TextBlock Text="Home" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    Margin="{StaticResource DashboardFeatureCardTopLeftMargin}"
+                    Style="{StaticResource DashboardCardButtonStyle}"
+                    Click="SecurityStatusCard_Click">
+                    <Grid Padding="{StaticResource DashboardFeatureCardPadding}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xE72E;"
+                            FontSize="56"
+                            Foreground="{StaticResource FeatureSuccessBrush}"
+                            Margin="{StaticResource DashboardFeatureCardIconMargin}" />
+
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock Text="Security Status Dashboard" Style="{StaticResource DashboardFeatureCardTitleTextStyle}" />
+                            <TextBlock Text="Monitor your PC's security at a glance and spot anything that needs attention" Style="{StaticResource DashboardFeatureCardBodyTextStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="{StaticResource DashboardFeatureCardCtaMargin}" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock Text="Check Status" Style="{StaticResource DashboardFeatureCardCtaTextStyle}" />
+                        </StackPanel>
+                    </Grid>
                 </Button>
 
-                <Grid
+                <Button
                     Grid.Row="0"
                     Grid.Column="1"
-                    Margin="0,0,0,4"
-                    VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <FontIcon
-                        Grid.Column="0"
-                        Glyph="&#xE72E;"
-                        FontSize="40"
-                        Foreground="#4CAF50"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Center"/>
-                    <TextBlock 
-                        Grid.Column="1"
-                        Text="Device Hardening &amp; Security" 
-                        FontSize="36" 
-                        FontWeight="Bold"
-                        TextWrapping="WrapWholeWords"
-                        VerticalAlignment="Center"/>
-                </Grid>
+                    Margin="{StaticResource DashboardFeatureCardTopRightMargin}"
+                    Style="{StaticResource DashboardCardButtonStyle}"
+                    Click="AppSecurityScannerCard_Click">
+                    <Grid Padding="{StaticResource DashboardFeatureCardPadding}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                <TextBlock
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xE7BA;"
+                            FontSize="56"
+                            Foreground="{StaticResource FeatureCriticalBrush}"
+                            Margin="{StaticResource DashboardFeatureCardIconMargin}" />
+
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock Text="App Update Checker" Style="{StaticResource DashboardFeatureCardTitleTextStyle}" />
+                            <TextBlock Text="Discover outdated apps on your PC and update them right from this page" Style="{StaticResource DashboardFeatureCardBodyTextStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="{StaticResource DashboardFeatureCardCtaMargin}" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock Text="Scan Apps" Style="{StaticResource DashboardFeatureCardCtaTextStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+
+                <Button
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="{StaticResource DashboardFeatureCardBottomLeftMargin}"
+                    Style="{StaticResource DashboardCardButtonStyle}"
+                    Click="NetworkSecurityCard_Click">
+                    <Grid Padding="{StaticResource DashboardFeatureCardPadding}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xE968;"
+                            FontSize="56"
+                            Foreground="{StaticResource FeatureAccentBlueBrush}"
+                            Margin="{StaticResource DashboardFeatureCardIconMargin}" />
+
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock Text="Network Security Monitor" Style="{StaticResource DashboardFeatureCardTitleTextStyle}" />
+                            <TextBlock Text="See what's connecting to the internet from your PC and detect suspicious network activity" Style="{StaticResource DashboardFeatureCardBodyTextStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="{StaticResource DashboardFeatureCardCtaMargin}" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock Text="Monitor Network" Style="{StaticResource DashboardFeatureCardCtaTextStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+
+                <Button
                     Grid.Row="1"
                     Grid.Column="1"
-                    Text="Make your system safer without needing technical knowledge"
-                    FontSize="18"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="WrapWholeWords"
-                    Margin="0,4,0,0"/>
-            </Grid>
-
-            <!-- Feature Cards Grid -->
-            <Grid Grid.Row="2" Margin="0,40,0,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" MinHeight="280"/>
-                    <RowDefinition Height="*" MinHeight="280"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Security Status Dashboard Card -->
-                <Button 
-                    Grid.Row="0" 
-                    Grid.Column="0"
-                    Margin="0,0,16,16"
-                    Padding="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Click="SecurityStatusCard_Click">
-                    <Grid Padding="36">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <FontIcon 
-                            Grid.Row="0"
-                            Glyph="&#xE72E;" 
-                            FontSize="56"
-                            Foreground="#4CAF50"
-                            Margin="0,0,0,20"/>
-
-                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                            <TextBlock 
-                                Text="Security Status Dashboard" 
-                                FontSize="24" 
-                                FontWeight="SemiBold"
-                                TextWrapping="WrapWholeWords"
-                                Margin="0,0,0,12"/>
-                            <TextBlock 
-                                Text="Monitor your PC's security at a glance and spot anything that needs attention"
-                                FontSize="15"
-                                TextWrapping="Wrap"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="22"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock 
-                                Text="Check Status" 
-                                FontSize="15"
-                                FontWeight="SemiBold"
-                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="8,0,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Button>
-
-                <!-- App Security Scanner Card -->
-                <Button 
-                    Grid.Row="0" 
-                    Grid.Column="1"
-                    Margin="16,0,0,16"
-                    Padding="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Click="AppSecurityScannerCard_Click">
-                    <Grid Padding="36">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <FontIcon 
-                            Grid.Row="0"
-                            Glyph="&#xE7BA;" 
-                            FontSize="56"
-                            Foreground="#F44336"
-                            Margin="0,0,0,20"/>
-
-                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                            <TextBlock 
-                                Text="App Update Checker" 
-                                FontSize="24" 
-                                FontWeight="SemiBold"
-                                TextWrapping="WrapWholeWords"
-                                Margin="0,0,0,12"/>
-                            <TextBlock 
-                                Text="Discover outdated apps on your PC and update them right from this page"
-                                FontSize="15"
-                                TextWrapping="Wrap"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="22"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock 
-                                Text="Scan Apps" 
-                                FontSize="15"
-                                FontWeight="SemiBold"
-                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="8,0,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Button>
-
-                <!-- Network Security Monitor Card -->
-                <Button 
-                    Grid.Row="1" 
-                    Grid.Column="0"
-                    Margin="0,16,16,0"
-                    Padding="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
-                    Click="NetworkSecurityCard_Click">
-                    <Grid Padding="36">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <FontIcon 
-                            Grid.Row="0"
-                            Glyph="&#xE968;" 
-                            FontSize="56"
-                            Foreground="#2196F3"
-                            Margin="0,0,0,20"/>
-
-                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                            <TextBlock 
-                                Text="Network Security Monitor" 
-                                FontSize="24" 
-                                FontWeight="SemiBold"
-                                TextWrapping="WrapWholeWords"
-                                Margin="0,0,0,12"/>
-                            <TextBlock 
-                                Text="See what's connecting to the internet from your PC and detect suspicious network activity"
-                                FontSize="15"
-                                TextWrapping="Wrap"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="22"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock 
-                                Text="Monitor Network" 
-                                FontSize="15"
-                                FontWeight="SemiBold"
-                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="8,0,0,0"/>
-                        </StackPanel>
-                    </Grid>
-                </Button>
-
-                <!-- Windows Settings Recommendations Card -->
-                <Button 
-                    Grid.Row="1" 
-                    Grid.Column="1"
-                    Margin="16,16,0,0"
-                    Padding="0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="2"
-                    CornerRadius="12"
+                    Margin="{StaticResource DashboardFeatureCardBottomRightMargin}"
+                    Style="{StaticResource DashboardCardButtonStyle}"
                     Click="SettingsRecommendationsCard_Click">
-                    <Grid Padding="36">
+                    <Grid Padding="{StaticResource DashboardFeatureCardPadding}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <FontIcon 
+                        <FontIcon
                             Grid.Row="0"
-                            Glyph="&#xE713;" 
+                            Glyph="&#xE713;"
                             FontSize="56"
-                            Foreground="#FF9800"
-                            Margin="0,0,0,20"/>
+                            Foreground="{StaticResource FeatureAttentionBrush}"
+                            Margin="{StaticResource DashboardFeatureCardIconMargin}" />
 
                         <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                            <TextBlock 
-                                Text="Windows Settings Recommendations" 
-                                FontSize="24" 
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,12"
-                                TextWrapping="WrapWholeWords"/>
-                            <TextBlock 
-                                Text="Learn about security settings like SmartScreen, remote access, and privacy options explained in plain language"
-                                FontSize="15"
-                                TextWrapping="Wrap"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                LineHeight="22"/>
+                            <TextBlock Text="Windows Settings Recommendations" Style="{StaticResource DashboardFeatureCardTitleTextStyle}" />
+                            <TextBlock Text="Learn about security settings like SmartScreen, remote access, and privacy options explained in plain language" Style="{StaticResource DashboardFeatureCardBodyTextStyle}" />
                         </StackPanel>
 
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0" HorizontalAlignment="Center">
-                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock 
-                                Text="View Settings" 
-                                FontSize="15"
-                                FontWeight="SemiBold"
-                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                Margin="8,0,0,0"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="{StaticResource DashboardFeatureCardCtaMargin}" HorizontalAlignment="Center">
+                            <FontIcon Glyph="&#xE76C;" FontSize="14" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <TextBlock Text="View Settings" Style="{StaticResource DashboardFeatureCardCtaTextStyle}" />
                         </StackPanel>
                     </Grid>
                 </Button>

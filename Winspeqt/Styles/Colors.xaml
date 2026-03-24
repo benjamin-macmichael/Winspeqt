@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="FeatureSuccessBrush" Color="#4CAF50" />
+    <SolidColorBrush x:Key="FeatureAccentBlueBrush" Color="#2196F3" />
+    <SolidColorBrush x:Key="FeatureAttentionBrush" Color="#FF9800" />
+    <SolidColorBrush x:Key="FeatureCriticalBrush" Color="#F44336" />
+    <SolidColorBrush x:Key="FeatureHighlightBrush" Color="#9C27B0" />
+    <SolidColorBrush x:Key="FeatureIndigoBrush" Color="#3F51B5" />
+    <SolidColorBrush x:Key="ActionPrimaryBrush" Color="#007ACC" />
+    <SolidColorBrush x:Key="ActionDangerBrush" Color="#BC2F32" />
+    <SolidColorBrush x:Key="SoftInfoBackgroundBrush" Color="#DCEEFF" />
+    <SolidColorBrush x:Key="SoftInfoForegroundBrush" Color="#1565C0" />
+    <SolidColorBrush x:Key="NeutralActionBrush" Color="#616161" />
+    <SolidColorBrush x:Key="ChartSurfaceBrush" Color="#FBFBFB" />
+    <SolidColorBrush x:Key="LoadingOverlayBrush" Color="#CC000000" />
+</ResourceDictionary>
