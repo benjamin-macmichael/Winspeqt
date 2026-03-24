@@ -225,8 +225,15 @@
                     MinHeight="300"
                     MaxHeight="600">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal">
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
                             <FontIcon 
+                                Grid.Column="0"
                                 Glyph="&#xE774;" 
                                 FontFamily="Segoe MDL2 Assets" 
                                 VerticalAlignment="Center"
@@ -235,40 +242,26 @@
                                 FontSize="20"
                                 Margin="0,0,4,16"/>
                             <TextBlock
+                                Grid.Column="1"
                                 Text="Network"
                                 FontSize="20"
                                 FontWeight="SemiBold"
                                 Margin="0,0,0,16"/>
-                        </StackPanel>
-                        <Border
-                            MinHeight="250">
-                            <lvc:CartesianChart
-                                Series="{x:Bind ViewModel.NetworkSeries}"
-                                YAxes="{x:Bind ViewModel.NetworkYAxes}"
-                                XAxes="{x:Bind ViewModel.XAxes}"
-                                LegendPosition="Top"
-                                Background="#fbfbfb"/>
-                        </Border>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Orientation="Vertical" Grid.Column="0" HorizontalAlignment="Center">
-                                <TextBlock Text="Upload" FontSize="16" />
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock 
+                            <StackPanel Orientation="Vertical" Grid.Column="2" HorizontalAlignment="Left">
+                                    <TextBlock Text="Upload" FontSize="16" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock 
                                         Text="{x:Bind ViewModel.NetworkSentValue, Mode=OneWay}" 
                                         Margin="0,0,4,0" 
                                         Foreground="#4CAF50"
                                         FontSize="20"/>
-                                    <TextBlock 
+                                        <TextBlock 
                                         Text="Mbps" 
                                         Foreground="#4CAF50"
                                         FontSize="20" />
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
-                            <StackPanel Orientation="Vertical" Grid.Column="1" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Vertical" Grid.Column="3" HorizontalAlignment="Left">
                                 <TextBlock Text="Download" FontSize="16" />
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock 
@@ -283,6 +276,14 @@
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
+                        <Border
+                            MinHeight="250">
+                            <lvc:CartesianChart
+                                Series="{x:Bind ViewModel.NetworkSeries}"
+                                YAxes="{x:Bind ViewModel.NetworkYAxes}"
+                                XAxes="{x:Bind ViewModel.XAxes}"
+                                Background="#fbfbfb"/>
+                        </Border>
                     </StackPanel>
                 </Border>
                 <Border 

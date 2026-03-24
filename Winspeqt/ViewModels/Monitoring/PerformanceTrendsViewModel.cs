@@ -359,7 +359,6 @@ namespace Winspeqt.ViewModels.Monitoring
                 long usedMb = 0;
                 try
                 {
-                    //System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
@@ -369,7 +368,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    //System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
                     totalMb = await _monitorService.GetTotalMemoryMBAsync();
                     usedMb = totalMb - availableMb;
@@ -385,7 +383,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    //System.Diagnostics.Debug.WriteLine("Getting disk usage...");
                     diskActivePercent = await _monitorService.GetDiskActiveTimePercentAsync();
                 }
                 catch (Exception ex)
@@ -399,7 +396,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    //System.Diagnostics.Debug.WriteLine("Getting network throughput...");
                     var network = await _monitorService.GetNetworkThroughputMbpsAsync();
                     networkSentMbps = Math.Max(0, network.SentMbps);
                     networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
@@ -425,7 +421,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     _memoryUsage.Enqueue(memoryUsedPercent);
                     MaxMemory = totalMb;
                     CurrentMemory = usedMb;
-                    System.Diagnostics.Debug.Print($"Memory Percent: {MemoryPercent}");
 
                     MemoryUsageValues.Clear();
                     foreach (var v in _memoryUsage)
