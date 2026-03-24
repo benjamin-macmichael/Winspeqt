@@ -197,6 +197,90 @@ namespace Winspeqt.ViewModels.Monitoring
             return null;
         }
 
+        private static double GetRamUsagePercent()
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem");
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    var total = Convert.ToDouble(obj["TotalVisibleMemorySize"]);
+                    var free = Convert.ToDouble(obj["FreePhysicalMemory"]);
+                    if (total > 0)
+                        return (total - free) / total * 100.0;
+                }
+            }
+            catch { }
+            return -1;
+        }
+
+        private static (bool isHdd, string driveName) GetSystemDriveType()
+        {
+            try
+            {
+                var systemRoot = System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+                using var partSearcher = new ManagementObjectSearcher(
+                    $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{systemRoot?.TrimEnd('\\')}'}}" +
+                    " WHERE AssocClass=Win32_LogicalDiskToPartition");
+                foreach (ManagementObject part in partSearcher.Get())
+                {
+                    using var diskSearcher = new ManagementObjectSearcher(
+                        $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{part["DeviceID"]}'}}" +
+                        " WHERE AssocClass=Win32_DiskDriveToDiskPartition");
+                    foreach (ManagementObject disk in diskSearcher.Get())
+                    {
+                        var mediaType = disk["MediaType"]?.ToString() ?? "";
+                        var model = disk["Model"]?.ToString() ?? "your system drive";
+                        // MediaType contains "Fixed hard disk" for HDD, SSD usually says "SSD" in model or has different media type
+                        var isSsd = mediaType.Contains("SSD", StringComparison.OrdinalIgnoreCase)
+                                 || (disk["Model"]?.ToString() ?? "").Contains("SSD", StringComparison.OrdinalIgnoreCase)
+                                 || (disk["Model"]?.ToString() ?? "").Contains("NVMe", StringComparison.OrdinalIgnoreCase)
+                                 || (disk["Model"]?.ToString() ?? "").Contains("Solid", StringComparison.OrdinalIgnoreCase);
+                        return (!isSsd, model);
+                    }
+                }
+            }
+            catch { }
+            return (false, "");
+        }
+
+        private static double GetTempFolderSizeGb()
+        {
+            try
+            {
+                var tempPath = System.IO.Path.GetTempPath();
+                var dir = new System.IO.DirectoryInfo(tempPath);
+                if (!dir.Exists) return 0;
+                long bytes = 0;
+                foreach (var file in dir.EnumerateFiles("*", System.IO.SearchOption.AllDirectories))
+                {
+                    try { bytes += file.Length; } catch { }
+                }
+                return bytes / (1024.0 * 1024 * 1024);
+            }
+            catch { }
+            return 0;
+        }
+
+        private static bool IsHighPerformancePowerPlan()
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT ElementName, IsActive FROM Win32_PowerPlan");
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    if (obj["IsActive"] is true)
+                    {
+                        var name = obj["ElementName"]?.ToString() ?? "";
+                        return name.Contains("High performance", StringComparison.OrdinalIgnoreCase)
+                            || name.Contains("Ultimate", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
         private static IReadOnlyList<PcTip> BuildTips(TimeSpan uptime, StartupApp apps)
         {
             var tips = new List<PcTip>();
@@ -269,6 +353,14 @@ namespace Winspeqt.ViewModels.Monitoring
                         null, null));
             }
 
+            // ── File Explorer ─────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Restart File Explorer if your Windows UI feels sluggish",
+                "File Explorer (explorer.exe) handles your taskbar, desktop, and file browsing. Restarting it can fix UI freezes, unresponsive taskbars, and general sluggishness — without a full reboot.",
+                "Restart File Explorer",
+                "restart-explorer"));
+
             // ── Startup apps ──────────────────────────────────────────────────
             var totalStartup = apps.RegistryRun.Count + apps.StartupFolder.Count;
             if (totalStartup >= 10)
@@ -286,13 +378,48 @@ namespace Winspeqt.ViewModels.Monitoring
                     "Review Startup Apps",
                     "startup-section"));
 
-            // ── File Explorer ─────────────────────────────────────────────────
+            // ── RAM usage ─────────────────────────────────────────────────────
+            var ramPct = GetRamUsagePercent();
+            if (ramPct >= 90)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Warning,
+                    $"Your RAM is almost full ({ramPct:F0}% in use)",
+                    "With very little free memory, Windows is likely using your disk as overflow (virtual memory), which is significantly slower. Close apps you aren't using or consider upgrading your RAM.",
+                    "Open Task Manager",
+                    "taskmgr"));
+            else if (ramPct >= 80)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    $"Your RAM usage is high ({ramPct:F0}% in use)",
+                    "High memory usage can cause slowdowns, especially when switching between apps. Check Task Manager to see what's using the most memory.",
+                    "Open Task Manager",
+                    "taskmgr"));
+
+            // ── Windows Update ────────────────────────────────────────────────
             tips.Add(new PcTip(
                 PcTipSeverity.Info,
-                "Restart File Explorer if your Windows UI feels sluggish",
-                "File Explorer (explorer.exe) handles your taskbar, desktop, and file browsing. Restarting it can fix UI freezes, unresponsive taskbars, and general sluggishness — without a full reboot.",
-                "Restart File Explorer",
-                "restart-explorer"));
+                "Run Windows Update and check for driver updates",
+                "Outdated drivers (especially graphics and chipset) can cause slowdowns, stuttering, and instability. Keeping Windows and drivers up to date is one of the simplest performance maintenance steps.",
+                "Open Windows Update",
+                "windows-update"));
+
+            // ── Network ───────────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "A slow internet connection can make your PC feel slow",
+                "If apps are taking a long time to load, streaming is choppy, or pages are sluggish, your network could be the bottleneck rather than your PC itself. Anything under 25 Mbps download may cause noticeable slowdowns for everyday tasks.",
+                "Run a Speed Test",
+                "speedtest"));
+
+            // ── Temp files ────────────────────────────────────────────────────
+            var tempGb = GetTempFolderSizeGb();
+            if (tempGb >= 2)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    $"Your temp folder is using {tempGb:F1} GB of disk space",
+                    "Temporary files accumulate over time and can take up significant space on your system drive. Clearing them is safe and can free up space Windows needs to operate efficiently.",
+                    "Open Storage Sense",
+                    "storage"));
 
             // ── Disk space ────────────────────────────────────────────────────
             try
@@ -320,21 +447,46 @@ namespace Winspeqt.ViewModels.Monitoring
             }
             catch { /* skip if drive info unavailable */ }
 
-            // ── Windows Update ────────────────────────────────────────────────
-            tips.Add(new PcTip(
-                PcTipSeverity.Info,
-                "Run Windows Update and check for driver updates",
-                "Outdated drivers (especially graphics and chipset) can cause slowdowns, stuttering, and instability. Keeping Windows and drivers up to date is one of the simplest performance maintenance steps.",
-                "Open Windows Update",
-                "windows-update"));
+            // ── Power plan ────────────────────────────────────────────────────
+            if (!IsHighPerformancePowerPlan())
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Your power plan may be limiting performance",
+                    "Windows can throttle your CPU speed to save power when on the Balanced or Power Saver plan. Switching to High Performance ensures your hardware runs at full speed.",
+                    "Open Power Settings",
+                    "power"));
 
-            // ── Network ───────────────────────────────────────────────────────
+            // ── Browser extensions ────────────────────────────────────────────
             tips.Add(new PcTip(
                 PcTipSeverity.Info,
-                "A slow internet connection can make your PC feel slow",
-                "If apps are taking a long time to load, streaming is choppy, or pages are sluggish, your network could be the bottleneck rather than your PC itself. Anything under 25 Mbps download may cause noticeable slowdowns for everyday tasks.",
-                "Run a Speed Test",
-                "speedtest"));
+                "Too many browser extensions can slow things down",
+                "Each browser extension runs in the background and consumes memory and CPU. If your browser feels sluggish or your PC slows down when browsing, try disabling extensions you don't actively use.",
+                null, null));
+
+            // ── HDD vs SSD ────────────────────────────────────────────────────
+            var (isHdd, driveName) = GetSystemDriveType();
+            if (isHdd)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Your PC is running on a traditional hard drive (HDD)",
+                    $"{(string.IsNullOrEmpty(driveName) ? "Your system drive" : driveName)} is a spinning hard disk, which is significantly slower than a modern SSD for everyday tasks like booting, opening apps, and loading files. Upgrading to an SSD is one of the single biggest performance improvements you can make on an older PC.",
+                    null, null));
+
+            // ── Malware scan ──────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Run a malware scan",
+                "Malware and unwanted background programs are a common but easy-to-miss cause of slowdowns. Running a Windows Defender scan is quick and free.",
+                "Open Windows Security",
+                "security"));
+
+            // ── SFC scan ──────────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Scan for corrupted system files",
+                "Windows includes a built-in tool (System File Checker) that scans for and repairs corrupted or missing system files, which can cause slowdowns and instability. This will open an elevated terminal window and may take a few minutes to complete — leave it open until it finishes.",
+                "Run System File Checker",
+                "sfc"));
 
             return tips;
         }
