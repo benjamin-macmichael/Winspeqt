@@ -437,19 +437,19 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _networkSent.Dequeue();
                     _networkSent.Enqueue(networkSentMbps);
+                    NetworkSentValue = networkReceivedMbps;
+
                     NetworkSentValues.Clear();
                     foreach (var v in _networkSent)
                         NetworkSentValues.Add(v);
 
-                    NetworkSentValue = networkReceivedMbps;
-
                     _networkReceived.Dequeue();
                     _networkReceived.Enqueue(networkReceivedMbps);
+                    NetworkReceivedValue = networkReceivedMbps;
+
                     NetworkReceivedValues.Clear();
                     foreach (var v in _networkReceived)
                         NetworkReceivedValues.Add(v);
-
-                    NetworkReceivedValue = networkReceivedMbps;
 
                     IsLoading = false;
                 });
