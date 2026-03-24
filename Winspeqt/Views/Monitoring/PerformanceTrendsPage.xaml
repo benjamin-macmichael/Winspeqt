@@ -158,14 +158,13 @@
                                 Foreground="#FF9800"
                                 FontWeight="SemiBold"
                                 FontSize="20"
-                                Margin="0,0,4,16"/>
+                                Margin="0,0,4,0"/>
                             <TextBlock
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Text="Memory (RAM)"
                                 FontSize="20"
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,16"/>
+                                FontWeight="SemiBold"/>
                             <StackPanel Orientation="Horizontal" Grid.Column="2" VerticalAlignment="Center">
                                 <TextBlock
                                     Text="{x:Bind ViewModel.MemoryPercent, Mode=OneWay}"
@@ -189,26 +188,31 @@
                                 XAxes="{x:Bind ViewModel.XAxes}"
                                 Background="#fbfbfb"/>
                         </Border>
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBlock 
                                 Text="{x:Bind ViewModel.CurrentMemory, Mode=OneWay}"
                                 Foreground="#FF9800"
+                                FontSize="20"
                                 Margin="0,0,4,0" />
                             <TextBlock 
                                 Text="MB"
                                 Foreground="#FF9800"
+                                FontSize="20"
                                 Margin="0,0,4,0" />
                             <TextBlock 
                                 Text="/"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                FontSize="20"
                                 Margin="0,0,4,0" />
                             <TextBlock 
                                 Text="{x:Bind ViewModel.MaxMemory, Mode=OneWay}"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                FontSize="20"
                                 Margin="0,0,4,0" />
                             <TextBlock 
                                 Text="MB"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                FontSize="20"
                                 Margin="0,0,4,0" />
                         </StackPanel>
                     </StackPanel>
@@ -240,13 +244,13 @@
                                 Foreground="#4CAF50"
                                 FontWeight="SemiBold"
                                 FontSize="20"
-                                Margin="0,0,4,16"/>
+                                Margin="0,0,4,0"/>
                             <TextBlock
                                 Grid.Column="1"
                                 Text="Network"
                                 FontSize="20"
                                 FontWeight="SemiBold"
-                                Margin="0,0,0,16"/>
+                                VerticalAlignment="Center"/>
                             <StackPanel Orientation="Vertical" Grid.Column="2" HorizontalAlignment="Left">
                                     <TextBlock Text="Upload" FontSize="16" />
                                     <StackPanel Orientation="Horizontal">
