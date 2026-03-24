@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Winspeqt.Controls.StandardDashboardHeader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="Root">
+
+    <Grid Margin="{StaticResource DashboardHeaderMargin}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="0"
+            Style="{StaticResource DashboardBackButtonStyle}"
+            Click="BackButton_Click">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon Glyph="&#xE76B;" FontSize="16" VerticalAlignment="Center" />
+                <TextBlock Text="Home" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+
+        <Grid
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="0,0,0,4"
+            VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <FontIcon
+                Grid.Column="0"
+                Glyph="{Binding ElementName=Root, Path=IconGlyph}"
+                FontSize="40"
+                Foreground="{Binding ElementName=Root, Path=IconBrush}"
+                Margin="{StaticResource DashboardHeaderIconMargin}"
+                VerticalAlignment="Center" />
+
+            <TextBlock
+                Grid.Column="1"
+                Text="{Binding ElementName=Root, Path=Title}"
+                Style="{StaticResource DashboardPageTitleTextStyle}" />
+        </Grid>
+
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="1"
+            Text="{Binding ElementName=Root, Path=Subtitle}"
+            Style="{StaticResource DashboardPageSubtitleTextStyle}" />
+    </Grid>
+</UserControl>
