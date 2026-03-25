@@ -201,26 +201,50 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             try
             {
-                var systemRoot = System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
-                using var partSearcher = new ManagementObjectSearcher(
-                    $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{systemRoot?.TrimEnd('\\')}'}}" +
+                // Get the drive letter of the system drive
+                var systemRoot = System.IO.Path.GetPathRoot(
+                    Environment.GetFolderPath(Environment.SpecialFolder.System))?.TrimEnd('\\') ?? "C:";
+
+                // Find the disk number via Win32_LogicalDiskToPartition chain
+                int? diskNumber = null;
+                string driveName = "";
+
+                using var ldSearcher = new ManagementObjectSearcher(
+                    $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{systemRoot}'}}" +
                     " WHERE AssocClass=Win32_LogicalDiskToPartition");
-                foreach (ManagementObject part in partSearcher.Get())
+                foreach (ManagementObject part in ldSearcher.Get())
                 {
                     using var diskSearcher = new ManagementObjectSearcher(
                         $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{part["DeviceID"]}'}}" +
                         " WHERE AssocClass=Win32_DiskDriveToDiskPartition");
                     foreach (ManagementObject disk in diskSearcher.Get())
                     {
-                        var mediaType = disk["MediaType"]?.ToString() ?? "";
-                        var model = disk["Model"]?.ToString() ?? "your system drive";
-                        // MediaType contains "Fixed hard disk" for HDD, SSD usually says "SSD" in model or has different media type
-                        var isSsd = mediaType.Contains("SSD", StringComparison.OrdinalIgnoreCase)
-                                 || (disk["Model"]?.ToString() ?? "").Contains("SSD", StringComparison.OrdinalIgnoreCase)
-                                 || (disk["Model"]?.ToString() ?? "").Contains("NVMe", StringComparison.OrdinalIgnoreCase)
-                                 || (disk["Model"]?.ToString() ?? "").Contains("Solid", StringComparison.OrdinalIgnoreCase);
-                        return (!isSsd, model);
+                        var deviceId = disk["DeviceID"]?.ToString() ?? "";
+                        // DeviceID is like "\\.\PHYSICALDRIVE0" — extract the number
+                        if (deviceId.Length > 0 && int.TryParse(
+                                System.Text.RegularExpressions.Regex.Match(deviceId, @"\d+$").Value,
+                                out var num))
+                        {
+                            diskNumber = num;
+                            driveName = disk["Model"]?.ToString() ?? "";
+                        }
                     }
+                }
+
+                if (diskNumber == null) return (false, "");
+
+                // Use MSFT_PhysicalDisk in root\Microsoft\Windows\Storage for accurate MediaType
+                // MediaType: 0 = Unspecified, 3 = HDD, 4 = SSD, 5 = SCM
+                var scope = new ManagementScope(@"\\.\root\Microsoft\Windows\Storage");
+                scope.Connect();
+                using var pdSearcher = new ManagementObjectSearcher(scope,
+                    new ObjectQuery($"SELECT MediaType, FriendlyName FROM MSFT_PhysicalDisk WHERE DeviceId='{diskNumber}'"));
+                foreach (ManagementObject pd in pdSearcher.Get())
+                {
+                    var mediaType = Convert.ToInt32(pd["MediaType"]);
+                    var friendlyName = pd["FriendlyName"]?.ToString() ?? driveName;
+                    // 3 = HDD, anything else (4=SSD, 5=SCM, 0=Unspecified) we treat as not-HDD
+                    return (mediaType == 3, friendlyName);
                 }
             }
             catch { }
@@ -249,7 +273,10 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             try
             {
-                using var searcher = new ManagementObjectSearcher("SELECT ElementName, IsActive FROM Win32_PowerPlan");
+                var scope = new ManagementScope(@"\\.\root\cimv2\power");
+                scope.Connect();
+                using var searcher = new ManagementObjectSearcher(scope,
+                    new ObjectQuery("SELECT ElementName, IsActive FROM Win32_PowerPlan"));
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     if (obj["IsActive"] is true)
