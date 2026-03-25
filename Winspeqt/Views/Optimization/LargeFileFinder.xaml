@@ -272,6 +272,7 @@
                                 <Button
                                     Click="Folder_Click"
                                     CommandParameter="{Binding FilePath}"
+                                    ToolTipService.ToolTip="{Binding Name}"
                                     MaxWidth="750"
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Stretch"
@@ -283,7 +284,7 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel
@@ -308,6 +309,7 @@
                                             Spacing="10"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Right"
+                                            Margin="16,0,0,0"
                                             Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToCollapsedConverter}}">
                                             <ProgressRing 
                                                 IsActive="True"
@@ -321,6 +323,7 @@
                                             Spacing="10"
                                             VerticalAlignment="Center"
                                             HorizontalAlignment="Right"
+                                            Margin="16,0,0,0"
                                             Visibility="{Binding Finished, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                             <TextBlock 
                                                 Text="{Binding Size}"
