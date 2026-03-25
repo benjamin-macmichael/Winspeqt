@@ -79,6 +79,16 @@ namespace Winspeqt.Views
             await dialog.ShowAsync();
         }
 
+        /// <summary>
+        /// Opens the feedback form in the user's default browser.
+        /// </summary>
+        /// <param name="sender">The feedback button.</param>
+        /// <param name="e">Routed event data.</param>
+        private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
+        }
+
     }
 
     public class StartupButtonColorConverter : IValueConverter

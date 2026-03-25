@@ -190,7 +190,16 @@
                         </TextBlock>
                     </StackPanel>
                 </Border>
-
+                <Button
+                    x:Name="FeedbackButton"
+                    Style="{StaticResource FloatingFeedbackButtonStyle}"
+                    Content="Feedback"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="16"
+                    Canvas.ZIndex="10"
+                    Click="FeedbackButton_Click"
+                    Foreground="WhiteSmoke"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>
