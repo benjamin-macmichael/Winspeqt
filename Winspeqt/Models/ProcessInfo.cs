@@ -11,13 +11,16 @@ namespace Winspeqt.Models
 
         // Extended info for Task Manager view
         public int ProcessId { get; set; }
+        public int ParentProcessId { get; set; }
         public string ProcessName { get; set; } = "";
+        public string ExecutablePath { get; set; } = "";
         public string Description { get; set; } = "";
         public double CpuUsagePercent { get; set; }
         public long MemoryUsageMB { get; set; }
         public string Status { get; set; } = "";
         public string FriendlyExplanation { get; set; } = "";
         public string Icon { get; set; } = "";
+        public bool HasVisibleWindow { get; set; }
 
         // Category for grouping processes
         public ProcessCategory Category { get; set; } = ProcessCategory.Other;
@@ -64,6 +67,29 @@ namespace Winspeqt.Models
                 if (MemoryUsageMB > 1000) return "#F44336"; // Red (>1GB)
                 if (MemoryUsageMB > 500) return "#FF9800"; // Orange (>500MB)
                 return "#4CAF50"; // Green
+            }
+        }
+
+        // Heat map background colors for table view (Task Manager style)
+        public string CpuHeatColor
+        {
+            get
+            {
+                if (CpuUsagePercent >= 75) return "#FFCDD2";
+                if (CpuUsagePercent >= 50) return "#FFE0B2";
+                if (CpuUsagePercent >= 25) return "#FFF9C4";
+                return "Transparent";
+            }
+        }
+
+        public string MemoryHeatColor
+        {
+            get
+            {
+                if (MemoryUsageMB >= 2000) return "#FFCDD2";
+                if (MemoryUsageMB >= 1000) return "#FFE0B2";
+                if (MemoryUsageMB >= 500) return "#FFF9C4";
+                return "Transparent";
             }
         }
     }

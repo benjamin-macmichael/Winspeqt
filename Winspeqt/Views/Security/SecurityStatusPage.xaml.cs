@@ -86,8 +86,7 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack) Frame.GoBack();
-            else Frame.Navigate(typeof(DashboardPage));
+            Frame.Navigate(typeof(SecurityDashboardPage));
         }
 
         // ── Info dialogs ──────────────────────────────────────────────────────
@@ -96,7 +95,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "🛡️ Windows Defender",
+                Title = "Windows Defender",
                 Content = "Windows Defender (also called Windows Security) is your computer's built-in antivirus protection.\n\n" +
                           "What it does:\n" +
                           "• Protects against viruses, malware, and spyware\n" +
@@ -114,7 +113,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "🔥 Windows Firewall",
+                Title = "Windows Firewall",
                 Content = "Windows Firewall is like a security guard for your computer's internet connection.\n\n" +
                           "What it does:\n" +
                           "• Controls what can connect to your PC from the internet\n" +
@@ -132,7 +131,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "🔄 Windows Update",
+                Title = "Windows Update",
                 Content = "Windows Update keeps your computer secure and running smoothly.\n\n" +
                           "What it does:\n" +
                           "• Fixes security vulnerabilities that hackers exploit\n" +
@@ -150,7 +149,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "🔐 BitLocker/Device Encryption",
+                Title = "BitLocker / Device Encryption",
                 Content = "BitLocker (or Device Encryption) scrambles all the data on your hard drive.\n\n" +
                           "What it does:\n" +
                           "• Encrypts your entire hard drive\n" +
@@ -168,7 +167,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "💾 Drive Health",
+                Title = "Drive Health",
                 Content = "Drive Health monitors the status of your hard drives and SSDs using built-in diagnostic data reported by Windows.\n\n" +
                           "What it checks:\n" +
                           "• Whether Windows detects any drive errors or failures\n" +
@@ -185,7 +184,7 @@ namespace Winspeqt.Views.Security
         {
             await new ContentDialog
             {
-                Title = "🔒 Secure Boot",
+                Title = "Secure Boot",
                 Content = "Secure Boot is a feature built into modern PCs that ensures your computer only starts up using trusted software.\n\n" +
                           "What it does:\n" +
                           "• Verifies that your operating system hasn't been tampered with\n" +

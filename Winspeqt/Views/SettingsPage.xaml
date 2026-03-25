@@ -25,31 +25,60 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
             <Button
+                Grid.Row="0"
                 Grid.Column="0"
-                Content="← Back"
                 Click="BackButton_Click"
                 Background="Transparent"
                 BorderThickness="0"
-                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                FontSize="16"
-                Padding="0"
+                Padding="8"
                 Margin="0,0,20,0"
-                VerticalAlignment="Center"/>
+                VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE76B;" FontSize="16"/>
+                    <TextBlock Text="Home" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
 
-            <StackPanel Grid.Column="1">
+            <Grid
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="0,0,0,4"
+                VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    Grid.Column="0"
+                    Glyph="&#xE713;"
+                    FontSize="40"
+                    Foreground="#FF9800"
+                    Margin="0,0,12,0"
+                    VerticalAlignment="Center"/>
                 <TextBlock
+                    Grid.Column="1"
                     Text="Settings"
-                    FontSize="28"
+                    FontSize="36"
                     FontWeight="Bold"
-                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                <TextBlock
-                    Text="Manage how Winspeqt behaves on your system"
-                    FontSize="14"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Margin="0,5,0,0"/>
-            </StackPanel>
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    TextWrapping="WrapWholeWords"
+                    VerticalAlignment="Center"/>
+            </Grid>
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="1"
+                Text="Manage how Winspeqt behaves on your system"
+                FontSize="18"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="WrapWholeWords"
+                Margin="0,4,0,0"/>
         </Grid>
 
         <!-- Settings Content -->
@@ -115,6 +144,60 @@
                     </Grid>
                 </Border>
 
+                <!-- Appearance Section -->
+                <TextBlock
+                    Text="APPEARANCE"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    CharacterSpacing="150"
+                    Margin="0,8,0,4"/>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            Grid.Column="0"
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            CornerRadius="8"
+                            Width="44"
+                            Height="44"
+                            Margin="0,0,16,0">
+                            <FontIcon
+                                Glyph="&#xE793;"
+                                FontSize="20"
+                                Foreground="#9C27B0"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock
+                                Text="Dark Mode"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock
+                                Text="Switch between light and dark appearance."
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"
+                                Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            IsOn="{Binding IsDarkMode, Mode=TwoWay}"
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0"
+                            OnContent=""
+                            OffContent=""/>
+                    </Grid>
+                </Border>
+
                 <!-- Notifications Section -->
                 <TextBlock
                     Text="NOTIFICATIONS"
@@ -153,15 +236,24 @@
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             TextWrapping="Wrap">
-                            Winspeqt captures app usage, settings, file storage, and other system information. 
-                            This information is necessary to make Winspeqt's features work. However, this data 
-                            still belongs to you. We never move it off your computer and only ever use it to show 
+                            Winspeqt captures app usage, settings, file storage, and other system information.
+                            This information is necessary to make Winspeqt's features work. However, this data
+                            still belongs to you. We never move it off your computer and only ever use it to show
                             you how your computer is behaving. If you have any questions, please reach out at
                             <Hyperlink NavigateUri="mailto:winspeqtsupport@byu.onmicrosoft.com" Click="Hyperlink_Click">winspeqtsupport@byu.onmicrosoft.com</Hyperlink>.
                         </TextBlock>
                     </StackPanel>
                 </Border>
-
+                <Button
+                    x:Name="FeedbackButton"
+                    Style="{StaticResource FloatingFeedbackButtonStyle}"
+                    Content="Feedback"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="16"
+                    Canvas.ZIndex="10"
+                    Click="FeedbackButton_Click"
+                    Foreground="WhiteSmoke"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

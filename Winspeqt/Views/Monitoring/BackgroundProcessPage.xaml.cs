@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using Winspeqt.Models;
@@ -14,29 +14,62 @@ namespace Winspeqt.Views.Monitoring
         {
             this.InitializeComponent();
             ViewModel = new BackgroundProcessViewModel();
+            UpdateViewToggleStyles();
         }
 
-
-
+        // ── Navigation ───────────────────────────────────────────────────────────
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
+            Frame.Navigate(typeof(MonitoringDashboardPage));
+        }
+
+        // ── View toggle ──────────────────────────────────────────────────────────
+        private void SetCardView_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.IsTableView = false;
+            UpdateViewToggleStyles();
+        }
+
+        private void SetTableView_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.IsTableView = true;
+            UpdateViewToggleStyles();
+        }
+
+        private void UpdateViewToggleStyles()
+        {
+            if (Application.Current.Resources.TryGetValue("AccentButtonStyle", out var accentObj) &&
+                accentObj is Style accentStyle)
             {
-                Frame.GoBack();
+                CardViewButton.Style = ViewModel.IsTableView ? null : accentStyle;
+                TableViewButton.Style = ViewModel.IsTableView ? accentStyle : null;
             }
         }
 
+        // ── Tree expand/collapse ─────────────────────────────────────────────────
+        private void ExpandProcess_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is ProcessGroup group)
+            {
+                group.IsExpanded = !group.IsExpanded;
+
+                if (group.IsExpanded)
+                    ViewModel.ExpandedProcessIds.Add(group.RootProcess.ProcessId);
+                else
+                    ViewModel.ExpandedProcessIds.Remove(group.RootProcess.ProcessId);
+            }
+        }
+
+        // ── End process ──────────────────────────────────────────────────────────
         private async void EndProcess_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
             var process = button?.Tag as ProcessInfo;
             if (process == null) return;
 
-            // Safety guard — protected processes should never reach here via the UI,
-            // but defend against it just in case.
             if (process.IsProtected) return;
 
-            ContentDialog confirmDialog = new ContentDialog
+            var confirmDialog = new ContentDialog
             {
                 Title = $"End {process.Description}?",
                 Content = $"Are you sure you want to close '{process.Description}'?\n\n" +
@@ -57,7 +90,7 @@ namespace Winspeqt.Views.Monitoring
 
                 if (success)
                 {
-                    ContentDialog successDialog = new ContentDialog
+                    var successDialog = new ContentDialog
                     {
                         Title = "Process Ended",
                         Content = $"'{process.Description}' has been successfully ended.",
@@ -68,7 +101,7 @@ namespace Winspeqt.Views.Monitoring
                 }
                 else
                 {
-                    ContentDialog errorDialog = new ContentDialog
+                    var errorDialog = new ContentDialog
                     {
                         Title = "Failed to End Process",
                         Content = $"Could not end '{process.Description}'.\n\n" +

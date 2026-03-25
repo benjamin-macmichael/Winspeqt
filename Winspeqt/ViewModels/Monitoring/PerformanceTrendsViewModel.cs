@@ -40,6 +40,8 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _cpuUsageValues, value);
         }
 
+        private double _totalCpuUsage = 0;
+        public double TotalCpuUsage { get => _totalCpuUsage; set => SetProperty(ref _totalCpuUsage, value); }
         public ISeries[] CpuSeries { get; }
         public IEnumerable<ICartesianAxis> CpuYAxes { get; }
         public IEnumerable<ICartesianAxis> XAxes { get; }
@@ -49,6 +51,31 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             get => _memoryUsage;
             set => SetProperty(ref _memoryUsage, value);
+        }
+
+        private long _maxMemory = 0;
+
+        public long MaxMemory
+        {
+            get => _maxMemory;
+            set => SetProperty(ref _maxMemory, value);
+        }
+
+        private long _currentMemory = 0;
+
+        public long CurrentMemory
+        {
+            get => _currentMemory;
+            set
+            {
+                SetProperty(ref _currentMemory, value);
+                OnPropertyChanged(nameof(MemoryPercent));
+            }
+        }
+
+        public double MemoryPercent
+        {
+            get => _maxMemory > 0 ? double.Round((double)_currentMemory / _maxMemory * 100, 1) : 0;
         }
 
         private ObservableCollection<double> _memoryUsageValues = new();
@@ -77,6 +104,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _diskUsageValues, value);
         }
 
+        private double _diskUsagePercent = 0;
+
+        public double DiskUsagePercent
+        {
+            get => _diskUsagePercent;
+            set => SetProperty(ref _diskUsagePercent, value);
+        }
+
         public ISeries[] DiskSeries { get; }
         public IEnumerable<ICartesianAxis> DiskYAxes { get; }
 
@@ -95,6 +130,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _networkSentValues, value);
         }
 
+        private double _networkSentValue = 0;
+
+        public double NetworkSentValue
+        {
+            get => _networkSentValue;
+            set => SetProperty(ref _networkSentValue, value);
+        }
+
         private Queue<double> _networkReceived = new Queue<double>(new double[_secondsTracked]);
         public Queue<double> NetworkReceived
         {
@@ -108,6 +151,14 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             get => _networkReceivedValues;
             set => SetProperty(ref _networkReceivedValues, value);
+        }
+
+        private double _networkReceivedValue = 0;
+
+        public double NetworkReceivedValue
+        {
+            get => _networkReceivedValue;
+            set => SetProperty(ref _networkReceivedValue, value);
         }
 
         public ISeries[] NetworkSeries { get; }
@@ -215,7 +266,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 new LineSeries<double>
                 {
                     Values = DiskUsageValues,
-                    Fill = new SolidColorPaint(SKColor.Parse("#4CAF50")),
+                    Fill = new SolidColorPaint(SKColor.Parse("#9C27B0")),
                     Stroke = null,
                     GeometryFill = null,
                     GeometryStroke = null
@@ -243,7 +294,7 @@ namespace Winspeqt.ViewModels.Monitoring
                 {
                     Values = NetworkSentValues,
                     Fill = null,
-                    Stroke = new SolidColorPaint(SKColor.Parse("#FF9800"), 3),
+                    Stroke = new SolidColorPaint(SKColor.Parse("#4CAF50"), 3),
                     GeometryFill = null,
                     GeometryStroke = null,
                     Name = "Upload"
@@ -305,9 +356,10 @@ namespace Winspeqt.ViewModels.Monitoring
                 double diskActivePercent = 0;
                 double networkSentMbps = 0;
                 double networkReceivedMbps = 0;
+                long totalMb = 0;
+                long usedMb = 0;
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting CPU...");
                     cpu = await _monitorService.GetTotalCpuUsageAsync();
                 }
                 catch (Exception ex)
@@ -317,12 +369,12 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting memory...");
                     var availableMb = await _monitorService.GetAvailableMemoryMBAsync();
-                    var totalMb = await _monitorService.GetTotalMemoryMBAsync();
+                    totalMb = await _monitorService.GetTotalMemoryMBAsync();
+                    usedMb = totalMb - availableMb;
                     if (totalMb > 0)
                     {
-                        memoryUsedPercent = (totalMb - availableMb) * 100.0 / totalMb;
+                        memoryUsedPercent = usedMb * 100.0 / totalMb;
                     }
                 }
                 catch (Exception ex)
@@ -332,7 +384,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting disk usage...");
                     diskActivePercent = await _monitorService.GetDiskActiveTimePercentAsync();
                 }
                 catch (Exception ex)
@@ -346,7 +397,6 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("Getting network throughput...");
                     var network = await _monitorService.GetNetworkThroughputMbpsAsync();
                     networkSentMbps = Math.Max(0, network.SentMbps);
                     networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
@@ -361,6 +411,7 @@ namespace Winspeqt.ViewModels.Monitoring
                     // update your rolling buffer
                     _cpuUsage.Dequeue();
                     _cpuUsage.Enqueue(cpu);
+                    TotalCpuUsage = cpu;
 
                     // update bindable collection
                     CpuUsageValues.Clear();
@@ -369,6 +420,8 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _memoryUsage.Dequeue();
                     _memoryUsage.Enqueue(memoryUsedPercent);
+                    MaxMemory = totalMb;
+                    CurrentMemory = usedMb;
 
                     MemoryUsageValues.Clear();
                     foreach (var v in _memoryUsage)
@@ -376,6 +429,7 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _diskUsage.Dequeue();
                     _diskUsage.Enqueue(diskActivePercent);
+                    DiskUsagePercent = diskActivePercent;
 
                     DiskUsageValues.Clear();
                     foreach (var v in _diskUsage)
@@ -383,12 +437,16 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     _networkSent.Dequeue();
                     _networkSent.Enqueue(networkSentMbps);
+                    NetworkSentValue = networkReceivedMbps;
+
                     NetworkSentValues.Clear();
                     foreach (var v in _networkSent)
                         NetworkSentValues.Add(v);
 
                     _networkReceived.Dequeue();
                     _networkReceived.Enqueue(networkReceivedMbps);
+                    NetworkReceivedValue = networkReceivedMbps;
+
                     NetworkReceivedValues.Clear();
                     foreach (var v in _networkReceived)
                         NetworkReceivedValues.Add(v);

@@ -4,8 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:Winspeqt.Helpers"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <helpers:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </Page.Resources>
 
     <Grid x:Name="RootLayout">
         <VisualStateManager.VisualStateGroups>
@@ -17,6 +22,7 @@
                         <AdaptiveTrigger MinWindowWidth="1250"/>
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
+                        <!-- Main category card columns -->
                         <Setter Target="CardsColumn0.Width" Value="*"/>
                         <Setter Target="CardsColumn1.Width" Value="*"/>
                         <Setter Target="CardsColumn2.Width" Value="*"/>
@@ -24,17 +30,19 @@
                         <Setter Target="CardsRow1.Height" Value="0"/>
                         <Setter Target="CardsRow2.Height" Value="0"/>
 
-                        <Setter Target="SecurityCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="SecurityCard.(Grid.Row)" Value="1"/>
                         <Setter Target="SecurityCard.(Grid.Column)" Value="0"/>
                         <Setter Target="SecurityCard.Margin" Value="0,0,20,0"/>
 
-                        <Setter Target="OptimizationCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="OptimizationCard.(Grid.Row)" Value="1"/>
                         <Setter Target="OptimizationCard.(Grid.Column)" Value="1"/>
                         <Setter Target="OptimizationCard.Margin" Value="20,0"/>
 
-                        <Setter Target="MonitoringCard.(Grid.Row)" Value="0"/>
+                        <Setter Target="MonitoringCard.(Grid.Row)" Value="1"/>
                         <Setter Target="MonitoringCard.(Grid.Column)" Value="2"/>
                         <Setter Target="MonitoringCard.Margin" Value="20,0,0,0"/>
+
+
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -45,42 +53,26 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-            <!-- Header Section -->
-            <Grid Grid.Row="0" Padding="60,60,60,40">
-            <!-- Gear icon top-right -->
-            <Button
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top"
-        Background="Transparent"
-        BorderThickness="0"
-        Padding="8"
-        CornerRadius="6"
-        Command="{Binding SettingsCommand}"
-        ToolTipService.ToolTip="Settings">
-                <FontIcon Glyph="&#xE713;" FontSize="20" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-            </Button>
-
-            <!-- Existing centered header text (unchanged) -->
-            <StackPanel HorizontalAlignment="Center">
-                <TextBlock
-            Text="Winspeqt"
-            FontSize="48"
-            FontWeight="Bold"
-            Margin="0,0,0,12"
-            TextAlignment="Center"/>
-                <TextBlock
-            Text="Your Windows System Inspector and Optimizer"
-            FontSize="20"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Margin="0,0,0,8"
-            TextAlignment="Center"/>
-                <TextBlock
-            Text="Choose a category to get started"
-            FontSize="18"
-            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-            TextAlignment="Center"/>
-            </StackPanel>
-            </Grid>
+        <!-- Existing centered header text (unchanged) -->
+        <StackPanel HorizontalAlignment="Center" Padding="60,60,60,40">
+            <TextBlock
+                Text="Winspeqt"
+                FontSize="48"
+                FontWeight="Bold"
+                Margin="0,0,0,12"
+                TextAlignment="Center"/>
+            <TextBlock
+                Text="Your Windows System Inspector and Optimizer"
+                FontSize="20"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Margin="0,0,0,8"
+                TextAlignment="Center"/>
+            <TextBlock
+                Text="Choose a category to get started"
+                FontSize="18"
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                TextAlignment="Center"/>
+        </StackPanel>
 
         <!-- Scroll only the card region so header layout/state behavior stays stable. -->
         <ScrollViewer
@@ -97,190 +89,335 @@
                     <ColumnDefinition x:Name="CardsColumn2" Width="0"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition x:Name="CardsRow0" Height="Auto"/>
                     <RowDefinition x:Name="CardsRow1" Height="Auto"/>
                     <RowDefinition x:Name="CardsRow2" Height="Auto"/>
                 </Grid.RowDefinitions>
 
-            <!-- Security Card -->
-            <Button 
-                x:Name="SecurityCard"
-                Grid.Row="0"
-                Grid.Column="0"
-                Margin="0,0,0,20"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="2"
-                CornerRadius="12"
-                Command="{Binding SecurityCommand}">
-                <Grid Padding="40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Icon -->
-                    <FontIcon 
-                        Grid.Row="0"
-                        Glyph="&#xE72E;" 
-                        FontSize="64"
-                        Foreground="#4CAF50"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,24"/>
-
-                    <!-- Content -->
-                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                        <TextBlock 
-                            Text="Security" 
-                            FontSize="32" 
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!-- System Health Metrics Card (Row 0, spans all columns)  -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <Border
+                    Grid.Row="0"
+                    Grid.ColumnSpan="3"
+                    Margin="0,0,0,20"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Padding="40,28">
+                    <StackPanel Spacing="20">
+                        <TextBlock
+                            Text="System Health"
+                            FontSize="20"
                             FontWeight="SemiBold"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,16"/>
-                        <TextBlock 
-                            Text="Stay protected with tools that cover status, apps, network, and settings"
-                            FontSize="16"
-                            TextWrapping="Wrap"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"
-                            TextAlignment="Center"
-                            LineHeight="24"/>
+                            HorizontalAlignment="Center"/>
+
+                        <!-- Three metric circles — always horizontal -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Security Score -->
+                            <Button
+                                Grid.Column="0"
+                                HorizontalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="8"
+                                CornerRadius="8"
+                                Command="{Binding SecurityScoreCommand}">
+                                <StackPanel HorizontalAlignment="Center" Spacing="10">
+                                    <Grid Width="120" Height="120" HorizontalAlignment="Center">
+                                        <ProgressRing
+                                            Width="120"
+                                            Height="120"
+                                            IsIndeterminate="False"
+                                            Value="{Binding SecurityScore}"
+                                            Maximum="100"
+                                            Foreground="{Binding SecurityScoreColor, Converter={StaticResource StringToBrushConverter}}"/>
+                                        <TextBlock
+                                            Text="{Binding SecurityScoreText}"
+                                            FontSize="15"
+                                            FontWeight="Bold"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <TextBlock
+                                        Text="Security Score"
+                                        FontSize="14"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Total Memory (Disk) -->
+                            <Button
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="8"
+                                CornerRadius="8"
+                                Command="{Binding DiskCommand}">
+                                <StackPanel HorizontalAlignment="Center" Spacing="10">
+                                    <Grid Width="120" Height="120" HorizontalAlignment="Center">
+                                        <ProgressRing
+                                            Width="120"
+                                            Height="120"
+                                            IsIndeterminate="False"
+                                            Value="{Binding DiskPercent}"
+                                            Maximum="100"
+                                            Foreground="{Binding DiskColor, Converter={StaticResource StringToBrushConverter}}"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+                                            <TextBlock
+                                                Text="{Binding DiskCenterText}"
+                                                FontSize="15"
+                                                FontWeight="Bold"
+                                                HorizontalAlignment="Center"/>
+                                            <TextBlock
+                                                Text="{Binding DiskSubText}"
+                                                FontSize="12"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock
+                                        Text="Total Storage"
+                                        FontSize="14"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- RAM Usage -->
+                            <Button
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="8"
+                                CornerRadius="8"
+                                Command="{Binding RamCommand}">
+                                <StackPanel HorizontalAlignment="Center" Spacing="10">
+                                    <Grid Width="120" Height="120" HorizontalAlignment="Center">
+                                        <ProgressRing
+                                            Width="120"
+                                            Height="120"
+                                            IsIndeterminate="False"
+                                            Value="{Binding RamPercent}"
+                                            Maximum="100"
+                                            Foreground="{Binding RamColor, Converter={StaticResource StringToBrushConverter}}"/>
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+                                            <TextBlock
+                                                Text="{Binding RamCenterText}"
+                                                FontSize="15"
+                                                FontWeight="Bold"
+                                                HorizontalAlignment="Center"/>
+                                            <TextBlock
+                                                Text="{Binding RamSubText}"
+                                                FontSize="12"
+                                                HorizontalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <TextBlock
+                                        Text="RAM Usage"
+                                        FontSize="14"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
                     </StackPanel>
+                </Border>
 
-                    <!-- Action Text -->
-                    <TextBlock 
-                        Grid.Row="2"
-                        Text="Get Started →" 
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        HorizontalAlignment="Center"
-                        Margin="0,24,0,0"/>
-                </Grid>
-            </Button>
+                <!-- Security Card -->
+                <Button
+                    x:Name="SecurityCard"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="0,0,0,20"
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Command="{Binding SecurityCommand}">
+                    <Grid Padding="40">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-            <!-- Optimization Card -->
-            <Button 
-                x:Name="OptimizationCard"
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="0,0,0,20"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="2"
-                CornerRadius="12"
-                Command="{Binding OptimizationCommand}">
-                <Grid Padding="40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                        <!-- Icon -->
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xE72E;"
+                            FontSize="64"
+                            Foreground="#4CAF50"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,24"/>
 
-                    <!-- Icon -->
-                    <FontIcon 
-                        Grid.Row="0"
-                        Glyph="&#xE73C;" 
-                        FontSize="64"
-                        Foreground="#2196F3"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,24"/>
+                        <!-- Content -->
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock
+                                Text="Security"
+                                FontSize="32"
+                                FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,16"/>
+                            <TextBlock
+                                Text="Stay protected with tools that cover status, apps, network, and settings"
+                                FontSize="16"
+                                TextWrapping="Wrap"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"
+                                TextAlignment="Center"
+                                LineHeight="24"/>
+                        </StackPanel>
 
-                    <!-- Content -->
-                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                        <TextBlock 
-                            Text="Optimization" 
-                            FontSize="32" 
+                        <!-- Action Text -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Text="Get Started →"
+                            FontSize="18"
                             FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,16"/>
-                        <TextBlock 
-                            Text="Free up disk space, find large files, remove unused apps, and speed up your system safely"
-                            FontSize="16"
-                            TextWrapping="Wrap"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Margin="0,24,0,0"/>
+                    </Grid>
+                </Button>
+
+                <!-- Optimization Card -->
+                <Button
+                    x:Name="OptimizationCard"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="0,0,0,20"
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Command="{Binding OptimizationCommand}">
+                    <Grid Padding="40">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Icon -->
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xEC4A;"
+                            FontSize="64"
+                            Foreground="#2196F3"
                             HorizontalAlignment="Center"
-                            TextAlignment="Center"
-                            LineHeight="24"/>
-                    </StackPanel>
+                            Margin="0,0,0,24"/>
 
-                    <!-- Action Text -->
-                    <TextBlock 
-                        Grid.Row="2"
-                        Text="Get Started →" 
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        HorizontalAlignment="Center"
-                        Margin="0,24,0,0"/>
-                </Grid>
-            </Button>
+                        <!-- Content -->
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock
+                                Text="Optimization"
+                                FontSize="32"
+                                FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,16"/>
+                            <TextBlock
+                                Text="Free up disk space, find large files, remove unused apps, and speed up your system safely"
+                                FontSize="16"
+                                TextWrapping="Wrap"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"
+                                TextAlignment="Center"
+                                LineHeight="24"/>
+                        </StackPanel>
 
-            <!-- Monitoring Card -->
-            <Button 
-                x:Name="MonitoringCard"
-                Grid.Row="2"
-                Grid.Column="0"
-                Margin="0"
-                Padding="0"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="2"
-                CornerRadius="12"
-                Command="{Binding MonitoringCommand}">
-                <Grid Padding="40">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Icon -->
-                    <FontIcon 
-                        Grid.Row="0"
-                        Glyph="&#xE9D9;" 
-                        FontSize="64"
-                        Foreground="#FF9800"
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,24"/>
-
-                    <!-- Content -->
-                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                        <TextBlock 
-                            Text="Monitoring" 
-                            FontSize="32" 
+                        <!-- Action Text -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Text="Get Started →"
+                            FontSize="18"
                             FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             HorizontalAlignment="Center"
-                            Margin="0,0,0,16"/>
-                        <TextBlock 
-                            Text="Monitor CPU, memory, and disk usage in real-time with friendly explanations of what's happening"
-                            FontSize="16"
-                            TextWrapping="Wrap"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"
-                            TextAlignment="Center"
-                            LineHeight="24"/>
-                    </StackPanel>
+                            Margin="0,24,0,0"/>
+                    </Grid>
+                </Button>
 
-                    <!-- Action Text -->
-                    <TextBlock 
-                        Grid.Row="2"
-                        Text="Get Started →" 
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                        HorizontalAlignment="Center"
-                        Margin="0,24,0,0"/>
-                </Grid>
-            </Button>
+                <!-- Monitoring Card -->
+                <Button
+                    x:Name="MonitoringCard"
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="0"
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="12"
+                    Command="{Binding MonitoringCommand}">
+                    <Grid Padding="40">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Icon -->
+                        <FontIcon
+                            Grid.Row="0"
+                            Glyph="&#xE9D9;"
+                            FontSize="64"
+                            Foreground="#FF9800"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,24"/>
+
+                        <!-- Content -->
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <TextBlock
+                                Text="Monitoring"
+                                FontSize="32"
+                                FontWeight="SemiBold"
+                                TextWrapping="WrapWholeWords"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,16"/>
+                            <TextBlock
+                                Text="Monitor CPU, memory, and disk usage in real-time with friendly explanations of what's happening"
+                                FontSize="16"
+                                TextWrapping="Wrap"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"
+                                TextAlignment="Center"
+                                LineHeight="24"/>
+                        </StackPanel>
+
+                        <!-- Action Text -->
+                        <TextBlock
+                            Grid.Row="2"
+                            Text="Get Started →"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            HorizontalAlignment="Center"
+                            Margin="0,24,0,0"/>
+                    </Grid>
+                </Button>
             </Grid>
         </ScrollViewer>
     </Grid>

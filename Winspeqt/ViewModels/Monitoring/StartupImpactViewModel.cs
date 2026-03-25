@@ -1,16 +1,17 @@
-using Microsoft.UI.Dispatching;
+﻿using Microsoft.UI.Dispatching;
 using StartupInventory;
 using System;
 using System.Collections.Generic;
+using System.Management;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Winspeqt.Helpers;
 using Winspeqt.Models;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
     /// <summary>
-    /// View model for the Startup Impact page. Loads startup items and exposes grouped data for display.
+    /// View model for the "Why Is My PC Running Slow?" page.
+    /// Loads startup items, exposes grouped data, and provides PC health tips.
     /// </summary>
     public class StartupImpactViewModel : ObservableObject
     {
@@ -18,40 +19,42 @@ namespace Winspeqt.ViewModels.Monitoring
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly IReadOnlyList<StartupGroupDefinition> _groupDefinitions;
 
+        // ── Loading ──────────────────────────────────────────────────────────
+
         private bool _isLoading;
-        /// <summary>
-        /// Indicates whether the view model is currently loading data.
-        /// </summary>
         public bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
 
-        private bool _showAdvancedSettings;
+        // ── Advanced / startup section ────────────────────────────────────────
+
+        private bool _showStartupDetail;
         /// <summary>
-        /// Controls the visibility of advanced settings in the view.
+        /// When true the startup detail screen is shown instead of the main screen.
         /// </summary>
-        public bool ShowAdvancedSettings
+        public bool ShowStartupDetail
         {
-            get => _showAdvancedSettings;
-            set
-            {
-                SetProperty(ref _showAdvancedSettings, value);
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(AdvancedSettingsText));
-            }
+            get => _showStartupDetail;
+            set => SetProperty(ref _showStartupDetail, value);
         }
 
+        // ── PC tips ───────────────────────────────────────────────────────────
+
+        private IReadOnlyList<PcTip> _pcTips = [];
         /// <summary>
-        /// Button label that reflects the current advanced settings state.
+        /// The list of actionable tips shown in the "Analyzing Your PC" section.
         /// </summary>
-        public string AdvancedSettingsText => $"{(ShowAdvancedSettings ? "Hide" : "Show")} Advanced Settings";
+        public IReadOnlyList<PcTip> PcTips
+        {
+            get => _pcTips;
+            private set => SetProperty(ref _pcTips, value);
+        }
+
+        // ── Startup data ──────────────────────────────────────────────────────
 
         private StartupApp _startupApp;
-        /// <summary>
-        /// Raw startup app data from the enumerator.
-        /// </summary>
         public StartupApp StartupApp
         {
             get => _startupApp;
@@ -59,23 +62,14 @@ namespace Winspeqt.ViewModels.Monitoring
         }
 
         private IReadOnlyList<StartupAppGroup> _startupAppGroups;
-        /// <summary>
-        /// Startup apps grouped by source for display.
-        /// </summary>
         public IReadOnlyList<StartupAppGroup> StartupAppGroups
         {
             get => _startupAppGroups;
             private set => SetProperty(ref _startupAppGroups, value);
         }
 
-        /// <summary>
-        /// Refreshes startup app data on demand.
-        /// </summary>
-        public ICommand RefreshCommand { get; }
+        // ── Constructor ───────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Initializes the view model, preloads data, and kicks off the full refresh.
-        /// </summary>
         public StartupImpactViewModel()
         {
             _startupEnumerator = new StartupEnumerator();
@@ -83,38 +77,19 @@ namespace Winspeqt.ViewModels.Monitoring
             _groupDefinitions = BuildGroupDefinitions();
             _startupApp = new StartupApp();
             _startupAppGroups = [];
+            _pcTips = [];
 
-            IsLoading = true;
-            ShowAdvancedSettings = false;
-
-            StartupApp = _startupEnumerator.GetStartupItems(false);
-            StartupAppGroups = BuildGroups(StartupApp, _groupDefinitions);
-
-            RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
-
-            _ = RefreshDataAsync(initialLoad: true);
+            ShowStartupDetail = false;
         }
 
-        /// <summary>
-        /// Toggles the advanced settings section.
-        /// </summary>
-        public void ToggleAdvancedSettings()
-        {
-            ShowAdvancedSettings = !ShowAdvancedSettings;
-        }
+        // ── Private helpers ───────────────────────────────────────────────────
 
-        /// <summary>
-        /// Creates the definitions used to build the grouped view.
-        /// </summary>
         private static IReadOnlyList<StartupGroupDefinition> BuildGroupDefinitions()
         {
-            // https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys
-            // https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
             var registryRunDescription = "The Registry contains information that Windows continually references during operation. The Run key makes the program run every time the user logs on. Registry keys can be viewed and edited in Registry Editor.";
             var registryRunOnceDescription = "The Registry contains information that Windows continually references during operation. The RunOnce key makes the program run one time, and then the key is deleted. Registry keys can be viewed and edited in Registry Editor.";
             var registryLink = "regedit";
             var registryButtonText = "View Registry Editor";
-            // https://www.lenovo.com/us/en/glossary/startup-folder/?orgRef=https%253A%252F%252Fwww.google.com%252F
             var startupDescription = "The startup folder contains shortcuts to programs that run when your computer starts up. It can contain executable files (.exe), shortcuts (.lnk), or script files (ex. .bat or .cmd).";
             var startupLink = "startup";
             var startupButtonText = "View Startup Folder";
@@ -124,82 +99,406 @@ namespace Winspeqt.ViewModels.Monitoring
 
             return new List<StartupGroupDefinition>
             {
-                new StartupGroupDefinition("Registry Run", app => app.RegistryRun, registryRunDescription, registryLink, registryButtonText),
-                new StartupGroupDefinition("Registry Run Once", app => app.RegistryRunOnce, registryRunOnceDescription, registryLink, registryButtonText),
-                new StartupGroupDefinition("Startup Folder", app => app.StartupFolder, startupDescription, startupLink, startupButtonText),
-                new StartupGroupDefinition("Scheduled Tasks", app => app.ScheduledTask, scheduleDescription, scheduleLink, scheduleButtonText)
+                new("Registry Run",      app => app.RegistryRun,    registryRunDescription,      registryLink, registryButtonText),
+                new("Registry Run Once", app => app.RegistryRunOnce, registryRunOnceDescription, registryLink, registryButtonText),
+                new("Startup Folder",    app => app.StartupFolder,  startupDescription,           startupLink,  startupButtonText),
+                new("Scheduled Tasks",   app => app.ScheduledTask,  scheduleDescription,          scheduleLink, scheduleButtonText),
             };
         }
 
-        /// <summary>
-        /// Builds grouped results from the raw app list and definition set.
-        /// </summary>
-        private static IReadOnlyList<StartupAppGroup> BuildGroups(StartupApp apps, IReadOnlyList<StartupGroupDefinition> definitions)
+        private static IReadOnlyList<StartupAppGroup> BuildGroups(
+            StartupApp apps,
+            IReadOnlyList<StartupGroupDefinition> definitions)
         {
             var groups = new List<StartupAppGroup>();
-
-            foreach (var definition in definitions)
+            foreach (var def in definitions)
             {
-                var items = definition.ItemsSelector(apps);
-                if (items == null || items.Count == 0)
-                    continue;
-
-                groups.Add(new StartupAppGroup(
-                    definition.Title,
-                    definition.Description,
-                    definition.Link,
-                    definition.ButtonText,
-                    items));
+                var items = def.ItemsSelector(apps);
+                if (items == null || items.Count == 0) continue;
+                groups.Add(new StartupAppGroup(def.Title, def.Description, def.Link, def.ButtonText, items));
             }
-
             return groups;
         }
 
-        /// <summary>
-        /// Display model for a group of startup items.
-        /// </summary>
-        public sealed class StartupAppGroup
+        private static TimeSpan GetSystemUptime()
         {
-            /// <summary>
-            /// Creates a display group with a title, description, and items.
-            /// </summary>
-            public StartupAppGroup(string title, string description, string link, string buttonText, IReadOnlyList<StartupItem> items)
-            {
-                Title = title;
-                Description = description;
-                Link = link;
-                ButtonText = buttonText;
-                Items = items;
-            }
-
-            public string Title { get; }
-
-            public string Description { get; }
-
-            public string Link { get; }
-
-            public string ButtonText { get; }
-            public IReadOnlyList<StartupItem> Items { get; }
+            try { return TimeSpan.FromMilliseconds(Environment.TickCount64); }
+            catch { return TimeSpan.Zero; }
         }
 
         /// <summary>
-        /// Loads the latest startup data and updates the UI.
+        /// Formats a TimeSpan into a human-readable uptime string down to the minute.
+        /// e.g. "3 days, 4 hours, 12 minutes" or "45 minutes"
         /// </summary>
-        private async Task RefreshDataAsync(bool initialLoad = false)
+        public static string FormatUptime(TimeSpan uptime)
         {
-            if (IsLoading && !initialLoad)
-                return;
+            var days = (int)uptime.TotalDays;
+            var hours = uptime.Hours;
+            var minutes = uptime.Minutes;
 
-            IsLoading = true;
+            if (days >= 1)
+            {
+                var parts = new List<string> { $"{days} day{(days == 1 ? "" : "s")}" };
+                if (hours > 0) parts.Add($"{hours} hour{(hours == 1 ? "" : "s")}");
+                if (minutes > 0) parts.Add($"{minutes} minute{(minutes == 1 ? "" : "s")}");
+                return $"Your PC has been running for {string.Join(", ", parts)} without a restart.";
+            }
+            if (hours >= 1)
+            {
+                var parts = new List<string> { $"{hours} hour{(hours == 1 ? "" : "s")}" };
+                if (minutes > 0) parts.Add($"{minutes} minute{(minutes == 1 ? "" : "s")}");
+                return $"Your PC has been running for {string.Join(", ", parts)}.";
+            }
+            if (minutes >= 1)
+                return $"Your PC has been running for {minutes} minute{(minutes == 1 ? "" : "s")}.";
 
+            return "Your PC was restarted very recently.";
+        }
+
+        /// <summary>
+        /// Attempts to get the BIOS release date via WMI. Returns null on failure.
+        /// </summary>
+        private static DateTime? GetBiosDate()
+        {
             try
             {
-                var fullStartupApp = await Task.Run(() => _startupEnumerator.GetStartupItems());
+                using var searcher = new ManagementObjectSearcher("SELECT ReleaseDate FROM Win32_BIOS");
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    var raw = obj["ReleaseDate"]?.ToString();
+                    if (!string.IsNullOrEmpty(raw))
+                    {
+                        // WMI datetime format: yyyyMMddHHmmss.mmmmmm+UTC
+                        var dateStr = raw[..8]; // "20181204"
+                        if (DateTime.TryParseExact(dateStr, "yyyyMMdd",
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            System.Globalization.DateTimeStyles.None, out var biosDate))
+                            return biosDate;
+                    }
+                }
+            }
+            catch { /* WMI unavailable */ }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the Windows OS install date from the registry.
+        /// </summary>
+        private static DateTime? GetOsInstallDate()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.LocalMachine
+                    .OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                if (key?.GetValue("InstallDate") is int ts)
+                    return DateTimeOffset.FromUnixTimeSeconds(ts).LocalDateTime;
+            }
+            catch { }
+            return null;
+        }
+
+        private static (bool isHdd, string driveName) GetSystemDriveType()
+        {
+            try
+            {
+                // Get the drive letter of the system drive
+                var systemRoot = System.IO.Path.GetPathRoot(
+                    Environment.GetFolderPath(Environment.SpecialFolder.System))?.TrimEnd('\\') ?? "C:";
+
+                // Find the disk number via Win32_LogicalDiskToPartition chain
+                int? diskNumber = null;
+                string driveName = "";
+
+                using var ldSearcher = new ManagementObjectSearcher(
+                    $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{systemRoot}'}}" +
+                    " WHERE AssocClass=Win32_LogicalDiskToPartition");
+                foreach (ManagementObject part in ldSearcher.Get())
+                {
+                    using var diskSearcher = new ManagementObjectSearcher(
+                        $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{part["DeviceID"]}'}}" +
+                        " WHERE AssocClass=Win32_DiskDriveToDiskPartition");
+                    foreach (ManagementObject disk in diskSearcher.Get())
+                    {
+                        var deviceId = disk["DeviceID"]?.ToString() ?? "";
+                        // DeviceID is like "\\.\PHYSICALDRIVE0" — extract the number
+                        if (deviceId.Length > 0 && int.TryParse(
+                                System.Text.RegularExpressions.Regex.Match(deviceId, @"\d+$").Value,
+                                out var num))
+                        {
+                            diskNumber = num;
+                            driveName = disk["Model"]?.ToString() ?? "";
+                        }
+                    }
+                }
+
+                if (diskNumber == null) return (false, "");
+
+                // Use MSFT_PhysicalDisk in root\Microsoft\Windows\Storage for accurate MediaType
+                // MediaType: 0 = Unspecified, 3 = HDD, 4 = SSD, 5 = SCM
+                var scope = new ManagementScope(@"\\.\root\Microsoft\Windows\Storage");
+                scope.Connect();
+                using var pdSearcher = new ManagementObjectSearcher(scope,
+                    new ObjectQuery($"SELECT MediaType, FriendlyName FROM MSFT_PhysicalDisk WHERE DeviceId='{diskNumber}'"));
+                foreach (ManagementObject pd in pdSearcher.Get())
+                {
+                    var mediaType = Convert.ToInt32(pd["MediaType"]);
+                    var friendlyName = pd["FriendlyName"]?.ToString() ?? driveName;
+                    // 3 = HDD, anything else (4=SSD, 5=SCM, 0=Unspecified) we treat as not-HDD
+                    return (mediaType == 3, friendlyName);
+                }
+            }
+            catch { }
+            return (false, "");
+        }
+
+        private static double GetTempFolderSizeGb()
+        {
+            try
+            {
+                var tempPath = System.IO.Path.GetTempPath();
+                var dir = new System.IO.DirectoryInfo(tempPath);
+                if (!dir.Exists) return 0;
+                long bytes = 0;
+                foreach (var file in dir.EnumerateFiles("*", System.IO.SearchOption.AllDirectories))
+                {
+                    try { bytes += file.Length; } catch { }
+                }
+                return bytes / (1024.0 * 1024 * 1024);
+            }
+            catch { }
+            return 0;
+        }
+
+        private static bool IsHighPerformancePowerPlan()
+        {
+            try
+            {
+                var scope = new ManagementScope(@"\\.\root\cimv2\power");
+                scope.Connect();
+                using var searcher = new ManagementObjectSearcher(scope,
+                    new ObjectQuery("SELECT ElementName, IsActive FROM Win32_PowerPlan"));
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    if (obj["IsActive"] is true)
+                    {
+                        var name = obj["ElementName"]?.ToString() ?? "";
+                        return name.Contains("High performance", StringComparison.OrdinalIgnoreCase)
+                            || name.Contains("Ultimate", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private static IReadOnlyList<PcTip> BuildTips(TimeSpan uptime, StartupApp apps)
+        {
+            var tips = new List<PcTip>();
+
+            // ── Uptime ────────────────────────────────────────────────────────
+            var uptimeDays = (int)uptime.TotalDays;
+            var uptimeFormatted = FormatUptime(uptime);
+
+            if (uptimeDays >= 7)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Warning,
+                    "Your PC hasn't been restarted in over a week",
+                    $"{uptimeFormatted} A restart is one of the quickest fixes you can try.",
+                    "Restart Now",
+                    "restart"));
+            else if (uptimeDays >= 3)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Consider restarting your PC",
+                    $"{uptimeFormatted} If something is behaving strangely or feeling sluggish, this is always the first thing worth trying.",
+                    "Restart Now",
+                    "restart"));
+            else
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Restarting is always a good first troubleshooting step",
+                    $"{uptimeFormatted} Some hard-to-find background processes can only be cleared with a reboot. If your PC feels off, a restart is the quickest thing to try.",
+                    "Restart Now",
+                    "restart"));
+
+            // ── PC Age ────────────────────────────────────────────────────────
+            var biosDate = GetBiosDate();
+            var osDate = GetOsInstallDate();
+
+            if (biosDate.HasValue)
+            {
+                var ageYears = (DateTime.Now - biosDate.Value).TotalDays / 365.25;
+                var ageDesc = ageYears >= 1
+                    ? $"{(int)ageYears} year{((int)ageYears == 1 ? "" : "s")} old (BIOS date: {biosDate.Value:MMMM yyyy})"
+                    : $"less than a year old (BIOS date: {biosDate.Value:MMMM yyyy})";
+
+                if (ageYears >= 7)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Warning,
+                        $"Your PC hardware is approximately {ageDesc}",
+                        "Older hardware naturally becomes slower over time as software demands grow. You may want to consider a hardware upgrade or replacing the PC, especially if performance has been degrading gradually.",
+                        null, null));
+                else if (ageYears >= 4)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        $"Your PC hardware is approximately {ageDesc}",
+                        "Your PC is getting on in age. It should still run modern software well, but you may start noticing slowdowns with more demanding applications.",
+                        null, null));
+                else
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        $"Your PC hardware is relatively recent — {ageDesc}",
+                        "Hardware age is unlikely to be the cause of any slowdowns you're experiencing.",
+                        null, null));
+            }
+            else if (osDate.HasValue)
+            {
+                // Fallback: OS install date as a proxy
+                var ageYears = (DateTime.Now - osDate.Value).TotalDays / 365.25;
+                if (ageYears >= 5)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        "Your Windows installation is over 5 years old",
+                        $"Your current Windows installation dates back to around {osDate.Value:MMMM yyyy}. Older installations can accumulate software cruft over time. A clean reinstall can sometimes restore snappiness — though this is a big step.",
+                        null, null));
+            }
+
+            // ── File Explorer ─────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Restart File Explorer if your Windows UI feels sluggish",
+                "File Explorer (explorer.exe) handles your taskbar, desktop, and file browsing. Restarting it can fix UI freezes, unresponsive taskbars, and general sluggishness — without a full reboot.",
+                "Restart File Explorer",
+                "restart-explorer"));
+
+            // ── Startup apps ──────────────────────────────────────────────────
+            var totalStartup = apps.RegistryRun.Count + apps.StartupFolder.Count;
+            if (totalStartup >= 10)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Warning,
+                    $"You have {totalStartup} apps launching at startup",
+                    "A large number of startup apps can significantly slow down how long it takes to reach your desktop and affect early performance. Consider disabling ones you don't need immediately.",
+                    "Review Startup Apps",
+                    "startup-section"));
+            else if (totalStartup >= 1)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    $"You have {totalStartup} app{(totalStartup == 1 ? "" : "s")} launching at startup",
+                    "Startup apps can add time to your boot and consume memory in the background. Review them to see if any can be disabled.",
+                    "Review Startup Apps",
+                    "startup-section"));
+
+            // ── Windows Update ────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Run Windows Update and check for driver updates",
+                "Outdated drivers (especially graphics and chipset) can cause slowdowns, stuttering, and instability. Keeping Windows and drivers up to date is one of the simplest performance maintenance steps.",
+                "Open Windows Update",
+                "windows-update"));
+
+            // ── Network ───────────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "A slow internet connection can make your PC feel slow",
+                "If apps are taking a long time to load, streaming is choppy, or pages are sluggish, your network could be the bottleneck rather than your PC itself. Anything under 25 Mbps download may cause noticeable slowdowns for everyday tasks.",
+                "Run a Speed Test",
+                "speedtest"));
+
+            // ── Temp files ────────────────────────────────────────────────────
+            var tempGb = GetTempFolderSizeGb();
+            if (tempGb >= 2)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    $"Your temp folder is using {tempGb:F1} GB of disk space",
+                    "Temporary files accumulate over time and can take up significant space on your system drive. Clearing them is safe and can free up space Windows needs to operate efficiently.",
+                    "Open Storage Sense",
+                    "storage"));
+
+            // ── Disk space ────────────────────────────────────────────────────
+            try
+            {
+                var drive = new System.IO.DriveInfo(
+                    System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)) ?? "C:\\");
+                var freeGb = drive.AvailableFreeSpace / (1024.0 * 1024 * 1024);
+                var totalGb = drive.TotalSize / (1024.0 * 1024 * 1024);
+                var freePct = freeGb / totalGb * 100;
+
+                if (freePct < 5)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Warning,
+                        $"Your system drive is almost full ({freeGb:F1} GB free)",
+                        "Windows needs free space on your system drive for virtual memory, temporary files, and updates. When it runs out, performance can degrade sharply. Try removing unused apps or large files.",
+                        "Open Storage Settings",
+                        "storage"));
+                else if (freePct < 15)
+                    tips.Add(new PcTip(
+                        PcTipSeverity.Info,
+                        $"Your system drive is getting full ({freeGb:F1} GB free, {freePct:F0}% free)",
+                        "Low disk space can cause slowdowns. Consider clearing temporary files or uninstalling apps you no longer use.",
+                        "Open Storage Settings",
+                        "storage"));
+            }
+            catch { /* skip if drive info unavailable */ }
+
+            // ── Power plan ────────────────────────────────────────────────────
+            if (!IsHighPerformancePowerPlan())
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Your power plan may be limiting performance",
+                    "Windows can throttle your CPU speed to save power when on the Balanced or Power Saver plan. Switching to High Performance ensures your hardware runs at full speed.",
+                    "Open Power Settings",
+                    "power"));
+
+            // ── Browser extensions ────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Too many browser extensions can slow things down",
+                "Each browser extension runs in the background and consumes memory and CPU. If your browser feels sluggish or your PC slows down when browsing, try disabling extensions you don't actively use.",
+                null, null));
+
+            // ── HDD vs SSD ────────────────────────────────────────────────────
+            var (isHdd, driveName) = GetSystemDriveType();
+            if (isHdd)
+                tips.Add(new PcTip(
+                    PcTipSeverity.Info,
+                    "Your PC is running on a traditional hard drive (HDD)",
+                    $"{(string.IsNullOrEmpty(driveName) ? "Your system drive" : driveName)} is a spinning hard disk, which is significantly slower than a modern SSD for everyday tasks like booting, opening apps, and loading files. Upgrading to an SSD is one of the single biggest performance improvements you can make on an older PC.",
+                    null, null));
+
+            // ── Malware scan ──────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Run a malware scan",
+                "Malware and unwanted background programs are a common but easy-to-miss cause of slowdowns. Running a Windows Defender scan is quick and free.",
+                "Open Windows Security",
+                "security"));
+
+            // ── SFC scan ──────────────────────────────────────────────────────
+            tips.Add(new PcTip(
+                PcTipSeverity.Info,
+                "Scan for corrupted system files",
+                "Windows includes a built-in tool (System File Checker) that scans for and repairs corrupted or missing system files, which can cause slowdowns and instability. This will open an elevated terminal window and may take a few minutes to complete — leave it open until it finishes.",
+                "Run System File Checker",
+                "sfc"));
+
+            return tips;
+        }
+
+        public async Task RefreshDataAsync()
+        {
+            if (IsLoading) return;
+
+            IsLoading = true;
+            try
+            {
+                var (fullStartupApp, uptime) = await Task.Run(() =>
+                    (_startupEnumerator.GetStartupItems(), GetSystemUptime()));
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
                     StartupApp = fullStartupApp;
                     StartupAppGroups = BuildGroups(StartupApp, _groupDefinitions);
+                    PcTips = BuildTips(uptime, fullStartupApp);
                 });
             }
             catch
@@ -211,5 +510,50 @@ namespace Winspeqt.ViewModels.Monitoring
                 IsLoading = false;
             }
         }
+
+        // ── Nested display models ─────────────────────────────────────────────
+
+        public sealed class StartupAppGroup
+        {
+            public StartupAppGroup(string title, string description, string link, string buttonText, IReadOnlyList<StartupItem> items)
+            {
+                Title = title;
+                Description = description;
+                Link = link;
+                ButtonText = buttonText;
+                Items = items;
+            }
+
+            public string Title { get; }
+            public string Description { get; }
+            public string Link { get; }
+            public string ButtonText { get; }
+            public IReadOnlyList<StartupItem> Items { get; }
+        }
+    }
+
+    // ── PC Tip models ─────────────────────────────────────────────────────────
+
+    public enum PcTipSeverity { Info, Warning }
+
+    public sealed class PcTip
+    {
+        public PcTip(PcTipSeverity severity, string title, string detail, string? actionLabel, string? actionKey)
+        {
+            Severity = severity;
+            Title = title;
+            Detail = detail;
+            ActionLabel = actionLabel;
+            ActionKey = actionKey;
+            HasAction = actionLabel != null && actionKey != null;
+        }
+
+        public PcTipSeverity Severity { get; }
+        public string Title { get; }
+        public string Detail { get; }
+        public string? ActionLabel { get; }
+        public string? ActionKey { get; }
+        public bool HasAction { get; }
+        public bool IsWarning => Severity == PcTipSeverity.Warning;
     }
 }

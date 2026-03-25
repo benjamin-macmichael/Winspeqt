@@ -74,8 +74,7 @@ namespace Winspeqt.Services
                 var properties = IPGlobalProperties.GetIPGlobalProperties();
 
                 // TCP Connections
-                var tcpConnections = properties.GetActiveTcpConnections();
-                foreach (var conn in tcpConnections)
+                foreach (var conn in properties.GetActiveTcpConnections())
                 {
                     connections.Add(new NetworkConnection
                     {
@@ -85,52 +84,132 @@ namespace Winspeqt.Services
                         RemoteAddress = conn.RemoteEndPoint.Address.ToString(),
                         RemotePort = conn.RemoteEndPoint.Port,
                         State = conn.State.ToString(),
-                        ProcessId = 0,
                         DetectedAt = DateTime.Now
                     });
                 }
 
                 // TCP Listeners
-                var tcpListeners = properties.GetActiveTcpListeners();
-                foreach (var listener in tcpListeners)
+                foreach (var listener in properties.GetActiveTcpListeners())
                 {
                     connections.Add(new NetworkConnection
                     {
                         Protocol = "TCP",
                         LocalAddress = listener.Address.ToString(),
                         LocalPort = listener.Port,
-                        RemoteAddress = string.Empty,
-                        RemotePort = 0,
                         State = "LISTENING",
-                        ProcessId = 0,
                         DetectedAt = DateTime.Now
                     });
                 }
 
                 // UDP Listeners
-                var udpListeners = properties.GetActiveUdpListeners();
-                foreach (var listener in udpListeners)
+                foreach (var listener in properties.GetActiveUdpListeners())
                 {
                     connections.Add(new NetworkConnection
                     {
                         Protocol = "UDP",
                         LocalAddress = listener.Address.ToString(),
                         LocalPort = listener.Port,
-                        RemoteAddress = string.Empty,
-                        RemotePort = 0,
                         State = "LISTENING",
-                        ProcessId = 0,
                         DetectedAt = DateTime.Now
                     });
                 }
 
+                // Enrich with PID + process name from netstat
+                var pidMap = GetConnectionPidMap();
+                var processCache = new Dictionary<int, string>();
+
                 foreach (var conn in connections)
                 {
+                    var key = $"{conn.LocalAddress}:{conn.LocalPort}|{conn.RemoteAddress}:{conn.RemotePort}";
+                    if (!pidMap.TryGetValue(key, out int pid))
+                    {
+                        // Fallback: match on local endpoint only (covers listeners)
+                        var localKey = $"{conn.LocalAddress}:{conn.LocalPort}|";
+                        foreach (var k in pidMap.Keys)
+                        {
+                            if (k.StartsWith(localKey, StringComparison.OrdinalIgnoreCase))
+                            {
+                                pid = pidMap[k];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (pid > 0)
+                    {
+                        conn.ProcessId = pid;
+                        if (!processCache.TryGetValue(pid, out var name))
+                        {
+                            try { name = Process.GetProcessById(pid).ProcessName; }
+                            catch { name = $"PID {pid}"; }
+                            processCache[pid] = name;
+                        }
+                        conn.ProcessName = name;
+                    }
+
+                    conn.RemoteServiceName = GetServiceName(conn.RemotePort);
                     AnalyzeConnectionRisk(conn);
                 }
 
                 return connections.OrderBy(c => c.LocalPort).ToList();
             });
+        }
+
+        private Dictionary<string, int> GetConnectionPidMap()
+        {
+            var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "netstat",
+                    Arguments = "-ano",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using var proc = Process.Start(psi);
+                var output = proc?.StandardOutput.ReadToEnd() ?? "";
+                proc?.WaitForExit(5000);
+
+                foreach (var line in output.Split('\n'))
+                {
+                    var parts = line.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 4) continue;
+                    if (parts[0] != "TCP" && parts[0] != "UDP") continue;
+                    if (!int.TryParse(parts[^1], out int pid) || pid == 0) continue;
+
+                    var local = NormalizeNetstatEndpoint(parts[1]);
+                    // TCP has State column; UDP goes straight to PID
+                    var remote = parts[0] == "TCP" && parts.Length >= 5
+                        ? NormalizeNetstatEndpoint(parts[2])
+                        : "0.0.0.0:0";
+
+                    map[$"{local}|{remote}"] = pid;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"netstat PID map error: {ex.Message}");
+            }
+            return map;
+        }
+
+        private static string NormalizeNetstatEndpoint(string ep)
+        {
+            if (ep == "*:*") return "0.0.0.0:0";
+            // IPv6 bracket form: [::]:135 or [2001:db8::1]:443
+            if (ep.StartsWith("[", StringComparison.Ordinal))
+            {
+                var close = ep.IndexOf(']');
+                if (close >= 0)
+                {
+                    var addr = ep.Substring(1, close - 1);
+                    var port = ep.Substring(close + 2);
+                    return $"{addr}:{port}";
+                }
+            }
+            return ep;
         }
 
         public async Task<List<NetworkTrafficStats>> GetNetworkTrafficStatsAsync()
@@ -226,13 +305,17 @@ namespace Winspeqt.Services
             return await Task.Run(() =>
             {
                 var devices = new List<ConnectedDevice>();
+                var wifiSsids = GetWifiSsidMap();
 
-                // Network interfaces (WiFi and Ethernet)
+                // Network interfaces (WiFi and Ethernet) — exclude virtual adapters
                 var interfaces = NetworkInterface.GetAllNetworkInterfaces()
                     .Where(ni => ni.OperationalStatus == OperationalStatus.Up
                               && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback
                               && ni.NetworkInterfaceType != NetworkInterfaceType.Tunnel
-                              && ni.NetworkInterfaceType != NetworkInterfaceType.Ppp);
+                              && ni.NetworkInterfaceType != NetworkInterfaceType.Ppp
+                              && !ni.Description.Contains("Virtual", StringComparison.OrdinalIgnoreCase)
+                              && !ni.Description.Contains("Hyper-V", StringComparison.OrdinalIgnoreCase)
+                              && !ni.Description.Contains("WAN Miniport", StringComparison.OrdinalIgnoreCase));
 
                 foreach (var ni in interfaces)
                 {
@@ -246,9 +329,14 @@ namespace Winspeqt.Services
                         _ => "Network"
                     };
 
+                    // For WiFi, use the SSID (e.g. "Michael's iPhone") as the display name
+                    var displayName = type == "WiFi" && wifiSsids.TryGetValue(ni.Name, out var ssid)
+                        ? ssid
+                        : ni.Name;
+
                     devices.Add(new ConnectedDevice
                     {
-                        Name = ni.Name,
+                        Name = displayName,
                         Description = ni.Description,
                         DeviceType = type,
                         Status = "Connected",
@@ -442,28 +530,137 @@ namespace Winspeqt.Services
             }
         }
 
+        public async Task<List<(string Ssid, string InterfaceName)>> GetUnsecuredWifiConnectionsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var unsecured = new List<(string, string)>();
+                try
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "netsh",
+                        Arguments = "wlan show interfaces",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true
+                    };
+                    using var proc = Process.Start(psi);
+                    var output = proc?.StandardOutput.ReadToEnd() ?? "";
+                    proc?.WaitForExit(3000);
+
+                    string? iface = null, ssid = null, auth = null, cipher = null;
+
+                    void TryAdd()
+                    {
+                        if (iface != null && ssid != null && auth != null && cipher != null)
+                        {
+                            bool isOpen = auth.Contains("Open", StringComparison.OrdinalIgnoreCase)
+                                       && cipher.Contains("None", StringComparison.OrdinalIgnoreCase);
+                            if (isOpen) unsecured.Add((ssid, iface));
+                        }
+                    }
+
+                    foreach (var line in output.Split('\n'))
+                    {
+                        var t = line.Trim();
+                        if (t.StartsWith("Name") && !t.StartsWith("SSID") && t.Contains(':'))
+                        {
+                            TryAdd();
+                            iface = t.Split(':', 2)[1].Trim();
+                            ssid = auth = cipher = null;
+                        }
+                        else if (t.StartsWith("SSID") && !t.StartsWith("BSSID") && t.Contains(':'))
+                            ssid = t.Split(':', 2)[1].Trim();
+                        else if (t.StartsWith("Authentication") && t.Contains(':'))
+                            auth = t.Split(':', 2)[1].Trim();
+                        else if (t.StartsWith("Cipher") && t.Contains(':'))
+                            cipher = t.Split(':', 2)[1].Trim();
+                    }
+                    TryAdd();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Unsecured WiFi check error: {ex.Message}");
+                }
+                return unsecured;
+            });
+        }
+
+        private Dictionary<string, string> GetWifiSsidMap()
+        {
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "netsh",
+                    Arguments = "wlan show interfaces",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using var proc = Process.Start(psi);
+                var output = proc?.StandardOutput.ReadToEnd() ?? "";
+                proc?.WaitForExit(3000);
+
+                string? currentInterface = null;
+                foreach (var line in output.Split('\n'))
+                {
+                    var trimmed = line.Trim();
+                    if (trimmed.StartsWith("Name") && trimmed.Contains(':') && !trimmed.StartsWith("SSID"))
+                        currentInterface = trimmed.Split(':', 2)[1].Trim();
+                    else if (trimmed.StartsWith("SSID") && !trimmed.StartsWith("BSSID") && trimmed.Contains(':') && currentInterface != null)
+                    {
+                        var ssid = trimmed.Split(':', 2)[1].Trim();
+                        if (!string.IsNullOrEmpty(ssid))
+                            map[currentInterface] = ssid;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"SSID map error: {ex.Message}");
+            }
+            return map;
+        }
+
         private string TranslateDisconnectReason(string reasonCode)
         {
             // WLAN disconnect reason codes (from IEEE 802.11)
-            return reasonCode switch
+            var description = reasonCode switch
             {
                 "0" => "Disconnected normally",
-                "1" => "Unspecified reason",
-                "2" => "Previous authentication no longer valid",
-                "3" => "Deauthenticated — station left",
-                "4" => "Disassociated due to inactivity",
-                "5" => "Too many associated stations",
-                "6" => "Class 2 frame from unauthenticated station",
-                "7" => "Class 3 frame from unassociated station",
-                "8" => "Disassociated — station left BSS",
-                "15" => "4-way handshake timeout (wrong password?)",
-                "16" => "Group key handshake timeout",
-                "17" => "Information element mismatch",
-                "23" => "802.1X authentication failed",
-                "34" => "TDLS teardown due to poor link",
-                "36" => "Disassociated: poor channel conditions",
-                _ => $"Code {reasonCode}"
+                "1" => "Disconnected for an unknown reason — try reconnecting",
+                "2" => "Login credentials expired — forget the network and rejoin",
+                "3" => "Kicked by the router — may be out of range or router restarted",
+                "4" => "Dropped due to inactivity — the router timed out your idle connection",
+                "5" => "Too many devices on the network — the router kicked you to free up space",
+                "6" => "Network error — device tried to send data before fully logging in",
+                "7" => "Network error — device sent data before fully joining the network",
+                "8" => "Left the network's coverage area (roaming or out of range)",
+                "9" => "Authentication failed — forget the network and try reconnecting",
+                "10" => "Power settings rejected by the router — check power adapter settings",
+                "11" => "WiFi channel conflict — device and router couldn't agree on a channel",
+                "12" => "Roamed to a better access point — normal on managed/enterprise networks",
+                "13" => "Settings mismatch — forget the network and try reconnecting",
+                "14" => "Security check failed — wrong password or potential network tampering",
+                "15" => "Wrong password — the security handshake timed out; double-check your password",
+                "16" => "Security key renewal failed — try reconnecting",
+                "17" => "Security settings mismatch between your device and the router",
+                "18" => "Encryption conflict — the router's encryption settings may need updating",
+                "19" => "Encryption key mismatch — forget the network and try reconnecting",
+                "20" => "Authentication method mismatch — forget the network and try reconnecting",
+                "21" => "Security protocol version not supported — update router or device firmware",
+                "22" => "Incompatible security features — check router security settings",
+                "23" => "Enterprise login failed — check your username and password with your IT team",
+                "24" => "Encryption type blocked by the network's security policy",
+                "34" => "Weak signal — direct device link dropped due to poor connection quality",
+                "36" => "Poor signal strength — move closer to the router or access point",
+                "45" => "The access point or connected device left the network",
+                _ => "Unknown reason — try reconnecting or restarting your router"
             };
+            return $"Code {reasonCode} — {description}";
         }
 
         private void InitializeWellKnownPorts()

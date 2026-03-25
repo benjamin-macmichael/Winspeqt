@@ -7,27 +7,133 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Grid>
-        <Frame x:Name="RootFrame">
-            <Frame.ContentTransitions>
-                <TransitionCollection>
-                    <NavigationThemeTransition>
-                        <NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                            <SuppressNavigationTransitionInfo/>
-                        </NavigationThemeTransition.DefaultNavigationTransitionInfo>
-                    </NavigationThemeTransition>
-                </TransitionCollection>
-            </Frame.ContentTransitions>
-        </Frame>
-
-        <Button
-            x:Name="FeedbackButton"
-            Style="{StaticResource FloatingFeedbackButtonStyle}"
-            Content="Feedback"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Margin="16"
-            Canvas.ZIndex="10"
-            Click="FeedbackButton_Click"
-            Foreground="WhiteSmoke"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid 
+            x:Name="AppTitleBar"  
+            Height="48" 
+            Grid.Row="0">
+            <TitleBar
+                x:Name="titleBar"
+                BackRequested="TitleBar_BackRequested"
+                IsBackButtonVisible="{x:Bind RootFrame.CanGoBack, Mode=OneWay}"
+                IsPaneToggleButtonVisible="True"
+                PaneToggleRequested="TitleBar_PaneToggleRequested"
+                Title="Winspeqt - Windows System Inspector">
+                <TitleBar.IconSource>
+                    <ImageIconSource ImageSource="/Assets/StoreLogo.png" />
+                </TitleBar.IconSource>
+            </TitleBar>
+        </Grid>
+        <Grid Grid.Row="1">
+            <NavigationView 
+                x:Name="nvCategories"
+                SelectionChanged="NavigationView_SelectionChanged"
+                IsBackButtonVisible="Collapsed"
+                IsPaneToggleButtonVisible="False"
+            >
+                <NavigationView.MenuItems>
+                    <NavigationViewItem Content="Home" Tag="Home">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE80F;" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="Security" Tag="SecurityDashboard">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE72E;" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="Security Status" Tag="SecurityStatus">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE72E;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="App Update Checker" Tag="AppSecurity">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE7BA;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="Network Security Monitor" Tag="NetworkSecurity">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE968;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="Settings Recommendations" Tag="SettingsRecommendations">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE713;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="Optimization" Tag="OptimizationDashboard">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xEC4A;" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="Large File Finder" Tag="LargeFileFinder">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE8B7;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="App Usage Tracker" Tag="AppUsage">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE74C;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="Safe AppData Cleanup" Tag="AppDataCleanup">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE74D;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="One-Click Optimization" Tag="Optimization">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE73C;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                    <NavigationViewItem Content="Monitoring" Tag="MonitoringDashboard">
+                        <NavigationViewItem.Icon>
+                            <FontIcon Glyph="&#xE9D9;" />
+                        </NavigationViewItem.Icon>
+                        <NavigationViewItem.MenuItems>
+                            <NavigationViewItem Content="Friendly Task Manager" Tag="TaskManager">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE7C4;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="Resource Trends" Tag="PerformanceTrends">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE9D9;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="What's Slowing Down My PC?" Tag="StartupImpact">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE7E8;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                            <NavigationViewItem Content="Background Process Insights" Tag="BackgroundProcess">
+                                <NavigationViewItem.Icon>
+                                    <FontIcon Glyph="&#xE8B5;" />
+                                </NavigationViewItem.Icon>
+                            </NavigationViewItem>
+                        </NavigationViewItem.MenuItems>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+                <Frame x:Name="RootFrame">
+                    <Frame.ContentTransitions>
+                        <TransitionCollection>
+                            <NavigationThemeTransition>
+                                <NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                                    <SuppressNavigationTransitionInfo/>
+                                </NavigationThemeTransition.DefaultNavigationTransitionInfo>
+                            </NavigationThemeTransition>
+                        </TransitionCollection>
+                    </Frame.ContentTransitions>
+                </Frame>
+            </NavigationView>
+        </Grid>
     </Grid>
 </Window>

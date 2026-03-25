@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management;
 using System.Threading.Tasks;
 using Winspeqt.Models;
@@ -8,6 +9,14 @@ namespace Winspeqt.Services
 {
     public class SecurityService
     {
+        // Segoe Fluent Icons glyph codes
+        private const string IconGood = "\uE73E";     // Checkmark
+        private const string IconWarning = "\uE7BA";  // Warning
+        private const string IconBad = "\uE711";      // Cancel/X
+        private const string IconUnknown = "\uE9CE";  // Unknown
+        private const string IconError = "\uE783";    // Error
+        private const string IconNeutral = "\uE89A";  // Remove/dash
+
         public async Task<SecurityStatusInfo> GetSecurityStatusAsync()
         {
             var defenderTask = Task.Run(() => CheckWindowsDefender());
@@ -39,23 +48,70 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Defender",
+                // Check SecurityCenter2 first for all registered AV products
+                var sc2Searcher = new ManagementObjectSearcher(@"root\SecurityCenter2",
+                    "SELECT * FROM AntiVirusProduct");
+
+                var activeProducts = new List<string>();
+
+                foreach (ManagementObject obj in sc2Searcher.Get())
+                {
+                    var displayName = obj["displayName"]?.ToString() ?? "Unknown";
+                    var productState = Convert.ToUInt32(obj["productState"]);
+                    var hex = productState.ToString("X6");
+
+                    // productState first two hex chars indicate AV status:
+                    // 06 = disabled/passive, 01 = not registered properly, 00 = unknown
+                    // Rather than whitelisting known good values, we blacklist known bad ones
+                    // so unknown AV products default to being treated as active
+                    var statePrefix = hex.Substring(0, 2);
+                    var isInactive = statePrefix == "06" || statePrefix == "01" || statePrefix == "00";
+                    var isActive = !isInactive;
+
+                    System.Diagnostics.Debug.WriteLine($"AV Product: {displayName}, State: {hex}, Active: {isActive}");
+
+                    if (isActive)
+                        activeProducts.Add(displayName);
+                }
+
+                if (activeProducts.Count > 0)
+                {
+                    var thirdParty = activeProducts.Where(p => !p.Contains("Windows Defender")).ToList();
+                    string message;
+
+                    if (thirdParty.Count > 0)
+                        message = $"Your PC is protected by Windows Defender. The scan also found these additional security products: {string.Join(", ", thirdParty)}.";
+                    else
+                        message = "Windows Defender is actively protecting your computer.";
+
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = true,
+                        Status = "Protected",
+                        Message = message,
+                        Icon = IconGood,
+                        Color = "#4CAF50"
+                    };
+                }
+
+                // Fall back to checking Defender directly via WMI
+                var defenderSearcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\Defender",
                     "SELECT * FROM MSFT_MpComputerStatus");
 
-                foreach (ManagementObject obj in searcher.Get())
+                foreach (ManagementObject obj in defenderSearcher.Get())
                 {
                     var antivirusEnabled = Convert.ToBoolean(obj["AntivirusEnabled"]);
                     var realTimeProtectionEnabled = Convert.ToBoolean(obj["RealTimeProtectionEnabled"]);
-                    var antiSpywareEnabled = Convert.ToBoolean(obj["AntispywareEnabled"]);
 
-                    if (antivirusEnabled && realTimeProtectionEnabled && antiSpywareEnabled)
+                    // Only require real-time protection to be on — antivirus flag may be off if a third-party AV is registered
+                    if (realTimeProtectionEnabled || antivirusEnabled)
                     {
                         return new SecurityComponentStatus
                         {
                             IsEnabled = true,
                             Status = "Protected",
                             Message = "Windows Defender is actively protecting your computer",
-                            Icon = "✓",
+                            Icon = IconGood,
                             Color = "#4CAF50"
                         };
                     }
@@ -65,8 +121,8 @@ namespace Winspeqt.Services
                         {
                             IsEnabled = false,
                             Status = "At Risk",
-                            Message = "Windows Defender protection is turned off or incomplete",
-                            Icon = "⚠",
+                            Message = "No active antivirus protection detected. Enable Windows Defender or install an antivirus.",
+                            Icon = IconBad,
                             Color = "#F44336"
                         };
                     }
@@ -76,20 +132,20 @@ namespace Winspeqt.Services
                 {
                     IsEnabled = false,
                     Status = "Unknown",
-                    Message = "Unable to check Windows Defender status",
-                    Icon = "?",
+                    Message = "Unable to check antivirus status",
+                    Icon = IconUnknown,
                     Color = "#9E9E9E"
                 };
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error checking Defender: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error checking antivirus: {ex.Message}");
                 return new SecurityComponentStatus
                 {
                     IsEnabled = false,
                     Status = "Error",
-                    Message = "Could not access Windows Defender settings",
-                    Icon = "!",
+                    Message = "Could not access antivirus settings",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -123,7 +179,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Active",
                         Message = "Windows Firewall is protecting all network connections",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -134,7 +190,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Partial",
                         Message = $"Firewall is active on {enabledCount} of {totalProfiles} network profiles",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -145,7 +201,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Disabled",
                         Message = "Windows Firewall is turned off - your PC is vulnerable",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#F44336"
                     };
                 }
@@ -158,7 +214,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Windows Firewall status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -168,61 +224,34 @@ namespace Winspeqt.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_QuickFixEngineering");
+                // Use Microsoft.Update.Session to check for pending updates
+                var updateSession = new WUApiLib.UpdateSession();
+                var updateSearcher = updateSession.CreateUpdateSearcher();
 
-                DateTime lastUpdate = DateTime.MinValue;
-                int updateCount = 0;
+                // Only search for software updates that are not installed and not hidden
+                var searchResult = updateSearcher.Search("IsInstalled=0 AND IsHidden=0 AND Type='Software'");
 
-                foreach (ManagementObject obj in searcher.Get())
-                {
-                    updateCount++;
-                    try
-                    {
-                        var installedOn = obj["InstalledOn"]?.ToString();
-                        if (!string.IsNullOrEmpty(installedOn))
-                        {
-                            if (DateTime.TryParse(installedOn, out DateTime installDate))
-                            {
-                                if (installDate > lastUpdate)
-                                    lastUpdate = installDate;
-                            }
-                        }
-                    }
-                    catch { }
-                }
+                int pendingCount = searchResult.Updates.Count;
 
-                var daysSinceUpdate = (DateTime.Now - lastUpdate).Days;
-
-                if (lastUpdate == DateTime.MinValue)
-                {
-                    return new SecurityComponentStatus
-                    {
-                        IsEnabled = true,
-                        Status = "Unknown",
-                        Message = "Unable to determine last update date",
-                        Icon = "?",
-                        Color = "#9E9E9E"
-                    };
-                }
-                else if (daysSinceUpdate <= 7)
+                if (pendingCount == 0)
                 {
                     return new SecurityComponentStatus
                     {
                         IsEnabled = true,
                         Status = "Up to Date",
-                        Message = $"Last update was {daysSinceUpdate} days ago - your system is current",
-                        Icon = "✓",
+                        Message = "Windows has checked for updates and your system is fully up to date",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
-                else if (daysSinceUpdate <= 30)
+                else if (pendingCount <= 5)
                 {
                     return new SecurityComponentStatus
                     {
-                        IsEnabled = true,
-                        Status = "Check for Updates",
-                        Message = $"Last update was {daysSinceUpdate} days ago - consider checking for updates",
-                        Icon = "⚠",
+                        IsEnabled = false,
+                        Status = "Updates Available",
+                        Message = $"{pendingCount} update(s) are available but not yet installed. Open Windows Update to install them.",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -232,8 +261,8 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = false,
                         Status = "Outdated",
-                        Message = $"Last update was {daysSinceUpdate} days ago - updates needed!",
-                        Icon = "✗",
+                        Message = $"{pendingCount} updates are waiting to be installed. Your system may be missing important security patches.",
+                        Icon = IconBad,
                         Color = "#F44336"
                     };
                 }
@@ -246,7 +275,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Windows Update status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -276,7 +305,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Not Available",
                     Message = "Encryption status could not be determined",
-                    Icon = "–",
+                    Icon = IconNeutral,
                     Color = "#9E9E9E"
                 };
             }
@@ -315,7 +344,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Available",
                         Message = "No encryptable drives found",
-                        Icon = "–",
+                        Icon = IconNeutral,
                         Color = "#9E9E9E"
                     };
                 }
@@ -326,7 +355,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Encrypted",
                         Message = $"All {totalVolumes} drive(s) are encrypted with BitLocker. Make sure you've backed up your recovery key!",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -337,7 +366,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Partial",
                         Message = $"{encryptedVolumes} of {totalVolumes} drives encrypted with BitLocker",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -348,7 +377,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Encrypted",
                         Message = "BitLocker is available but not enabled on your drives",
-                        Icon = "✗",
+                        Icon = IconBad,
                         Color = "#FF9800"
                     };
                 }
@@ -360,7 +389,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Access Denied",
                     Message = "Administrator privileges required to check encryption status",
-                    Icon = "🔒",
+                    Icon = IconWarning,
                     Color = "#FF9800"
                 };
             }
@@ -422,7 +451,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Encrypted",
                         Message = "Device encryption is enabled and protecting your drives. Remember to back up your recovery key to a safe place!",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -436,7 +465,7 @@ namespace Winspeqt.Services
                             IsEnabled = false,
                             Status = "Available",
                             Message = "Your device supports encryption but it may not be enabled. Check Settings > Privacy & Security > Device Encryption",
-                            Icon = "⚠",
+                            Icon = IconWarning,
                             Color = "#FF9800"
                         };
                     }
@@ -447,7 +476,7 @@ namespace Winspeqt.Services
                             IsEnabled = false,
                             Status = "TPM Not Ready",
                             Message = "Your device has TPM hardware but it needs to be enabled in BIOS/UEFI",
-                            Icon = "⚠",
+                            Icon = IconWarning,
                             Color = "#FF9800"
                         };
                     }
@@ -458,7 +487,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Not Supported",
                     Message = "This device doesn't have TPM hardware required for encryption",
-                    Icon = "–",
+                    Icon = IconNeutral,
                     Color = "#9E9E9E"
                 };
             }
@@ -472,7 +501,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Unknown",
                     Message = "Could not determine encryption status. BitLocker/Device Encryption may not be available on Windows Home edition.",
-                    Icon = "?",
+                    Icon = IconUnknown,
                     Color = "#9E9E9E"
                 };
             }
@@ -483,7 +512,8 @@ namespace Winspeqt.Services
             try
             {
                 var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_DiskDrive");
-                var issues = new List<string>();
+                var criticalIssues = new List<string>();
+                var warnings = new List<string>();
                 int totalDrives = 0;
 
                 foreach (ManagementObject obj in searcher.Get())
@@ -492,9 +522,27 @@ namespace Winspeqt.Services
                     var model = obj["Model"]?.ToString() ?? "Unknown Drive";
                     var status = obj["Status"]?.ToString() ?? "Unknown";
 
-                    // Win32_DiskDrive Status values: "OK", "Degraded", "Error", "Unknown", "Pred Fail"
-                    if (status != "OK")
-                        issues.Add($"{model}: {status}");
+                    switch (status)
+                    {
+                        case "OK":
+                            break;
+                        case "Pred Fail":
+                            criticalIssues.Add($"{model}: its built-in diagnostics are predicting an imminent failure. " +
+                                               "SMART does not provide a specific timeline — treat this as urgent.");
+                            break;
+                        case "Error":
+                            criticalIssues.Add($"{model}: a hardware error has been detected on this drive.");
+                            break;
+                        case "Degraded":
+                            warnings.Add($"{model}: is reporting degraded performance, which may indicate early signs of wear.");
+                            break;
+                        case "Unknown":
+                            warnings.Add($"{model}: is reporting an unknown status. This may be a driver or compatibility issue.");
+                            break;
+                        default:
+                            warnings.Add($"{model}: is reporting an unexpected status ({status}).");
+                            break;
+                    }
                 }
 
                 if (totalDrives == 0)
@@ -503,43 +551,45 @@ namespace Winspeqt.Services
                     {
                         IsEnabled = false,
                         Status = "No Drives Found",
-                        Message = "No drives could be detected",
-                        Icon = "?",
+                        Message = "No drives could be detected. This may indicate a driver issue.",
+                        Icon = IconUnknown,
                         Color = "#9E9E9E"
                     };
                 }
 
-                if (issues.Count == 0)
+                if (criticalIssues.Count == 0 && warnings.Count == 0)
                 {
                     return new SecurityComponentStatus
                     {
                         IsEnabled = true,
                         Status = "Healthy",
                         Message = $"All {totalDrives} drive(s) are reporting healthy status. No issues detected.",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
-                else if (issues.Count < totalDrives)
+                else if (criticalIssues.Count > 0)
                 {
-                    return new SecurityComponentStatus
-                    {
-                        IsEnabled = false,
-                        Status = "Warning",
-                        Message = $"{issues.Count} of {totalDrives} drive(s) may have issues: {string.Join(", ", issues)}. Consider backing up your data.",
-                        Icon = "⚠",
-                        Color = "#FF9800"
-                    };
-                }
-                else
-                {
+                    var details = string.Join("\n\n", criticalIssues);
                     return new SecurityComponentStatus
                     {
                         IsEnabled = false,
                         Status = "At Risk",
-                        Message = $"Drive issues detected: {string.Join(", ", issues)}. Back up your data immediately!",
-                        Icon = "✗",
+                        Message = $"Critical drive issue(s) detected:\n\n{details}\n\nBack up your important files immediately and replace the affected drive as soon as possible.",
+                        Icon = IconBad,
                         Color = "#F44336"
+                    };
+                }
+                else
+                {
+                    var details = string.Join("\n\n", warnings);
+                    return new SecurityComponentStatus
+                    {
+                        IsEnabled = false,
+                        Status = "Warning",
+                        Message = $"Drive warning(s) detected:\n\n{details}\n\nConsider backing up your data and monitoring these drives closely.",
+                        Icon = IconWarning,
+                        Color = "#FF9800"
                     };
                 }
             }
@@ -550,8 +600,8 @@ namespace Winspeqt.Services
                 {
                     IsEnabled = false,
                     Status = "Error",
-                    Message = "Could not check drive health status",
-                    Icon = "!",
+                    Message = "Could not check drive health status. Try running Winspeqt as administrator.",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -570,7 +620,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Not Supported",
                         Message = "Your system uses legacy BIOS and does not support Secure Boot",
-                        Icon = "–",
+                        Icon = IconNeutral,
                         Color = "#9E9E9E"
                     };
                 }
@@ -583,7 +633,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Unknown",
                         Message = "Could not determine Secure Boot state",
-                        Icon = "?",
+                        Icon = IconUnknown,
                         Color = "#9E9E9E"
                     };
                 }
@@ -597,7 +647,7 @@ namespace Winspeqt.Services
                         IsEnabled = true,
                         Status = "Enabled",
                         Message = "Secure Boot is active, protecting your PC from unauthorized software at startup",
-                        Icon = "✓",
+                        Icon = IconGood,
                         Color = "#4CAF50"
                     };
                 }
@@ -608,7 +658,7 @@ namespace Winspeqt.Services
                         IsEnabled = false,
                         Status = "Disabled",
                         Message = "Secure Boot is off. Your PC may be vulnerable to bootkit malware. Enable it in your BIOS/UEFI settings.",
-                        Icon = "⚠",
+                        Icon = IconWarning,
                         Color = "#FF9800"
                     };
                 }
@@ -621,7 +671,7 @@ namespace Winspeqt.Services
                     IsEnabled = false,
                     Status = "Error",
                     Message = "Could not check Secure Boot status",
-                    Icon = "!",
+                    Icon = IconError,
                     Color = "#FF9800"
                 };
             }
@@ -646,7 +696,7 @@ namespace Winspeqt.Services
             // Windows Update (20 points)
             if (status.WindowsUpdateStatus.Status == "Up to Date")
                 score += 20;
-            else if (status.WindowsUpdateStatus.Status == "Check for Updates")
+            else if (status.WindowsUpdateStatus.Status == "Updates Available")
                 score += 10;
 
             // BitLocker (10 points) — less critical, not all systems support it
