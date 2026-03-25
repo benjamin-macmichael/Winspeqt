@@ -133,6 +133,7 @@ namespace Winspeqt.Models
             ByteSize = size;
             Parent = parent;
             Finished = finished;
+            //Parent?.UpdateSize(Parent.ByteSize + size);
         }
 
         /// <summary>
@@ -142,6 +143,7 @@ namespace Winspeqt.Models
         public void UpdateSize(long size)
         {
             ByteSize = size;
+            //Parent?.UpdateSize(Parent.ByteSize + size);
             Finished = true;
         }
     }

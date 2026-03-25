@@ -406,13 +406,13 @@ namespace Winspeqt.ViewModels.Optimization
                 long size = 0;
                 if (item.Children.Count == 0)
                 {
-                    size = await Task.Run(() => GetDirectorySize(item));
+                    var nothing = await Task.Run(() => GetDirectorySize(item));
                 }
                 else
                 {
-                    size = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
+                    var nothing = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
                 }
-                _dispatcher.TryEnqueue(() => item.UpdateSize(size));
+                //_dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)
             {
@@ -427,9 +427,10 @@ namespace Winspeqt.ViewModels.Optimization
         /// <returns>Total file size in bytes.</returns>
         private static long GetDirectorySize(FileSearchItem folder)
         {
+            folder.UpdateSize(1000000);
             long size = 0;
-            var directories = new Stack<string>();
-            directories.Push(folder.FilePath);
+            var directories = new Stack<FileSearchItem>();
+            directories.Push(folder);
 
             while (directories.Count > 0)
             {
@@ -437,11 +438,14 @@ namespace Winspeqt.ViewModels.Optimization
 
                 try
                 {
-                    foreach (var file in Directory.EnumerateFiles(current))
+                    foreach (var file in Directory.EnumerateFiles(current.FilePath))
                     {
                         try
                         {
-                            size += new FileInfo(file).Length;
+                            var fileInfo = new FileInfo(file);
+                            size += fileInfo.Length;
+                            var temp = new FileSearchItem(fileInfo.Name, fileInfo.FullName, "file", fileInfo.Length, current, true);
+                            current.Children.Add(temp);
                         }
                         catch
                         {
@@ -456,9 +460,11 @@ namespace Winspeqt.ViewModels.Optimization
 
                 try
                 {
-                    foreach (var dir in Directory.EnumerateDirectories(current))
+                    foreach (var dir in Directory.EnumerateDirectories(current.FilePath))
                     {
-                        directories.Push(dir);
+                        var child = new FileSearchItem(System.IO.Path.GetFileName(dir), dir, "folder", 0, current, false);
+                        current.Children.Add(child);
+                        directories.Push(child);
                     }
                 }
                 catch
