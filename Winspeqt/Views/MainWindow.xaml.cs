@@ -69,6 +69,10 @@ namespace Winspeqt.Views
         {
             this.InitializeComponent();
             Title = "Winspeqt - Windows System Inspector";
+
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            if (localSettings.Values.TryGetValue("IsDarkMode", out var themeObj) && themeObj is bool isDark)
+                ((FrameworkElement)Content).RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
             AppWindow.Resize(new Windows.Graphics.SizeInt32(1200, 800));
             RootFrame.Navigated += RootFrame_Navigated;
             Activated += MainWindow_Activated;
@@ -139,7 +143,10 @@ namespace Winspeqt.Views
         /// </summary>
         private void ApplyThemeChrome()
         {
-            Color chromeColor = ((SolidColorBrush)Application.Current.Resources["AppChromeBrush"]).Color;
+            var actualTheme = ((FrameworkElement)Content).ActualTheme;
+            Color chromeColor = actualTheme == ElementTheme.Dark
+                ? Color.FromArgb(255, 26, 26, 26)     // #1A1A1A — matches App.xaml Dark
+                : Color.FromArgb(255, 240, 243, 249);  // #F0F3F9 — matches App.xaml Light
             AppWindow.TitleBar.ButtonBackgroundColor = chromeColor;
             AppWindow.TitleBar.ButtonInactiveBackgroundColor = chromeColor;
             nvCategories.Background = new SolidColorBrush(chromeColor);
