@@ -187,7 +187,7 @@
                                         </StackPanel>
                                     </Grid>
                                     <TextBlock
-                                        Text="Total Memory"
+                                        Text="Total Storage"
                                         FontSize="14"
                                         HorizontalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
