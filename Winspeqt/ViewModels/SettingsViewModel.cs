@@ -9,6 +9,7 @@ namespace Winspeqt.ViewModels
     {
         private readonly SettingsService _settingsService;
         private bool _launchAtStartup;
+        private bool _isDarkMode;
 
         public SettingsViewModel()
         {
@@ -24,9 +25,13 @@ namespace Winspeqt.ViewModels
                 localSettings.Values["LaunchAtStartup"] = true;
                 _settingsService.SetStartupRegistry(true);
             }
+
+            if (localSettings.Values.ContainsKey("IsDarkMode"))
+                _isDarkMode = (bool)localSettings.Values["IsDarkMode"];
         }
 
         public event EventHandler<string>? NavigationRequested;
+        public event EventHandler<bool>? ThemeChanged;
 
         public bool LaunchAtStartup
         {
@@ -43,6 +48,19 @@ namespace Winspeqt.ViewModels
         }
 
         public string StartupButtonText => _launchAtStartup ? "⏸ Disable Startup" : "▶ Enable Startup";
+
+        public bool IsDarkMode
+        {
+            get => _isDarkMode;
+            set
+            {
+                if (SetProperty(ref _isDarkMode, value))
+                {
+                    Windows.Storage.ApplicationData.Current.LocalSettings.Values["IsDarkMode"] = value;
+                    ThemeChanged?.Invoke(this, value);
+                }
+            }
+        }
 
         public ICommand NavigateBackCommand { get; }
 

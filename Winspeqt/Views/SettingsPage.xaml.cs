@@ -18,6 +18,10 @@ namespace Winspeqt.Views
             ViewModel = new SettingsViewModel();
             this.DataContext = ViewModel;
             ViewModel.NavigationRequested += OnNavigationRequested;
+            ViewModel.ThemeChanged += (s, isDark) =>
+            {
+                ((FrameworkElement)XamlRoot.Content).RequestedTheme = isDark ? ElementTheme.Dark : ElementTheme.Light;
+            };
         }
 
         private void StartupButton_Click(object sender, RoutedEventArgs e)

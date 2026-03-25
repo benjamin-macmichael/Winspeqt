@@ -144,6 +144,60 @@
                     </Grid>
                 </Border>
 
+                <!-- Appearance Section -->
+                <TextBlock
+                    Text="APPEARANCE"
+                    FontSize="11"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    CharacterSpacing="150"
+                    Margin="0,8,0,4"/>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border
+                            Grid.Column="0"
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            CornerRadius="8"
+                            Width="44"
+                            Height="44"
+                            Margin="0,0,16,0">
+                            <FontIcon
+                                Glyph="&#xE793;"
+                                FontSize="20"
+                                Foreground="#9C27B0"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock
+                                Text="Dark Mode"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock
+                                Text="Switch between light and dark appearance."
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap"
+                                Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <ToggleSwitch
+                            Grid.Column="2"
+                            IsOn="{Binding IsDarkMode, Mode=TwoWay}"
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0"
+                            OnContent=""
+                            OffContent=""/>
+                    </Grid>
+                </Border>
+
                 <!-- Notifications Section -->
                 <TextBlock
                     Text="NOTIFICATIONS"
