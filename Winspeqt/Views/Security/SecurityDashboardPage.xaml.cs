@@ -13,10 +13,7 @@ namespace Winspeqt.Views.Security
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-            {
-                Frame.GoBack();
-            }
+            Frame.Navigate(typeof(DashboardPage));
         }
 
         private void SecurityStatusCard_Click(object sender, RoutedEventArgs e)

@@ -28,8 +28,7 @@ namespace Winspeqt.Views.Optimization
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Frame.CanGoBack)
-                Frame.GoBack();
+            Frame.Navigate(typeof(OptimizationDashboardPage));
         }
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)

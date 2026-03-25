@@ -30,17 +30,111 @@ namespace Winspeqt.Services
                 apps.AddRange(ScanRegistryKey(Registry.LocalMachine, @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"));
                 apps.AddRange(ScanRegistryKey(Registry.CurrentUser, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"));
 
-                var uniqueApps = apps
+                // First pass: remove blanks and system components
+                var candidates = apps
                     .Where(a => !string.IsNullOrWhiteSpace(a.AppName))
                     .Where(a => !string.IsNullOrWhiteSpace(a.InstalledVersion))
-                    .GroupBy(a => a.AppName.ToLower())
-                    .Select(g => g.First())
                     .Where(a => !IsSystemComponent(a.AppName))
-                    .OrderBy(a => a.AppName)
                     .ToList();
 
-                return uniqueApps;
+                // Deduplicate exact same name+version combos (same app in multiple hives)
+                // but KEEP entries that have the same base name but different versions (e.g. Python 3.10 vs 3.11)
+                var deduped = candidates
+                    .GroupBy(a => a.AppName.ToLower())
+                    .Select(g => g.First())
+                    .ToList();
+
+                // Remove sub-components: if entry A's name is a prefix of entry B's name,
+                // then B is a sub-component of A and should be discarded.
+                // e.g. "Python 3.11.9 (64-bit)" is a prefix of "Python 3.11.9 Core Interpreter (64-bit)"
+                var appNames = deduped.Select(a => StripArchSuffix(a.AppName)).ToList();
+                deduped = deduped.Where(a =>
+                {
+                    var stripped = StripArchSuffix(a.AppName);
+                    // Keep this entry only if no OTHER entry's name is a prefix of this one
+                    return !appNames.Any(other =>
+                        other != stripped &&
+                        stripped.StartsWith(other, StringComparison.OrdinalIgnoreCase));
+                }).ToList();
+
+                // Second pass: group by normalized name to detect multiple version installs
+                // e.g. "Python 3.10.0", "Python 3.11.2" both normalize to "python"
+                var normalizedGroups = deduped
+                    .GroupBy(a => NormalizeAppNameForGrouping(a.AppName))
+                    .ToList();
+
+                foreach (var group in normalizedGroups)
+                {
+                    var entries = group.ToList();
+                    if (entries.Count > 1)
+                    {
+                        // Multiple versions of the same app detected
+                        foreach (var entry in entries)
+                        {
+                            entry.HasMultipleInstalls = true;
+                            entry.InstallCount = entries.Count;
+                            // Store the display names of all OTHER versions
+                            entry.OtherVersions = entries
+                                .Where(e => e != entry)
+                                .Select(e => e.AppName)
+                                .ToList();
+                        }
+                    }
+                }
+
+                return deduped.OrderBy(a => a.AppName).ToList();
             });
+        }
+
+        /// <summary>
+        /// Strips architecture suffixes like "(64-bit)", "(x64)" etc. for prefix comparison.
+        /// </summary>
+        private string StripArchSuffix(string appName)
+        {
+            return appName
+                .Replace(" (x64)", "")
+                .Replace(" (x86)", "")
+                .Replace(" (64-bit)", "")
+                .Replace(" (32-bit)", "")
+                .Replace(" 64-bit", "")
+                .Replace(" 32-bit", "")
+                .Trim();
+        }
+
+        /// <summary>
+        /// Normalizes an app name for grouping purposes by stripping trailing version numbers,
+        /// architecture suffixes, and other noise so that "Python 3.10.0 (64-bit)" and
+        /// "Python 3.11.2 (64-bit)" both map to "python".
+        /// </summary>
+        private string NormalizeAppNameForGrouping(string appName)
+        {
+            var normalized = appName
+                .Replace(" (x64)", "")
+                .Replace(" (x86)", "")
+                .Replace(" (64-bit)", "")
+                .Replace(" (32-bit)", "")
+                .Replace(" 64-bit", "")
+                .Replace(" 32-bit", "")
+                .Trim();
+
+            // Strip trailing version-like tokens (e.g. "3.10.0", "2024", "v2")
+            var parts = normalized.Split(' ');
+            while (parts.Length > 1)
+            {
+                var last = parts[^1];
+                // If last token looks like a version number or pure year, strip it
+                if (last.All(c => char.IsDigit(c) || c == '.') ||
+                    last.TrimStart('v').All(c => char.IsDigit(c) || c == '.'))
+                {
+                    parts = parts.Take(parts.Length - 1).ToArray();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return string.Join(" ", parts).ToLower().Trim();
         }
 
         public async Task CheckAppVersionsAsync(List<AppSecurityInfo> apps)
@@ -77,7 +171,7 @@ namespace Winspeqt.Services
                 if (!string.IsNullOrEmpty(wingetVersion))
                 {
                     wingetScore = 95; // High confidence for direct match
-                    wingetPackageName = app.AppName; // Use app name for direct matches
+                    wingetPackageName = app.AppName;
                 }
             }
 
@@ -144,7 +238,6 @@ namespace Winspeqt.Services
 
                 if (completedTask == readTask)
                 {
-                    // Process completed naturally
                     var output = await readTask;
                     process.WaitForExit(1000);
 
@@ -164,13 +257,12 @@ namespace Winspeqt.Services
                 }
                 else
                 {
-                    // Timeout - process is hanging, cancel it
                     System.Diagnostics.Debug.WriteLine($"Process hanging for {wingetId} - cancelling");
                     try
                     {
                         if (!process.HasExited)
                         {
-                            process.Kill(); // Kill only this specific process
+                            process.Kill();
                             System.Diagnostics.Debug.WriteLine($"Killed hanging process for {wingetId}");
                         }
                     }
@@ -238,7 +330,6 @@ namespace Winspeqt.Services
                 }
                 else
                 {
-                    // Timeout - process is hanging, cancel it
                     System.Diagnostics.Debug.WriteLine($"Search hanging for {searchQuery} - cancelling");
                     try
                     {
@@ -317,9 +408,7 @@ namespace Winspeqt.Services
 
                     // Publisher matching (if available in ID)
                     if (!string.IsNullOrEmpty(publisherLower) && packageId.ToLower().Contains(publisherLower))
-                    {
                         score += 25;
-                    }
 
                     if (score >= 50 && score > bestScore)
                     {
@@ -391,9 +480,7 @@ namespace Winspeqt.Services
 
                 string? version = null;
                 if (package.TryGetProperty("Versions", out var versions) && versions.GetArrayLength() > 0)
-                {
                     version = versions[0].GetString();
-                }
 
                 if (string.IsNullOrEmpty(version) || string.IsNullOrEmpty(packageId))
                     continue;
@@ -599,9 +686,7 @@ namespace Winspeqt.Services
             foreach (var mapping in knownMappings)
             {
                 if (appName.IndexOf(mapping.Key, StringComparison.OrdinalIgnoreCase) >= 0)
-                {
                     return mapping.Value;
-                }
             }
 
             return null;
@@ -645,43 +730,36 @@ namespace Winspeqt.Services
                 // Only mark as critical if we have high confidence (90%+)
                 if (app.ConfidenceScore >= 90)
                 {
-                    // Option 3: Apps where ANY outdated version is critical (browsers, security software)
                     var alwaysCriticalApps = new[]
                     {
-                "google chrome",
-                "mozilla firefox",
-                "microsoft edge",
-                "brave",
-                "opera",
-                "safari",
-                "windows defender",
-                "malwarebytes",
-                "avg antivirus",
-                "avast",
-                "norton",
-                "mcafee",
-                "bitdefender",
-                "kaspersky"
-            };
+                        "google chrome",
+                        "mozilla firefox",
+                        "microsoft edge",
+                        "brave",
+                        "opera",
+                        "safari",
+                        "windows defender",
+                        "malwarebytes",
+                        "avg antivirus",
+                        "avast",
+                        "norton",
+                        "mcafee",
+                        "bitdefender",
+                        "kaspersky"
+                    };
 
                     var appNameLower = app.AppName.ToLower();
                     if (alwaysCriticalApps.Any(critical => appNameLower.Contains(critical)))
-                    {
                         isCritical = true;
-                    }
 
-                    // Option 2: Check if version gap is 2+ major versions
                     if (!isCritical)
                     {
                         var versionGap = CalculateVersionGap(app.InstalledVersion, app.LatestVersion);
                         if (versionGap >= 2)
-                        {
                             isCritical = true;
-                        }
                     }
                 }
 
-                // Set status based on criticality
                 if (isCritical)
                 {
                     app.Status = SecurityStatus.Critical;
@@ -694,9 +772,7 @@ namespace Winspeqt.Services
                 }
 
                 if (string.IsNullOrEmpty(app.UpdateInstructions))
-                {
                     app.UpdateInstructions = GenerateGenericUpdateInstructions(app.AppName);
-                }
             }
             else if (comparison == 0)
             {
@@ -722,11 +798,8 @@ namespace Winspeqt.Services
                 var parts1 = v1.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
                 var parts2 = v2.Split('.').Select(p => int.TryParse(p, out var n) ? n : 0).ToArray();
 
-                // Compare major version (first number)
                 if (parts1.Length > 0 && parts2.Length > 0)
-                {
                     return parts2[0] - parts1[0];
-                }
 
                 return 0;
             }
@@ -876,7 +949,7 @@ namespace Winspeqt.Services
                 "mono.toolchain",
                 "testplatform",
                 "msi development tools",
-                
+
                 // System runtimes and redistributables
                 "redistributable",
                 "runtime",
@@ -884,7 +957,7 @@ namespace Winspeqt.Services
                 "directx",
                 "visual c++ library",
                 "universal crt",
-                
+
                 // Windows components
                 "windows app certification kit",
                 "windows desktop extension sdk",
@@ -896,11 +969,11 @@ namespace Winspeqt.Services
                 "sdk arm additions",
                 "universal general midi",
                 "windows installation assistant",
-                
+
                 // Microsoft Edge/Browser components
                 "microsoft edge update",
                 "microsoft edge webview",
-                
+
                 // Development/Debug tools
                 "diagnosticshub",
                 "icecap_collection",
@@ -911,13 +984,13 @@ namespace Winspeqt.Services
                 "application verifier",
                 "vs jit debugger",
                 "vs script debugging",
-                
+
                 // Office components (managed by Office)
                 "office 16 click-to-run",
                 "microsoft office",
                 "click-to-run extensibility",
                 "click-to-run licensing",
-                
+
                 // Driver and hardware utilities (vendor-managed)
                 "nvidia",
                 "amd",
@@ -925,7 +998,7 @@ namespace Winspeqt.Services
                 "intel graphics",
                 "realtek",
                 "qualcomm",
-                
+
                 // OEM bloatware/utilities
                 "lenovo vantage",
                 "lenovo system",
@@ -937,45 +1010,45 @@ namespace Winspeqt.Services
                 "hp system event",
                 "asus",
                 "acer",
-                
+
                 // Game launcher prerequisites (managed by launcher)
                 "launcher prerequisites",
                 "epic games launcher prerequisites",
                 "battle.net helper",
-                
+
                 // Windows system services
                 "windows subsystem",
                 "app installer",
                 "windows toolscorepkg",
                 "minion", // Windows Minion system service
-                
+
                 // Update services (managed automatically)
                 "update health tools",
                 "google update",
                 "adobe refresh manager",
-                
+
                 // Java (often dependency, not user app)
                 "java se development kit",
                 "java(tm)",
-                
+
                 // System fonts and UI
                 "vs_coreeditorfonts",
                 "font",
-                
+
                 // Background services
                 "service host",
                 "background task",
                 "helper",
-                
+
                 // Database components (often dependencies)
                 "mysql connector",
                 "sql server",
                 "clr types",
-                
+
                 // Compatibility and legacy
                 "compatibility database",
                 "shim infrastructure",
-                
+
                 // Installers and utilities (not actual apps)
                 "machine-wide installer",
                 "machine installer",
@@ -998,7 +1071,7 @@ namespace Winspeqt.Services
             public string LatestVersion { get; set; } = string.Empty;
             public string WinGetId { get; set; } = string.Empty;
             public int MatchScore { get; set; }
-            public string PackageName { get; set; } = string.Empty; // The display name from the API
+            public string PackageName { get; set; } = string.Empty;
         }
     }
 }

@@ -61,6 +61,10 @@ namespace Winspeqt.Views
         private static AppUsageService? _appUsageService;
         private bool _isSyncingNavigationSelection;
 
+        /// <summary>
+        /// Initializes the main application window, configures navigation, theme chrome, tray behavior, and the startup page.
+        /// </summary>
+        /// <param name="initialFeature">Optional feature identifier to open immediately when the app is launched from a toast or shortcut.</param>
         public MainWindow(string? initialFeature = null)
         {
             this.InitializeComponent();
@@ -70,6 +74,7 @@ namespace Winspeqt.Views
             Activated += MainWindow_Activated;
             ((FrameworkElement)Content).ActualThemeChanged += MainWindow_ActualThemeChanged;
             AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            AppWindow.SetIcon("Assets/StoreLogo.png");
             ApplyThemeChrome();
             if (AppWindow.TitleBar.ExtendsContentIntoTitleBar)
             {
@@ -113,11 +118,19 @@ namespace Winspeqt.Views
             };
         }
 
+        /// <summary>
+        /// Reapplies title bar and navigation chrome colors when the app theme changes.
+        /// </summary>
+        /// <param name="sender">The root framework element whose theme changed.</param>
+        /// <param name="args">Unused event data.</param>
         private void MainWindow_ActualThemeChanged(FrameworkElement sender, object args)
         {
             ApplyThemeChrome();
         }
 
+        /// <summary>
+        /// Applies the current themed chrome color to the title bar and navigation surfaces.
+        /// </summary>
         private void ApplyThemeChrome()
         {
             Color chromeColor = ((SolidColorBrush)Application.Current.Resources["AppChromeBrush"]).Color;
@@ -127,20 +140,29 @@ namespace Winspeqt.Views
             AppTitleBar.Background = new SolidColorBrush(chromeColor);
         }
 
+        /// <summary>
+        /// Updates the title bar foreground to match the active or inactive window state.
+        /// </summary>
+        /// <param name="sender">The window raising the activation event.</param>
+        /// <param name="args">Activation state data for the window.</param>
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                TitleBarTextBlock.Foreground =
+                titleBar.Foreground =
                     (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
             }
             else
             {
-                TitleBarTextBlock.Foreground =
+                titleBar.Foreground =
                     (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
             }
         }
 
+        /// <summary>
+        /// Brings the window to the foreground and navigates to the requested feature page.
+        /// </summary>
+        /// <param name="feature">Feature identifier used to select the destination page.</param>
         public void NavigateToFeature(string feature)
         {
             // Make sure window is visible first
@@ -179,9 +201,15 @@ namespace Winspeqt.Views
             });
         }
 
-        // Provide the service to pages
+        /// <summary>
+        /// Returns the shared app usage service instance for pages that need usage data access.
+        /// </summary>
+        /// <returns>The shared <see cref="AppUsageService"/> instance, or <see langword="null"/> if it has not been created.</returns>
         public static AppUsageService? GetAppUsageService() => _appUsageService;
 
+        /// <summary>
+        /// Saves persisted data and disposes long-lived services before the application exits.
+        /// </summary>
         public void CleanupAndExit()
         {
             _appUsageService?.SaveData();
@@ -189,17 +217,21 @@ namespace Winspeqt.Views
             _systemTrayHelper?.Dispose();
         }
 
+        /// <summary>
+        /// Opens the feedback form in the user's default browser.
+        /// </summary>
+        /// <param name="sender">The feedback button.</param>
+        /// <param name="e">Routed event data.</param>
         private async void FeedbackButton_Click(object sender, RoutedEventArgs e)
         {
             _ = await Windows.System.Launcher.LaunchUriAsync(new Uri("https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=m278xvtRqEi3eZ7lZLQEE3SxlEbNs7pKmP3fkIYe7phUNDVXOFJONzNNWk5CWTc5Q0tLSEM2RTFVNS4u"));
         }
 
         /// <summary>
-        /// Handles navigation from the side bar. If the last navigation is still loading it will stop. Otherwise goes
-        /// to next frame if page is found.
+        /// Handles side navigation selection changes and routes the frame to the matching page.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
+        /// <param name="sender">The navigation view whose selection changed.</param>
+        /// <param name="args">Selection change data that identifies the selected item.</param>
         private void NavigationView_SelectionChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs args)
         {
             if (_isSyncingNavigationSelection)
@@ -222,36 +254,34 @@ namespace Winspeqt.Views
         }
 
         /// <summary>
-        /// Tries to go back. Checks if user can still go back and updates accordingly.
+        /// Navigates the frame backward when a previous page is available.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void NavView_BackRequested(NavigationView sender,
-                                   NavigationViewBackRequestedEventArgs args)
+        /// <param name="sender">The title bar control that raised the back request.</param>
+        /// <param name="args">Unused event data.</param>
+        private void TitleBar_BackRequested(TitleBar sender,
+                                   object args)
         {
-            TryGoBack();
-            nvCategories.IsBackEnabled = RootFrame.CanGoBack;
+            if (this.RootFrame.CanGoBack)
+            {
+                this.RootFrame.GoBack();
+            }
         }
 
         /// <summary>
-        /// Checks if able to go back to prevent error. Will go back if it can.
+        /// Toggles the visibility of the navigation pane from the custom title bar.
         /// </summary>
-        /// <returns></returns>
-        private bool TryGoBack()
+        /// <param name="sender">The title bar control that raised the pane toggle request.</param>
+        /// <param name="args">Unused event data.</param>
+        private void TitleBar_PaneToggleRequested(TitleBar sender, object args)
         {
-            if (!RootFrame.CanGoBack)
-                return false;
-
-            RootFrame.GoBack();
-            return true;
+            nvCategories.IsPaneOpen = !nvCategories.IsPaneOpen;
         }
 
         /// <summary>
-        /// Sets the selected item in the navigation view in case the navigation came from a source other than the navigation
-        /// view.
+        /// Synchronizes the selected navigation item after frame navigation initiated outside the navigation view.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The frame that completed navigation.</param>
+        /// <param name="e">Navigation event data containing the destination page type.</param>
         private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             nvCategories.IsBackEnabled = RootFrame.CanGoBack;
@@ -277,11 +307,11 @@ namespace Winspeqt.Views
         }
 
         /// <summary>
-        /// Finds the item related to the navigation view request
+        /// Recursively finds the navigation view item whose tag matches the requested page tag.
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="tag"></param>
-        /// <returns></returns>
+        /// <param name="items">Navigation view items to search.</param>
+        /// <param name="tag">Tag value associated with the target page.</param>
+        /// <returns>The matching <see cref="NavigationViewItem"/>, or <see langword="null"/> when no match exists.</returns>
         private static NavigationViewItem? FindNavigationViewItemByTag(IList<object> items, string tag)
         {
             foreach (object item in items)

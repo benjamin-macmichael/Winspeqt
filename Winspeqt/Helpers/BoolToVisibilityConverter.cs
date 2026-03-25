@@ -8,12 +8,18 @@ namespace Winspeqt.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return (value is bool b && b) ? Visibility.Visible : Visibility.Collapsed;
+            var b = value is bool boolean && boolean;
+            if (parameter is string s && s.Equals("Invert", StringComparison.OrdinalIgnoreCase))
+                b = !b;
+            return b ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            return value is Visibility v && v == Visibility.Visible;
+            var visible = value is Visibility v && v == Visibility.Visible;
+            if (parameter is string s && s.Equals("Invert", StringComparison.OrdinalIgnoreCase))
+                visible = !visible;
+            return visible;
         }
     }
 }

@@ -18,6 +18,7 @@ namespace Winspeqt.Views
             ViewModel.NavigationRequested += OnNavigationRequested;
 
             Loaded += DashboardPage_Loaded;
+            Unloaded += DashboardPage_Unloaded;
             SizeChanged += DashboardPage_SizeChanged;
         }
 
@@ -27,6 +28,13 @@ namespace Winspeqt.Views
 
             // Re-apply after first layout pass to avoid occasional startup timing misses.
             DispatcherQueue.TryEnqueue(ApplyResponsiveState);
+
+            ViewModel.StartRefresh(DispatcherQueue);
+        }
+
+        private void DashboardPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.StopRefresh();
         }
 
         private void DashboardPage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -55,6 +63,9 @@ namespace Winspeqt.Views
                     break;
                 case "Monitoring":
                     Frame.Navigate(typeof(Monitoring.MonitoringDashboardPage));
+                    break;
+                case "ResourceTrends":
+                    Frame.Navigate(typeof(Monitoring.PerformanceTrendsPage));
                     break;
                 case "Settings":
                     Frame.Navigate(typeof(SettingsPage));
