@@ -33,63 +33,31 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
 
                 <Button 
-                    Grid.Row="0"
                     Grid.Column="0"
+                    Content="← Back"
                     Click="BackButton_Click"
                     Background="Transparent"
                     BorderThickness="0"
                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                    Padding="8"
+                    FontSize="16"
+                    Padding="0"
                     Margin="0,0,20,0"
-                    VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE76B;" FontSize="16"/>
-                        <TextBlock Text="Optimization Home" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                    VerticalAlignment="Center"/>
 
-                <Grid
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Margin="0,0,0,4"
-                    VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <FontIcon
-                        Grid.Column="0"
-                        Glyph="&#xE74C;"
-                        FontSize="40"
-                        Foreground="#2196F3"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Center"/>
-                    <TextBlock
-                        Grid.Column="1"
-                        Text="App Usage Tracker" 
-                        FontSize="36" 
-                        FontWeight="Bold" 
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        TextWrapping="WrapWholeWords"
-                        VerticalAlignment="Center"/>
-                </Grid>
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="App Usage Tracker" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Monitor your application usage and screen time" 
+                               FontSize="14" 
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                               Margin="0,5,0,0"/>
+                </StackPanel>
 
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Text="Monitor your application usage and screen time"
-                    FontSize="18"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="WrapWholeWords"
-                    Margin="0,4,0,0"/>
-
-                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
                     <Button Content="View Installed Apps" 
                             Command="{Binding ShowInstalledAppsCommand}"
                             Background="#007ACC"
@@ -379,61 +347,34 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0"
-                        Grid.Row="0"
+                <Button Grid.Column="0" Grid.Row="0"
+                        Content="← Back"
                         Command="{Binding ShowUsageViewCommand}"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="8"
-                        Margin="0,0,20,0"
-                        VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon Glyph="&#xE76B;" FontSize="16"/>
-                        <TextBlock Text="Usage Tracker" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                <Grid
-                    Grid.Column="1"
-                    Grid.Row="0"
-                    Margin="0,0,0,4"
-                    VerticalAlignment="Center">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <FontIcon
-                        Grid.Column="0"
-                        Glyph="&#xE8D6;"
-                        FontSize="40"
-                        Foreground="#007ACC"
-                        Margin="0,0,12,0"
-                        VerticalAlignment="Center"/>
-                    <TextBlock
-                        Grid.Column="1"
-                        Text="Installed Applications"
-                        FontSize="36"
-                        FontWeight="Bold"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        TextWrapping="WrapWholeWords"
+                        FontSize="16"
+                        Padding="0"
+                        Margin="0,0,20,0"
                         VerticalAlignment="Center"/>
-                </Grid>
 
-                <TextBlock
-                    Grid.Column="1"
-                    Grid.Row="1"
-                    Text="Find apps you haven't used recently and consider uninstalling"
-                    FontSize="18"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    TextWrapping="WrapWholeWords"
-                    Margin="0,4,0,0"/>
+                <StackPanel Grid.Column="1" Grid.Row="0">
+                    <TextBlock Text="Installed Applications" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Find apps you haven't used recently and consider uninstalling" 
+                               FontSize="14" 
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                               Margin="0,5,0,0"/>
+                </StackPanel>
 
                 <Border Grid.Row="1" 
                         Grid.ColumnSpan="2" 
                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
                         CornerRadius="6" 
                         Padding="20,15"
-                        Margin="0,36,0,0">
+                        Margin="0,15,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <FontIcon Glyph="&#xE946;" FontSize="20" Foreground="#007ACC" VerticalAlignment="Center"/>
                         <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
@@ -450,37 +391,116 @@
             <ScrollViewer Grid.Row="1" 
                           Margin="30,0,30,30"
                           VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding InstalledApps}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
-                                    CornerRadius="6" 
-                                    Padding="15" 
-                                    Margin="0,0,0,8">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                <StackPanel Spacing="0">
 
-                                    <!-- App Info -->
-                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding AppName}" 
-                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" 
-                                                   FontSize="14" 
-                                                   FontWeight="SemiBold"/>
+                    <!-- Summary Bar -->
+                    <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8"
+                            Padding="20,12"
+                            Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE7C1;" FontSize="16" Foreground="#007ACC" VerticalAlignment="Center"/>
+                            <TextBlock VerticalAlignment="Center"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       FontSize="13">
+                                <Run Text="{Binding TotalTrackedApps}"/>
+                                <Run Text="apps tracked by Winspeqt"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Grouped App Lists -->
+                    <ItemsControl ItemsSource="{Binding GroupedInstalledApps}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,16">
+
+                                    <!-- Group Header -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding GroupName}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   CharacterSpacing="50"
+                                                   VerticalAlignment="Center"/>
+                                        <Border Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                CornerRadius="10"
+                                                Padding="8,2">
+                                            <TextBlock Text="{Binding Count}"
+                                                       FontSize="11"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        </Border>
                                     </StackPanel>
 
-                                    <!-- Last Used -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
-                                        <TextBlock Text="Last Used" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="10"/>
-                                        <TextBlock Text="{Binding FormattedLastUsed}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontSize="12"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                    <!-- Apps in Group -->
+                                    <ItemsControl ItemsSource="{Binding Apps}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                        CornerRadius="6"
+                                                        Padding="15,10"
+                                                        Margin="0,0,0,6">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Icon Circle -->
+                                                        <Border Grid.Column="0"
+                                                                Background="#007ACC"
+                                                                CornerRadius="8"
+                                                                Width="40"
+                                                                Height="40"
+                                                                Margin="0,0,14,0">
+                                                            <TextBlock Text="{Binding AppName, Converter={StaticResource FirstLetterConverter}}"
+                                                                       Foreground="White"
+                                                                       FontSize="16"
+                                                                       FontWeight="Bold"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Border>
+
+                                                        <!-- App Name + Tracked Since -->
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding AppName}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"/>
+                                                            <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,2,0,0">
+                                                                <TextBlock Text="Tracked since"
+                                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                           FontSize="11"/>
+                                                                <TextBlock Text="{Binding FormattedInstallDate}"
+                                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                           FontSize="11"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+
+                                                        <!-- Last Used -->
+                                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                            <TextBlock Text="Last Used"
+                                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                       FontSize="10"
+                                                                       HorizontalAlignment="Right"/>
+                                                            <TextBlock Text="{Binding FormattedLastUsed}"
+                                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                                       FontSize="12"
+                                                                       FontWeight="SemiBold"
+                                                                       HorizontalAlignment="Right"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </ScrollViewer>
         </Grid>
 

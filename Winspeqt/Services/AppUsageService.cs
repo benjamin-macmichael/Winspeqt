@@ -7,18 +7,19 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Win32;
 using Winspeqt.Models;
 
 namespace Winspeqt.Services
 {
     public class AppUsageService
     {
-        private Dictionary<string, AppUsageData> _usageData = new Dictionary<string, AppUsageData>();
-        private Timer _trackingTimer = new();
-        private Timer _saveTimer = new();
-        private string? _currentActiveProcess;
+        private Dictionary<string, AppUsageData> _usageData;
+        private Timer _trackingTimer;
+        private Timer _saveTimer;
+        private string _currentActiveProcess;
         private DateTime _lastCheckTime;
-        private readonly string _dataFilePath = "";
+        private readonly string _dataFilePath;
         private bool _isTracking;
 
         [DllImport("user32.dll")]
@@ -45,7 +46,6 @@ namespace Winspeqt.Services
             _usageData = new Dictionary<string, AppUsageData>();
             _lastCheckTime = DateTime.Now;
 
-            // Set up data file path in AppData
             string appDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Winspeqt");
@@ -55,22 +55,18 @@ namespace Winspeqt.Services
 
             _dataFilePath = Path.Combine(appDataFolder, "app_usage_data.json");
 
-            // Load existing data
             LoadPersistedData();
-
             InitializeTracking();
         }
 
         private void InitializeTracking()
         {
-            // Tracking timer - check active window every second
             _trackingTimer = new Timer(1000);
             _trackingTimer.Elapsed += TrackingTimer_Elapsed;
             _trackingTimer.Start();
             _isTracking = true;
 
-            // Save timer - persist data every 5 minutes
-            _saveTimer = new Timer(300000); // 5 minutes
+            _saveTimer = new Timer(300000);
             _saveTimer.Elapsed += (s, e) => SaveData();
             _saveTimer.Start();
         }
@@ -85,9 +81,7 @@ namespace Winspeqt.Services
                 if (!string.IsNullOrEmpty(activeProcess))
                 {
                     if (_currentActiveProcess != activeProcess)
-                    {
                         _currentActiveProcess = activeProcess;
-                    }
 
                     var elapsed = DateTime.Now - _lastCheckTime;
                     TrackUsage(activeProcess, elapsed);
@@ -100,22 +94,19 @@ namespace Winspeqt.Services
             }
         }
 
-        private string? GetActiveProcessName()
+        private string GetActiveProcessName()
         {
             try
             {
                 IntPtr hwnd = GetForegroundWindow();
 
-                // Only track if it's a visible, non-tool window
                 if (!IsWindowVisible(hwnd))
                     return null;
 
-                // Check if it's a tool window (skip those)
                 IntPtr exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
                 if ((exStyle.ToInt32() & WS_EX_TOOLWINDOW) != 0)
                     return null;
 
-                // Check if it has an owner (skip owned windows)
                 IntPtr owner = GetWindow(hwnd, GW_OWNER);
                 if (owner != IntPtr.Zero)
                     return null;
@@ -123,7 +114,6 @@ namespace Winspeqt.Services
                 GetWindowThreadProcessId(hwnd, out int processId);
                 Process process = Process.GetProcessById(processId);
 
-                // Skip system processes
                 string processName = process.ProcessName.ToLower();
                 if (processName == "explorer" || processName == "textinputhost" ||
                     processName == "searchapp" || processName == "startmenuexperiencehost" ||
@@ -186,7 +176,6 @@ namespace Winspeqt.Services
         {
             return await Task.Run(() =>
             {
-                // Count only apps we're actually tracking (user apps)
                 var trackedAppsCount = _usageData.Count;
                 var mostUsed = _usageData.Values.OrderByDescending(d => d.TotalUsageTime).FirstOrDefault();
 
@@ -194,7 +183,7 @@ namespace Winspeqt.Services
                 {
                     TotalScreenTime = TimeSpan.FromSeconds(_usageData.Values.Sum(d => d.TotalUsageTime.TotalSeconds)),
                     TotalAppsUsed = trackedAppsCount,
-                    ActiveApps = trackedAppsCount, // Just show how many apps we've tracked
+                    ActiveApps = trackedAppsCount,
                     MostUsedApp = mostUsed != null ? GetFriendlyAppName(mostUsed.ProcessName) : "N/A",
                     TrackingStartTime = _usageData.Values.OrderBy(d => d.FirstUsed).FirstOrDefault()?.FirstUsed ?? DateTime.Now
                 };
@@ -203,23 +192,67 @@ namespace Winspeqt.Services
 
         private string GetFriendlyAppName(string processName)
         {
-            var nameMap = new Dictionary<string, string>
+            var nameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
+                // Browsers
                 { "chrome", "Google Chrome" },
                 { "firefox", "Firefox" },
                 { "msedge", "Microsoft Edge" },
-                { "Code", "Visual Studio Code" },
+                { "opera", "Opera" },
+                { "brave", "Brave" },
+                // Development
+                { "code", "Visual Studio Code" },
                 { "devenv", "Visual Studio" },
+                { "windowsterminal", "Windows Terminal" },
+                { "wt", "Windows Terminal" },
+                { "rider", "JetBrains Rider" },
+                { "idea64", "IntelliJ IDEA" },
+                { "pycharm64", "PyCharm" },
+                { "webstorm64", "WebStorm" },
+                { "git", "Git" },
+                // Microsoft Office
+                { "outlook", "Outlook" },
+                { "excel", "Excel" },
+                { "winword", "Word" },
+                { "powerpnt", "PowerPoint" },
+                { "onenote", "OneNote" },
+                { "teams", "Microsoft Teams" },
+                { "onedrive", "OneDrive" },
+                // Communication
+                { "slack", "Slack" },
+                { "discord", "Discord" },
+                { "zoom", "Zoom" },
+                { "skype", "Skype" },
+                { "telegram", "Telegram" },
+                { "whatsapp", "WhatsApp" },
+                // Media
+                { "spotify", "Spotify" },
+                { "vlc", "VLC Media Player" },
+                { "wmplayer", "Windows Media Player" },
+                { "photos", "Photos" },
+                // System / Windows
                 { "explorer", "File Explorer" },
                 { "notepad", "Notepad" },
-                { "Spotify", "Spotify" },
-                { "Discord", "Discord" },
-                { "Teams", "Microsoft Teams" },
-                { "Slack", "Slack" },
-                { "OUTLOOK", "Outlook" },
-                { "EXCEL", "Excel" },
-                { "WINWORD", "Word" },
-                { "POWERPNT", "PowerPoint" }
+                { "taskmgr", "Task Manager" },
+                { "regedit", "Registry Editor" },
+                { "mspaint", "Paint" },
+                { "snippingtool", "Snipping Tool" },
+                { "calculator", "Calculator" },
+                { "systemsettings", "Settings" },
+                { "searchhost", "Windows Search" },
+                { "searchapp", "Windows Search" },
+                { "microsoft.configurationmanagement", "Configuration Manager" },
+                // Utilities
+                { "7zfm", "7-Zip" },
+                { "winrar", "WinRAR" },
+                { "acrobat", "Adobe Acrobat" },
+                { "acrord32", "Adobe Acrobat Reader" },
+                { "postman", "Postman" },
+                // Gaming
+                { "steam", "Steam" },
+                { "epicgameslauncher", "Epic Games" },
+                // Other
+                { "winspeqt", "Winspeqt" },
             };
 
             return nameMap.ContainsKey(processName) ? nameMap[processName] : processName;
@@ -236,7 +269,7 @@ namespace Winspeqt.Services
         {
             _isTracking = false;
             _trackingTimer?.Stop();
-            SaveData(); // Save before stopping
+            SaveData();
         }
 
         public void StartTracking()
@@ -256,11 +289,7 @@ namespace Winspeqt.Services
                     UsageData = _usageData.Values.ToList()
                 };
 
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-
+                var options = new JsonSerializerOptions { WriteIndented = true };
                 string json = JsonSerializer.Serialize(dataToSave, options);
                 File.WriteAllText(_dataFilePath, json);
 
@@ -297,7 +326,7 @@ namespace Winspeqt.Services
 
         public void Dispose()
         {
-            SaveData(); // Final save before disposal
+            SaveData();
             _trackingTimer?.Stop();
             _trackingTimer?.Dispose();
             _saveTimer?.Stop();
@@ -308,16 +337,15 @@ namespace Winspeqt.Services
         {
             return await Task.Run(() =>
             {
-                // Just convert our tracked apps to InstalledAppModel format
                 return _usageData.Values
                     .Select(tracked => new InstalledAppModel
                     {
                         AppName = GetFriendlyAppName(tracked.ProcessName),
-                        Publisher = "Unknown", // We don't track this
-                        Version = "Unknown", // We don't track this
+                        Publisher = "Unknown",
+                        Version = "Unknown",
                         InstallDate = tracked.FirstUsed,
                         LastUsed = tracked.LastUsed,
-                        SizeInBytes = 0, // We don't track this
+                        SizeInBytes = 0,
                         UninstallString = null
                     })
                     .OrderByDescending(a => a.LastUsed)
@@ -328,7 +356,7 @@ namespace Winspeqt.Services
 
     internal class AppUsageData
     {
-        public string ProcessName { get; set; } = "";
+        public string ProcessName { get; set; }
         public TimeSpan TotalUsageTime { get; set; }
         public DateTime LastUsed { get; set; }
         public int LaunchCount { get; set; }
@@ -338,6 +366,6 @@ namespace Winspeqt.Services
     internal class PersistedUsageData
     {
         public DateTime LastSaved { get; set; }
-        public List<AppUsageData> UsageData { get; set; } = new List<AppUsageData>();
+        public List<AppUsageData> UsageData { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Dispatching;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,21 +15,23 @@ namespace Winspeqt.ViewModels.Optimization
     {
         private readonly AppUsageService _appUsageService;
         private readonly DispatcherQueue _dispatcherQueue;
-        private DispatcherQueueTimer? _updateTimer;
+        private DispatcherQueueTimer _updateTimer;
 
-        private ObservableCollection<AppUsageModel> _applications = new();
-        private ObservableCollection<InstalledAppModel> _installedApps = new();
-        private AppUsageStats? _usageStats;
+        private ObservableCollection<AppUsageModel> _applications;
+        private ObservableCollection<InstalledAppModel> _installedApps;
+        private AppUsageStats _usageStats;
         private bool _isLoading;
-        private string _searchText = string.Empty;
+        private string _searchText;
         private bool _isTrackingEnabled;
         private bool _hasOptedIn;
         private bool _showOnlyUnused;
         private bool _showInstalledAppsView;
 
+        public List<InstalledAppGroup> GroupedInstalledApps { get; private set; } = new();
+
         public AppUsageViewModel() : this(null) { }
 
-        public AppUsageViewModel(AppUsageService? appUsageService)
+        public AppUsageViewModel(AppUsageService appUsageService)
         {
             _appUsageService = appUsageService ?? new AppUsageService();
             Applications = new ObservableCollection<AppUsageModel>();
@@ -71,7 +74,7 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _installedApps, value);
         }
 
-        public AppUsageStats? UsageStats
+        public AppUsageStats UsageStats
         {
             get => _usageStats;
             set
@@ -125,6 +128,8 @@ namespace Winspeqt.ViewModels.Optimization
             get => _showInstalledAppsView;
             set => SetProperty(ref _showInstalledAppsView, value);
         }
+
+        public int TotalTrackedApps => InstalledApps.Count;
 
         public string TotalScreenTimeFormatted
         {
@@ -269,12 +274,39 @@ namespace Winspeqt.ViewModels.Optimization
             try
             {
                 var allApps = await _appUsageService.GetInstalledAppsAsync();
+
                 InstalledApps.Clear();
                 foreach (var app in allApps)
                 {
                     if (!ShowOnlyUnused || app.IsUnused)
                         InstalledApps.Add(app);
                 }
+
+                // Build grouped list
+                var filtered = allApps.Where(a => !ShowOnlyUnused || a.IsUnused).ToList();
+                GroupedInstalledApps = filtered
+                    .GroupBy(a =>
+                    {
+                        if (!a.LastUsed.HasValue) return "Unknown";
+                        var days = (DateTime.Now - a.LastUsed.Value).TotalDays;
+                        if (days < 1) return "Used Today";
+                        if (days < 7) return "Used This Week";
+                        if (days < 30) return "Used This Month";
+                        return "Older";
+                    })
+                    .OrderBy(g => g.Key switch
+                    {
+                        "Used Today" => 0,
+                        "Used This Week" => 1,
+                        "Used This Month" => 2,
+                        "Older" => 3,
+                        _ => 4
+                    })
+                    .Select(g => new InstalledAppGroup(g.Key, g.ToList()))
+                    .ToList();
+
+                OnPropertyChanged(nameof(GroupedInstalledApps));
+                OnPropertyChanged(nameof(TotalTrackedApps));
             }
             catch (Exception ex)
             {
@@ -330,6 +362,19 @@ namespace Winspeqt.ViewModels.Optimization
         {
             _appUsageService.ResetTracking();
             _ = RefreshDataAsync();
+        }
+    }
+
+    public class InstalledAppGroup
+    {
+        public string GroupName { get; }
+        public List<InstalledAppModel> Apps { get; }
+        public int Count => Apps.Count;
+
+        public InstalledAppGroup(string groupName, List<InstalledAppModel> apps)
+        {
+            GroupName = groupName;
+            Apps = apps;
         }
     }
 }
