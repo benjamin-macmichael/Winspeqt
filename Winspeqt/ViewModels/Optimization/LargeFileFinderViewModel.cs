@@ -366,7 +366,7 @@ namespace Winspeqt.ViewModels.Optimization
                         }
 
                         channel.Writer.TryWrite(item);
-                        sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
+                        sizeTasks.Add(UpdateFolderSizeAsync(item));
                     }
 
                     foreach (var file in Directory.EnumerateFiles(folder.FilePath))
@@ -397,7 +397,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="item">Folder item to update.</param>
         /// <param name="path">Physical directory path for size calculation.</param>
-        private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
+        private async Task UpdateFolderSizeAsync(FileSearchItem item)
         {
             try
             {
@@ -406,7 +406,7 @@ namespace Winspeqt.ViewModels.Optimization
                 long size = 0;
                 if (item.Children.Count == 0)
                 {
-                    size = await Task.Run(() => GetDirectorySize(path));
+                    size = await Task.Run(() => GetDirectorySize(item));
                 }
                 else
                 {
@@ -416,7 +416,7 @@ namespace Winspeqt.ViewModels.Optimization
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", path, ex.ToString());
+                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", item.FilePath, ex.ToString());
             }
         }
 
@@ -425,11 +425,11 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="folder">Root folder path to measure.</param>
         /// <returns>Total file size in bytes.</returns>
-        private static long GetDirectorySize(string folder)
+        private static long GetDirectorySize(FileSearchItem folder)
         {
             long size = 0;
             var directories = new Stack<string>();
-            directories.Push(folder);
+            directories.Push(folder.FilePath);
 
             while (directories.Count > 0)
             {
