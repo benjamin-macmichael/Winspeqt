@@ -70,6 +70,15 @@ namespace Winspeqt.Views.Monitoring
                 case "windows-update":
                     TryStartProcess("ms-settings:windowsupdate", null, "Windows Update");
                     break;
+                case "power":
+                    TryStartProcess("ms-settings:powersleep", null, "power settings");
+                    break;
+                case "security":
+                    TryStartProcess("windowsdefender:", null, "Windows Security");
+                    break;
+                case "sfc":
+                    TryStartElevatedProcess("cmd.exe", "/k sfc /scannow", "System File Checker");
+                    break;
                 case "startup-section":
                     ViewModel.ShowStartupDetail = true;
                     break;
@@ -145,6 +154,24 @@ namespace Winspeqt.Views.Monitoring
                 Debug.WriteLine($"Error killing explorer: {ex.Message}");
             }
             TryStartProcess("explorer.exe", null, "Explorer");
+        }
+
+        private static void TryStartElevatedProcess(string fileName, string? arguments, string errorContext)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments ?? string.Empty,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error opening {errorContext}: {ex.Message}");
+            }
         }
 
         private static void TryStartProcess(string fileName, string? arguments, string errorContext)
