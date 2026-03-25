@@ -82,6 +82,12 @@ namespace Winspeqt.Views
             }
 
 
+            OverlappedPresenter presenter = OverlappedPresenter.Create();
+            presenter.PreferredMinimumWidth = 1010;
+
+            AppWindow.SetPresenter(presenter);
+
+
             if (_appUsageService == null)
                 _appUsageService = new AppUsageService();
 
