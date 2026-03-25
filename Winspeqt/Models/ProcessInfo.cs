@@ -69,6 +69,29 @@ namespace Winspeqt.Models
                 return "#4CAF50"; // Green
             }
         }
+
+        // Heat map background colors for table view (Task Manager style)
+        public string CpuHeatColor
+        {
+            get
+            {
+                if (CpuUsagePercent >= 75) return "#FFCDD2";
+                if (CpuUsagePercent >= 50) return "#FFE0B2";
+                if (CpuUsagePercent >= 25) return "#FFF9C4";
+                return "Transparent";
+            }
+        }
+
+        public string MemoryHeatColor
+        {
+            get
+            {
+                if (MemoryUsageMB >= 2000) return "#FFCDD2";
+                if (MemoryUsageMB >= 1000) return "#FFE0B2";
+                if (MemoryUsageMB >= 500) return "#FFF9C4";
+                return "Transparent";
+            }
+        }
     }
 
     public enum ProcessCategory

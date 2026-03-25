@@ -29,6 +29,10 @@ namespace Winspeqt.Services
             "spoolsv", "audiodg", "dashost",
             // Windows Update
             "wuauclt", "musnotification", "usoclient",
+            // Kernel & memory
+            "registry", "memory compression", "system interrupts", "ntoskrnl",
+            // Virtualization-based security
+            "secure system", "securesystem", "vmmem",
         };
 
         private static bool IsProtectedProcess(string processName)

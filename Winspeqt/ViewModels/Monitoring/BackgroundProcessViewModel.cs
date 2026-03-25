@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +21,9 @@ namespace Winspeqt.ViewModels.Monitoring
         private bool _isLoading;
         private string _searchQuery = string.Empty;
         private bool _isRefreshing;
+        private bool _isTableView;
+        private string _sortColumn = "Memory";
+        private bool _sortAscending = false;
 
         // Process categorization dictionaries
         private readonly HashSet<string> _browserProcesses = new(StringComparer.OrdinalIgnoreCase)
@@ -75,6 +78,7 @@ namespace Winspeqt.ViewModels.Monitoring
             FilteredProcesses = new ObservableCollection<ProcessInfo>();
             BatteryDevices = new ObservableCollection<BatteryInfo>();
 
+            // Card view collections (top 5 per category)
             BrowserProcesses = new ObservableCollection<ProcessInfo>();
             GamingProcesses = new ObservableCollection<ProcessInfo>();
             CloudStorageProcesses = new ObservableCollection<ProcessInfo>();
@@ -84,9 +88,19 @@ namespace Winspeqt.ViewModels.Monitoring
             DevelopmentProcesses = new ObservableCollection<ProcessInfo>();
             OtherProcesses = new ObservableCollection<ProcessInfo>();
 
-            RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
+            // Table view collections (all processes, grouped as trees)
+            BrowserGroups = new ObservableCollection<ProcessGroup>();
+            GamingGroups = new ObservableCollection<ProcessGroup>();
+            CloudStorageGroups = new ObservableCollection<ProcessGroup>();
+            CommunicationGroups = new ObservableCollection<ProcessGroup>();
+            MediaGroups = new ObservableCollection<ProcessGroup>();
+            DevelopmentGroups = new ObservableCollection<ProcessGroup>();
+            SystemServicesGroups = new ObservableCollection<ProcessGroup>();
+            OtherGroups = new ObservableCollection<ProcessGroup>();
 
-            // Delay initialization to let the UI load first
+            RefreshCommand = new RelayCommand(async () => await RefreshDataAsync());
+            SortCommand = new RelayCommand<string>(ExecuteSort);
+
             _dispatcherQueue.TryEnqueue(async () =>
             {
                 await Task.Delay(100);
@@ -94,6 +108,7 @@ namespace Winspeqt.ViewModels.Monitoring
             });
         }
 
+        // ── Card view collections ────────────────────────────────────────────────
         public ObservableCollection<ProcessInfo> AllProcesses { get; }
         public ObservableCollection<ProcessInfo> FilteredProcesses { get; }
         public ObservableCollection<BatteryInfo> BatteryDevices { get; }
@@ -107,14 +122,75 @@ namespace Winspeqt.ViewModels.Monitoring
         public ObservableCollection<ProcessInfo> DevelopmentProcesses { get; }
         public ObservableCollection<ProcessInfo> OtherProcesses { get; }
 
+        // ── Table view collections ───────────────────────────────────────────────
+        public ObservableCollection<ProcessGroup> BrowserGroups { get; }
+        public ObservableCollection<ProcessGroup> GamingGroups { get; }
+        public ObservableCollection<ProcessGroup> CloudStorageGroups { get; }
+        public ObservableCollection<ProcessGroup> CommunicationGroups { get; }
+        public ObservableCollection<ProcessGroup> MediaGroups { get; }
+        public ObservableCollection<ProcessGroup> DevelopmentGroups { get; }
+        public ObservableCollection<ProcessGroup> SystemServicesGroups { get; }
+        public ObservableCollection<ProcessGroup> OtherGroups { get; }
+
+        /// <summary>Tracks which root process IDs are expanded, so state survives refresh.</summary>
+        public HashSet<int> ExpandedProcessIds { get; } = new();
+
+        // ── View toggle ──────────────────────────────────────────────────────────
+        public bool IsTableView
+        {
+            get => _isTableView;
+            set
+            {
+                _isTableView = value;
+                OnPropertyChanged(nameof(IsTableView));
+                OnPropertyChanged(nameof(IsCardView));
+            }
+        }
+
+        public bool IsCardView => !IsTableView;
+
+        // ── Sort state ───────────────────────────────────────────────────────────
+        public string SortColumn
+        {
+            get => _sortColumn;
+            private set
+            {
+                _sortColumn = value;
+                OnPropertyChanged(nameof(SortColumn));
+                NotifySortHeaders();
+            }
+        }
+
+        public bool SortAscending
+        {
+            get => _sortAscending;
+            private set
+            {
+                _sortAscending = value;
+                OnPropertyChanged(nameof(SortAscending));
+                NotifySortHeaders();
+            }
+        }
+
+        // Column header labels with sort indicator arrows
+        public string NameHeader => "Name" + (SortColumn == "Name" ? (SortAscending ? " ↑" : " ↓") : "");
+        public string CpuHeader => "CPU" + (SortColumn == "Cpu" ? (SortAscending ? " ↑" : " ↓") : "");
+        public string MemoryHeader => "Memory" + (SortColumn == "Memory" ? (SortAscending ? " ↑" : " ↓") : "");
+        public string TimeHeader => "Running" + (SortColumn == "Time" ? (SortAscending ? " ↑" : " ↓") : "");
+
+        private void NotifySortHeaders()
+        {
+            OnPropertyChanged(nameof(NameHeader));
+            OnPropertyChanged(nameof(CpuHeader));
+            OnPropertyChanged(nameof(MemoryHeader));
+            OnPropertyChanged(nameof(TimeHeader));
+        }
+
+        // ── General state ────────────────────────────────────────────────────────
         public bool IsLoading
         {
             get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged(nameof(IsLoading));
-            }
+            set { _isLoading = value; OnPropertyChanged(nameof(IsLoading)); }
         }
 
         public string SearchQuery
@@ -128,8 +204,11 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        // ── Commands ─────────────────────────────────────────────────────────────
         public ICommand RefreshCommand { get; }
+        public ICommand SortCommand { get; }
 
+        // ── Initialization ───────────────────────────────────────────────────────
         private async Task InitializeAsync()
         {
             try
@@ -147,20 +226,16 @@ namespace Winspeqt.ViewModels.Monitoring
         {
             if (_isRefreshing) return;
             _isRefreshing = true;
-
             IsLoading = true;
 
             try
             {
                 var processes = await Task.Run(async () =>
                 {
-                    try
-                    {
-                        return await _systemMonitor.GetRunningProcessesAsync();
-                    }
+                    try { return await _systemMonitor.GetRunningProcessesAsync(); }
                     catch (AccessViolationException ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"AccessViolation in GetRunningProcessesAsync: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"AccessViolation: {ex.Message}");
                         return new List<ProcessInfo>();
                     }
                     catch (Exception ex)
@@ -181,13 +256,15 @@ namespace Winspeqt.ViewModels.Monitoring
                         {
                             if (process != null)
                             {
-                                // Categorize the process
                                 process.Category = CategorizeProcess(process);
+                                if (process.Category == ProcessCategory.SystemServices)
+                                    process.IsProtected = true;
                                 AllProcesses.Add(process);
                             }
                         }
 
                         GroupProcessesByCategory();
+                        BuildProcessGroups();
                         FilterProcesses();
                     }
                     catch (Exception ex)
@@ -207,36 +284,31 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
+        // ── Categorization ───────────────────────────────────────────────────────
         private ProcessCategory CategorizeProcess(ProcessInfo process)
         {
-            var processName = process.ProcessName?.ToLower() ?? "";
-            var description = process.Description?.ToLower() ?? "";
+            var name = process.ProcessName?.ToLower() ?? "";
+            var desc = process.Description?.ToLower() ?? "";
 
-            // Check each category
-            if (_browserProcesses.Any(b => processName.Contains(b) || description.Contains(b)))
+            if (_browserProcesses.Any(b => name.Contains(b) || desc.Contains(b)))
                 return ProcessCategory.Browser;
-
-            if (_gamingProcesses.Any(g => processName.Contains(g) || description.Contains(g)))
+            if (_gamingProcesses.Any(g => name.Contains(g) || desc.Contains(g)))
                 return ProcessCategory.Gaming;
-
-            if (_cloudStorageProcesses.Any(c => processName.Contains(c) || description.Contains(c)))
+            if (_cloudStorageProcesses.Any(c => name.Contains(c) || desc.Contains(c)))
                 return ProcessCategory.CloudStorage;
-
-            if (_communicationProcesses.Any(c => processName.Contains(c) || description.Contains(c)))
+            if (_communicationProcesses.Any(c => name.Contains(c) || desc.Contains(c)))
                 return ProcessCategory.Communication;
-
-            if (_mediaProcesses.Any(m => processName.Contains(m) || description.Contains(m)))
+            if (_mediaProcesses.Any(m => name.Contains(m) || desc.Contains(m)))
                 return ProcessCategory.Media;
-
-            if (_developmentProcesses.Any(d => processName.Contains(d) || description.Contains(d)))
+            if (_developmentProcesses.Any(d => name.Contains(d) || desc.Contains(d)))
                 return ProcessCategory.Development;
-
-            if (_systemServicesProcesses.Any(s => processName.Contains(s) || description.Contains(s)))
+            if (_systemServicesProcesses.Any(s => name.Contains(s) || desc.Contains(s)))
                 return ProcessCategory.SystemServices;
 
             return ProcessCategory.Other;
         }
 
+        // ── Card view grouping (top 5 per category) ──────────────────────────────
         private void GroupProcessesByCategory()
         {
             BrowserProcesses.Clear();
@@ -248,55 +320,122 @@ namespace Winspeqt.ViewModels.Monitoring
             DevelopmentProcesses.Clear();
             OtherProcesses.Clear();
 
-            // Group processes by category
-            var categorizedProcesses = AllProcesses
+            var grouped = AllProcesses
                 .Where(p => p != null)
                 .GroupBy(p => p.Category)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            // Add top 5 by memory usage to each category
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Browser, BrowserProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Gaming, GamingProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.CloudStorage, CloudStorageProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Communication, CommunicationProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Media, MediaProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Development, DevelopmentProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.SystemServices, SystemServicesProcesses);
-            AddTopProcessesToCategory(categorizedProcesses, ProcessCategory.Other, OtherProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Browser, BrowserProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Gaming, GamingProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.CloudStorage, CloudStorageProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Communication, CommunicationProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Media, MediaProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Development, DevelopmentProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.SystemServices, SystemServicesProcesses);
+            AddTopProcessesToCategory(grouped, ProcessCategory.Other, OtherProcesses);
         }
 
-        private void AddTopProcessesToCategory(
-            Dictionary<ProcessCategory, List<ProcessInfo>> categorizedProcesses,
+        private static void AddTopProcessesToCategory(
+            Dictionary<ProcessCategory, List<ProcessInfo>> grouped,
             ProcessCategory category,
-            ObservableCollection<ProcessInfo> targetCollection)
+            ObservableCollection<ProcessInfo> target)
         {
-            if (categorizedProcesses.TryGetValue(category, out var processes))
-            {
-                // Sort by memory usage (descending) and take top 5
-                // Try to use WorkingSet64, PrivateMemorySize64, or fall back to ProcessId
-                var topProcesses = processes
-                    .OrderByDescending(p =>
-                    {
-                        // Parse memory from display string if available
-                        if (!string.IsNullOrEmpty(p.MemoryUsageDisplay))
-                        {
-                            var memStr = p.MemoryUsageDisplay.Replace("MB", "").Replace("GB", "").Trim();
-                            if (double.TryParse(memStr, out var mem))
-                            {
-                                return p.MemoryUsageDisplay.Contains("GB") ? mem * 1024 : mem;
-                            }
-                        }
-                        return 0;
-                    })
-                    .Take(5);
+            if (!grouped.TryGetValue(category, out var processes)) return;
 
-                foreach (var process in topProcesses)
+            var top = processes
+                .OrderByDescending(p =>
                 {
-                    targetCollection.Add(process);
-                }
+                    if (!string.IsNullOrEmpty(p.MemoryUsageDisplay))
+                    {
+                        var memStr = p.MemoryUsageDisplay.Replace("MB", "").Replace("GB", "").Trim();
+                        if (double.TryParse(memStr, out var mem))
+                            return p.MemoryUsageDisplay.Contains("GB") ? mem * 1024 : mem;
+                    }
+                    return 0;
+                })
+                .Take(5);
+
+            foreach (var p in top) target.Add(p);
+        }
+
+        // ── Table view grouping (all processes, parent-child tree) ───────────────
+        private void BuildProcessGroups()
+        {
+            BuildCategoryGroups(ProcessCategory.Browser, BrowserGroups);
+            BuildCategoryGroups(ProcessCategory.Gaming, GamingGroups);
+            BuildCategoryGroups(ProcessCategory.CloudStorage, CloudStorageGroups);
+            BuildCategoryGroups(ProcessCategory.Communication, CommunicationGroups);
+            BuildCategoryGroups(ProcessCategory.Media, MediaGroups);
+            BuildCategoryGroups(ProcessCategory.Development, DevelopmentGroups);
+            BuildCategoryGroups(ProcessCategory.SystemServices, SystemServicesGroups);
+            BuildCategoryGroups(ProcessCategory.Other, OtherGroups);
+        }
+
+        private void BuildCategoryGroups(ProcessCategory category, ObservableCollection<ProcessGroup> target)
+        {
+            target.Clear();
+
+            var processes = AllProcesses.Where(p => p.Category == category).ToList();
+            if (processes.Count == 0) return;
+
+            var pids = new HashSet<int>(processes.Select(p => p.ProcessId));
+
+            // Processes whose parent is NOT in this category are roots
+            var roots = processes.Where(p => !pids.Contains(p.ParentProcessId));
+            var childrenByParent = processes
+                .Where(p => pids.Contains(p.ParentProcessId))
+                .GroupBy(p => p.ParentProcessId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var root in SortProcessList(roots))
+            {
+                var group = new ProcessGroup { RootProcess = root };
+                group.IsExpanded = ExpandedProcessIds.Contains(root.ProcessId);
+
+                if (childrenByParent.TryGetValue(root.ProcessId, out var children))
+                    foreach (var child in SortProcessList(children))
+                        group.ChildProcesses.Add(child);
+
+                target.Add(group);
             }
         }
 
+        private IEnumerable<ProcessInfo> SortProcessList(IEnumerable<ProcessInfo> processes)
+        {
+            return _sortColumn switch
+            {
+                "Name" => _sortAscending
+                    ? processes.OrderBy(p => p.Description)
+                    : processes.OrderByDescending(p => p.Description),
+                "Cpu" => _sortAscending
+                    ? processes.OrderBy(p => p.CpuUsagePercent)
+                    : processes.OrderByDescending(p => p.CpuUsagePercent),
+                "Time" => _sortAscending
+                    ? processes.OrderBy(p => p.StartTime)
+                    : processes.OrderByDescending(p => p.StartTime),
+                _ => _sortAscending  // "Memory" default
+                    ? processes.OrderBy(p => p.MemoryUsageMB)
+                    : processes.OrderByDescending(p => p.MemoryUsageMB),
+            };
+        }
+
+        private void ExecuteSort(string column)
+        {
+            if (SortColumn == column)
+                SortAscending = !SortAscending;
+            else
+            {
+                // Use backing fields to avoid double notification before rebuild
+                _sortColumn = column;
+                _sortAscending = column == "Name"; // ascending for name, descending for metrics
+                OnPropertyChanged(nameof(SortColumn));
+                OnPropertyChanged(nameof(SortAscending));
+                NotifySortHeaders();
+            }
+            BuildProcessGroups();
+        }
+
+        // ── Search filter ────────────────────────────────────────────────────────
         private void FilterProcesses()
         {
             FilteredProcesses.Clear();
@@ -308,22 +447,17 @@ namespace Winspeqt.ViewModels.Monitoring
                     (p.Description?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false) ||
                     (p.FriendlyExplanation?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ?? false));
 
-            foreach (var process in filtered)
-            {
-                FilteredProcesses.Add(process);
-            }
+            foreach (var p in filtered) FilteredProcesses.Add(p);
         }
 
+        // ── Auto-refresh ─────────────────────────────────────────────────────────
         private void StartAutoRefresh()
         {
             _refreshTimer = _dispatcherQueue.CreateTimer();
             _refreshTimer.Interval = TimeSpan.FromSeconds(5);
             _refreshTimer.Tick += async (s, e) =>
             {
-                try
-                {
-                    await RefreshDataAsync();
-                }
+                try { await RefreshDataAsync(); }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Auto-refresh error: {ex.Message}");
@@ -332,6 +466,13 @@ namespace Winspeqt.ViewModels.Monitoring
             _refreshTimer.Start();
         }
 
+        public void StopAutoRefresh()
+        {
+            _refreshTimer?.Stop();
+            _refreshTimer = null;
+        }
+
+        // ── End process ──────────────────────────────────────────────────────────
         public async Task<bool> EndProcessAsync(ProcessInfo process)
         {
             System.Diagnostics.Process? systemProcess = null;
@@ -348,31 +489,18 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     switch (process.Category)
                     {
-                        case ProcessCategory.Browser:
-                            BrowserProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.Gaming:
-                            GamingProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.CloudStorage:
-                            CloudStorageProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.Communication:
-                            CommunicationProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.SystemServices:
-                            SystemServicesProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.Development:
-                            DevelopmentProcesses.Remove(process);
-                            break;
-                        case ProcessCategory.Media:
-                            MediaProcesses.Remove(process);
-                            break;
-                        default:
-                            OtherProcesses.Remove(process);
-                            break;
+                        case ProcessCategory.Browser:       BrowserProcesses.Remove(process); break;
+                        case ProcessCategory.Gaming:        GamingProcesses.Remove(process); break;
+                        case ProcessCategory.CloudStorage:  CloudStorageProcesses.Remove(process); break;
+                        case ProcessCategory.Communication: CommunicationProcesses.Remove(process); break;
+                        case ProcessCategory.SystemServices:SystemServicesProcesses.Remove(process); break;
+                        case ProcessCategory.Development:   DevelopmentProcesses.Remove(process); break;
+                        case ProcessCategory.Media:         MediaProcesses.Remove(process); break;
+                        default:                            OtherProcesses.Remove(process); break;
                     }
+
+                    // Rebuild table groups to remove the process from tree view too
+                    BuildProcessGroups();
                 });
 
                 return true;
@@ -403,17 +531,9 @@ namespace Winspeqt.ViewModels.Monitoring
             }
         }
 
-        public void StopAutoRefresh()
-        {
-            _refreshTimer?.Stop();
-            _refreshTimer = null;
-        }
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged(string propertyName)
-        {
+        protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }
