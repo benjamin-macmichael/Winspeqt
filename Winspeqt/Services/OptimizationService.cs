@@ -17,16 +17,20 @@ namespace Winspeqt.Services
 
             var tasks = new List<(bool enabled, Func<Task<OptimizationTaskResult>> action)>
             {
-                (options.CleanRecycleBin,        () => CleanRecycleBinAsync(progress)),
-                (options.CleanTempFiles,          () => CleanTempFilesAsync(progress)),
-                (options.CleanThumbnailCache,     () => CleanThumbnailCacheAsync(progress)),
-                (options.FlushDnsCache,           () => FlushDnsCacheAsync(progress)),
-                (options.CleanPrefetch,           () => CleanPrefetchAsync(progress)),
-                (options.CleanWindowsErrorReports,() => CleanWindowsErrorReportsAsync(progress)),
-                (options.CleanCrashDumps,         () => CleanCrashDumpsAsync(progress)),
-                (options.CleanWindowsUpdateCache, () => CleanWindowsUpdateCacheAsync(progress)),
-                (options.CleanEventLogs,          () => CleanEventLogsAsync(progress)),
-                (options.CleanBrowserCache,       () => CleanEdgeCacheAsync(progress)),
+                (options.CleanRecycleBin,           () => CleanRecycleBinAsync(progress)),
+                (options.CleanTempFiles,             () => CleanTempFilesAsync(progress)),
+                (options.CleanThumbnailCache,        () => CleanThumbnailCacheAsync(progress)),
+                (options.FlushDnsCache,              () => FlushDnsCacheAsync(progress)),
+                (options.CleanPrefetch,              () => CleanPrefetchAsync(progress)),
+                (options.CleanWindowsErrorReports,   () => CleanWindowsErrorReportsAsync(progress)),
+                (options.CleanCrashDumps,            () => CleanCrashDumpsAsync(progress)),
+                (options.CleanWindowsUpdateCache,    () => CleanWindowsUpdateCacheAsync(progress)),
+                (options.CleanEventLogs,             () => CleanEventLogsAsync(progress)),
+                (options.CleanBrowserCache,          () => CleanEdgeCacheAsync(progress)),
+                (options.CleanChromeCache,           () => CleanChromeCacheAsync(progress)),
+                (options.CleanFirefoxCache,          () => CleanFirefoxCacheAsync(progress)),
+                (options.CleanDeliveryOptimization,  () => CleanDeliveryOptimizationAsync(progress)),
+                (options.CleanRecentFiles,           () => CleanRecentFilesAsync(progress)),
             };
 
             foreach (var (enabled, action) in tasks)
@@ -97,9 +101,54 @@ namespace Winspeqt.Services
                 results["EdgeCache"] = GetDirectorySize(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     @"Microsoft\Edge\User Data\Default\Cache\Cache_Data"));
+
+                // Chrome Cache
+                results["ChromeCache"] = GetDirectorySize(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Google\Chrome\User Data\Default\Cache\Cache_Data"));
+
+                // Firefox Cache — all profiles
+                results["FirefoxCache"] = GetFirefoxCacheSize();
+
+                // Delivery Optimization Cache
+                results["DeliveryOptimization"] = GetDirectorySize(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache"));
+
+                // Recent Files
+                results["RecentFiles"] = GetRecentFilesSize();
             });
 
             return results;
+        }
+
+        // ── Helpers for scan ──────────────────────────────────────────────────
+
+        private long GetFirefoxCacheSize()
+        {
+            long total = 0;
+            var profilesRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Mozilla\Firefox\Profiles");
+            if (!Directory.Exists(profilesRoot)) return 0;
+            foreach (var profile in Directory.GetDirectories(profilesRoot))
+            {
+                var cache2 = Path.Combine(profile, "cache2");
+                total += GetDirectorySize(cache2);
+            }
+            return total;
+        }
+
+        private long GetRecentFilesSize()
+        {
+            var recent = Environment.GetFolderPath(Environment.SpecialFolder.Recent);
+            var autoDest = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"Microsoft\Windows\Recent\AutomaticDestinations");
+            var customDest = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                @"Microsoft\Windows\Recent\CustomDestinations");
+            return GetDirectorySize(recent) + GetDirectorySize(autoDest) + GetDirectorySize(customDest);
         }
 
         // ── Always-on tasks ───────────────────────────────────────────────────
@@ -112,7 +161,6 @@ namespace Winspeqt.Services
                 long freed = 0;
                 try
                 {
-                    // Get size before emptying using Shell API
                     var info = new NativeMethods.SHQUERYRBINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(NativeMethods.SHQUERYRBINFO)) };
                     NativeMethods.SHQueryRecycleBin(null, ref info);
                     freed = info.i64Size;
@@ -125,7 +173,7 @@ namespace Winspeqt.Services
                     return new OptimizationTaskResult
                     {
                         TaskName = "Recycle Bin",
-                        Icon = "🗑️",
+                        Icon = "\uE74D",
                         Success = true,
                         BytesFreed = freed,
                         StatusMessage = "Emptied successfully"
@@ -423,6 +471,116 @@ namespace Winspeqt.Services
             });
         }
 
+        // ── New tasks ─────────────────────────────────────────────────────────
+
+        private Task<OptimizationTaskResult> CleanChromeCacheAsync(IProgress<string> progress)
+        {
+            return Task.Run(() =>
+            {
+                progress.Report("Clearing Google Chrome cache...");
+                var chromeCachePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Google\Chrome\User Data\Default\Cache\Cache_Data");
+
+                var (freed, _) = DeleteFilesInPaths(new[] { chromeCachePath });
+                return new OptimizationTaskResult
+                {
+                    TaskName = "Chrome Cache",
+                    Icon = "\uE909",
+                    Success = true,
+                    BytesFreed = freed,
+                    IsOptional = true,
+                    StatusMessage = freed > 0 ? "Cleared successfully" : "Nothing to clear (or Chrome not installed)",
+                    Color = "#7eb900"
+                };
+            });
+        }
+
+        private Task<OptimizationTaskResult> CleanFirefoxCacheAsync(IProgress<string> progress)
+        {
+            return Task.Run(() =>
+            {
+                progress.Report("Clearing Firefox cache...");
+                var profilesRoot = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Mozilla\Firefox\Profiles");
+
+                long freed = 0;
+                if (Directory.Exists(profilesRoot))
+                {
+                    foreach (var profile in Directory.GetDirectories(profilesRoot))
+                    {
+                        var cache2 = Path.Combine(profile, "cache2");
+                        var (f, _) = DeleteFilesInPaths(new[] { cache2 });
+                        freed += f;
+                    }
+                }
+
+                return new OptimizationTaskResult
+                {
+                    TaskName = "Firefox Cache",
+                    Icon = "\uE909",
+                    Success = true,
+                    BytesFreed = freed,
+                    IsOptional = true,
+                    StatusMessage = freed > 0 ? "Cleared successfully" : "Nothing to clear (or Firefox not installed)",
+                    Color = "#feb800"
+                };
+            });
+        }
+
+        private Task<OptimizationTaskResult> CleanDeliveryOptimizationAsync(IProgress<string> progress)
+        {
+            return Task.Run(() =>
+            {
+                progress.Report("Cleaning Delivery Optimization cache...");
+                var path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache");
+
+                var (freed, _) = DeleteFilesInPaths(new[] { path });
+                return new OptimizationTaskResult
+                {
+                    TaskName = "Delivery Optimization",
+                    Icon = "\uE896",
+                    Success = true,
+                    BytesFreed = freed,
+                    IsOptional = true,
+                    StatusMessage = freed > 0 ? "Cleaned successfully" : "Already empty",
+                    Color = "#00a3ee"
+                };
+            });
+        }
+
+        private Task<OptimizationTaskResult> CleanRecentFilesAsync(IProgress<string> progress)
+        {
+            return Task.Run(() =>
+            {
+                progress.Report("Clearing recent files list...");
+
+                var recent = Environment.GetFolderPath(Environment.SpecialFolder.Recent);
+                var autoDest = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    @"Microsoft\Windows\Recent\AutomaticDestinations");
+                var customDest = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    @"Microsoft\Windows\Recent\CustomDestinations");
+
+                var (freed, errors) = DeleteFilesInPaths(new[] { recent, autoDest, customDest });
+
+                return new OptimizationTaskResult
+                {
+                    TaskName = "Recent Files List",
+                    Icon = "\uE838",
+                    Success = true,
+                    BytesFreed = freed,
+                    IsOptional = true,
+                    StatusMessage = errors > 0 ? $"Cleared ({errors} skipped)" : "Cleared successfully",
+                    Color = "#7eb900"
+                };
+            });
+        }
+
         // ── Helpers ───────────────────────────────────────────────────────────
 
         private (long bytesFreed, int errors) DeleteFilesInPaths(string[] paths, string pattern = "*")
@@ -441,7 +599,7 @@ namespace Winspeqt.Services
                         {
                             var size = new FileInfo(file).Length;
                             File.Delete(file);
-                            freed += size; // only count if delete succeeded
+                            freed += size;
                         }
                         catch { errors++; }
                     }
@@ -462,7 +620,6 @@ namespace Winspeqt.Services
                 {
                     try
                     {
-                        // Only count files we can actually open and delete
                         using var fs = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
                         size += fs.Length;
                     }

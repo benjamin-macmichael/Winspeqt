@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-
 namespace Winspeqt.Models
 {
     public class OptimizationTaskResult
@@ -11,9 +10,7 @@ namespace Winspeqt.Models
         public long BytesFreed { get; set; }
         public string StatusMessage { get; set; } = "";
         public bool IsOptional { get; set; }
-
         public string Color { get; set; } = "#000000";
-
         public string FormattedBytesFreed
         {
             get
@@ -27,14 +24,12 @@ namespace Winspeqt.Models
             }
         }
     }
-
     public class OptimizationResult
     {
         public List<OptimizationTaskResult> TaskResults { get; set; } = new();
         public long TotalBytesFreed => TaskResults.Sum(t => t.BytesFreed);
         public int TasksCompleted => TaskResults.Count(t => t.Success);
         public int TasksFailed => TaskResults.Count(t => !t.Success);
-
         public string FormattedBytesFreed
         {
             get
@@ -47,7 +42,6 @@ namespace Winspeqt.Models
             }
         }
     }
-
     public class OptimizationOptions
     {
         // Always-on (defaults)
@@ -58,10 +52,14 @@ namespace Winspeqt.Models
         public bool CleanPrefetch { get; set; } = true;
         public bool CleanWindowsErrorReports { get; set; } = true;
         public bool CleanCrashDumps { get; set; } = true;
-
         // Optional toggles (on by default)
         public bool CleanWindowsUpdateCache { get; set; } = true;
         public bool CleanEventLogs { get; set; } = false;
-        public bool CleanBrowserCache { get; set; } = true;
+        public bool CleanBrowserCache { get; set; } = true;  // Edge
+        // New
+        public bool CleanChromeCache { get; set; } = true;
+        public bool CleanFirefoxCache { get; set; } = true;
+        public bool CleanDeliveryOptimization { get; set; } = true;
+        public bool CleanRecentFiles { get; set; } = true;
     }
 }

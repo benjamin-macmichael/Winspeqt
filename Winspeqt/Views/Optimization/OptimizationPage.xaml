@@ -499,6 +499,102 @@
                                     </Grid>
                                 </Grid>
                             </Border>
+
+                            <!-- Chrome Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE909;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Google Chrome Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears Chrome's temporary browsing cache. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanChromeCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeChromeCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Firefox Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE909;" FontSize="24" Foreground="#feb800" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Firefox Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears Firefox's temporary browsing cache across all profiles. Websites may load slightly slower on your first visit after cleaning." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanFirefoxCache, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeFirefoxCache}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Delivery Optimization Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE896;" FontSize="24" Foreground="#00a3ee" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Delivery Optimization Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes files Windows cached to share updates with nearby PCs. Often several gigabytes and safe to delete anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanDeliveryOptimization, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeDeliveryOptimization}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Recent Files -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE838;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Recent Files List" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears the list of recently opened files shown in File Explorer and app jump lists. Your actual files are not affected." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanRecentFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeRecentFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
