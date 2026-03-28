@@ -55,6 +55,19 @@ namespace Winspeqt.ViewModels.Optimization
         private string _sizeEdgeCache = "...";
         public string SizeEdgeCache { get => _sizeEdgeCache; set => SetProperty(ref _sizeEdgeCache, value); }
 
+        // New size properties
+        private string _sizeChromeCache = "...";
+        public string SizeChromeCache { get => _sizeChromeCache; set => SetProperty(ref _sizeChromeCache, value); }
+
+        private string _sizeFirefoxCache = "...";
+        public string SizeFirefoxCache { get => _sizeFirefoxCache; set => SetProperty(ref _sizeFirefoxCache, value); }
+
+        private string _sizeDeliveryOptimization = "...";
+        public string SizeDeliveryOptimization { get => _sizeDeliveryOptimization; set => SetProperty(ref _sizeDeliveryOptimization, value); }
+
+        private string _sizeRecentFiles = "...";
+        public string SizeRecentFiles { get => _sizeRecentFiles; set => SetProperty(ref _sizeRecentFiles, value); }
+
         // ── Run state ─────────────────────────────────────────────────────────
 
         private bool _isRunning;
@@ -159,6 +172,35 @@ namespace Winspeqt.ViewModels.Optimization
             set { SetProperty(ref _cleanBrowserCache, value); Options.CleanBrowserCache = value; RecalculateEstimate(); }
         }
 
+        // New option properties
+        private bool _cleanChromeCache = true;
+        public bool CleanChromeCache
+        {
+            get => _cleanChromeCache;
+            set { SetProperty(ref _cleanChromeCache, value); Options.CleanChromeCache = value; RecalculateEstimate(); }
+        }
+
+        private bool _cleanFirefoxCache = true;
+        public bool CleanFirefoxCache
+        {
+            get => _cleanFirefoxCache;
+            set { SetProperty(ref _cleanFirefoxCache, value); Options.CleanFirefoxCache = value; RecalculateEstimate(); }
+        }
+
+        private bool _cleanDeliveryOptimization = true;
+        public bool CleanDeliveryOptimization
+        {
+            get => _cleanDeliveryOptimization;
+            set { SetProperty(ref _cleanDeliveryOptimization, value); Options.CleanDeliveryOptimization = value; RecalculateEstimate(); }
+        }
+
+        private bool _cleanRecentFiles = true;
+        public bool CleanRecentFiles
+        {
+            get => _cleanRecentFiles;
+            set { SetProperty(ref _cleanRecentFiles, value); Options.CleanRecentFiles = value; RecalculateEstimate(); }
+        }
+
         // ── Command ───────────────────────────────────────────────────────────
 
         public ICommand RunOptimizationCommand { get; }
@@ -187,6 +229,10 @@ namespace Winspeqt.ViewModels.Optimization
                 SizeCrashDumps = "...";
                 SizeUpdateCache = "...";
                 SizeEdgeCache = "...";
+                SizeChromeCache = "...";
+                SizeFirefoxCache = "...";
+                SizeDeliveryOptimization = "...";
+                SizeRecentFiles = "...";
             });
 
             _scannedSizes = await _service.ScanSizesAsync();
@@ -201,6 +247,10 @@ namespace Winspeqt.ViewModels.Optimization
                 SizeCrashDumps = FormatBytes(_scannedSizes.GetValueOrDefault("CrashDumps"));
                 SizeUpdateCache = FormatBytes(_scannedSizes.GetValueOrDefault("UpdateCache"));
                 SizeEdgeCache = FormatBytes(_scannedSizes.GetValueOrDefault("EdgeCache"));
+                SizeChromeCache = FormatBytes(_scannedSizes.GetValueOrDefault("ChromeCache"));
+                SizeFirefoxCache = FormatBytes(_scannedSizes.GetValueOrDefault("FirefoxCache"));
+                SizeDeliveryOptimization = FormatBytes(_scannedSizes.GetValueOrDefault("DeliveryOptimization"));
+                SizeRecentFiles = FormatBytes(_scannedSizes.GetValueOrDefault("RecentFiles"));
                 IsScanning = false;
                 RecalculateEstimate();
             });
@@ -219,6 +269,10 @@ namespace Winspeqt.ViewModels.Optimization
             if (Options.CleanCrashDumps) total += _scannedSizes.GetValueOrDefault("CrashDumps");
             if (Options.CleanWindowsUpdateCache) total += _scannedSizes.GetValueOrDefault("UpdateCache");
             if (Options.CleanBrowserCache) total += _scannedSizes.GetValueOrDefault("EdgeCache");
+            if (Options.CleanChromeCache) total += _scannedSizes.GetValueOrDefault("ChromeCache");
+            if (Options.CleanFirefoxCache) total += _scannedSizes.GetValueOrDefault("FirefoxCache");
+            if (Options.CleanDeliveryOptimization) total += _scannedSizes.GetValueOrDefault("DeliveryOptimization");
+            if (Options.CleanRecentFiles) total += _scannedSizes.GetValueOrDefault("RecentFiles");
 
             EstimatedTotal = FormatBytes(total);
         }
@@ -252,9 +306,6 @@ namespace Winspeqt.ViewModels.Optimization
                         settings["Optimization_LastRunTime"] = DateTime.Now.Ticks;
                         settings["Optimization_LastBytesFreed"] = result.TotalBytesFreed;
 
-                        // Compute and save health score for notification manager
-                        // Score is based on how recently the user has run an optimization
-                        // and how much was freed (if a lot was freed, score was low before)
                         int healthScore = ComputeHealthScore(result);
                         settings["Optimization_HealthScore"] = healthScore;
                         System.Diagnostics.Debug.WriteLine($"[OptimizationViewModel] Saved health score={healthScore}");
@@ -265,7 +316,6 @@ namespace Winspeqt.ViewModels.Optimization
                     }
                 });
 
-                // Rescan after run so estimates are fresh
                 await ScanSizesAsync();
             }
             catch (Exception ex)
@@ -281,14 +331,12 @@ namespace Winspeqt.ViewModels.Optimization
 
         private static int ComputeHealthScore(OptimizationResult result)
         {
-            // Score starts at 100 and drops based on how much was freed
-            // The more junk found, the worse the score was before cleaning
             long freed = result.TotalBytesFreed;
-            if (freed >= 1_073_741_824) return 40;  // 1GB+ freed = was very dirty
-            if (freed >= 524_288_000) return 55;  // 500MB+
-            if (freed >= 104_857_600) return 70;  // 100MB+
-            if (freed >= 10_485_760) return 85;  // 10MB+
-            return 95;                               // barely anything = already clean
+            if (freed >= 1_073_741_824) return 40;
+            if (freed >= 524_288_000) return 55;
+            if (freed >= 104_857_600) return 70;
+            if (freed >= 10_485_760) return 85;
+            return 95;
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
