@@ -89,7 +89,7 @@
                             </NavigationViewItem>
                             <NavigationViewItem Content="One-Click Optimization" Tag="Optimization">
                                 <NavigationViewItem.Icon>
-                                    <FontIcon Glyph="&#xE73C;" />
+                                    <FontIcon Glyph="&#xEA99;" />
                                 </NavigationViewItem.Icon>
                             </NavigationViewItem>
                         </NavigationViewItem.MenuItems>

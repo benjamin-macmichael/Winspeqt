@@ -55,10 +55,10 @@ namespace Winspeqt.Models
         // Optional toggles (on by default)
         public bool CleanWindowsUpdateCache { get; set; } = true;
         public bool CleanEventLogs { get; set; } = false;
-        public bool CleanBrowserCache { get; set; } = true;  // Edge
+        public bool CleanBrowserCache { get; set; } = false;  // Edge
         // New
-        public bool CleanChromeCache { get; set; } = true;
-        public bool CleanFirefoxCache { get; set; } = true;
+        public bool CleanChromeCache { get; set; } = false;
+        public bool CleanFirefoxCache { get; set; } = false;
         public bool CleanDeliveryOptimization { get; set; } = true;
         public bool CleanRecentFiles { get; set; } = true;
     }
