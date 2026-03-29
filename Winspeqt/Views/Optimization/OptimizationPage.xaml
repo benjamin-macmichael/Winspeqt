@@ -219,13 +219,21 @@
                                     Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                             </StackPanel>
                             <TextBlock
+                                Text="This may take a moment depending on how much is on your PC."
+                                FontSize="13"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                HorizontalAlignment="Center"
+                                Margin="0,2,0,4"
+                                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <TextBlock
                                 Text="Winspeqt will safely clean up junk files from your PC."
-                                FontSize="15"
+                                FontSize="13"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 HorizontalAlignment="Center"
                                 TextAlignment="Center"
                                 TextWrapping="Wrap"
-                                MaxWidth="480"/>
+                                MaxWidth="480"
+                                Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                         </StackPanel>
 
                         <!-- Task List -->
@@ -476,6 +484,61 @@
                                 </Grid>
                             </Border>-->
 
+                            <!-- Delivery Optimization Cache -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE896;" FontSize="24" Foreground="#00a3ee" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Delivery Optimization Cache" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes files Windows cached to share updates with nearby PCs. Often several gigabytes and safe to delete anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanDeliveryOptimization, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeDeliveryOptimization}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Recent Files -->
+                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE838;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Recent Files List" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Clears the list of recently opened files shown in File Explorer and app jump lists. Your actual files are not affected." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44"/>
+                                            <ColumnDefinition Width="64"/>
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanRecentFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding SizeRecentFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Browser cache section label -->
+                            <TextBlock
+                                Text="Browser cache"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,16,0,4"/>
+
                             <!-- Edge Cache -->
                             <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
                                 <Grid>
@@ -548,53 +611,6 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Delivery Optimization Cache -->
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <FontIcon Grid.Column="0" Glyph="&#xE896;" FontSize="24" Foreground="#00a3ee" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Delivery Optimization Cache" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Removes files Windows cached to share updates with nearby PCs. Often several gigabytes and safe to delete anytime." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="44"/>
-                                            <ColumnDefinition Width="64"/>
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanDeliveryOptimization, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding SizeDeliveryOptimization}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Grid>
-                            </Border>
-
-                            <!-- Recent Files -->
-                            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <FontIcon Grid.Column="0" Glyph="&#xE838;" FontSize="24" Foreground="#7eb900" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Recent Files List" FontSize="15" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Clears the list of recently opened files shown in File Explorer and app jump lists. Your actual files are not affected." FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="44"/>
-                                            <ColumnDefinition Width="64"/>
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox Grid.Column="0" IsChecked="{Binding CleanRecentFiles, Mode=TwoWay}" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding SizeRecentFiles}" FontSize="13" FontWeight="SemiBold" Foreground="#4CAF50" Margin="4,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
-                                    </Grid>
-                                </Grid>
-                            </Border>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

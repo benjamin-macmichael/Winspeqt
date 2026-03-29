@@ -165,7 +165,7 @@ namespace Winspeqt.ViewModels.Optimization
             set { SetProperty(ref _cleanEventLogs, value); Options.CleanEventLogs = value; RecalculateEstimate(); }
         }
 
-        private bool _cleanBrowserCache = true;
+        private bool _cleanBrowserCache = false;
         public bool CleanBrowserCache
         {
             get => _cleanBrowserCache;
@@ -173,14 +173,14 @@ namespace Winspeqt.ViewModels.Optimization
         }
 
         // New option properties
-        private bool _cleanChromeCache = true;
+        private bool _cleanChromeCache = false;
         public bool CleanChromeCache
         {
             get => _cleanChromeCache;
             set { SetProperty(ref _cleanChromeCache, value); Options.CleanChromeCache = value; RecalculateEstimate(); }
         }
 
-        private bool _cleanFirefoxCache = true;
+        private bool _cleanFirefoxCache = false;
         public bool CleanFirefoxCache
         {
             get => _cleanFirefoxCache;
