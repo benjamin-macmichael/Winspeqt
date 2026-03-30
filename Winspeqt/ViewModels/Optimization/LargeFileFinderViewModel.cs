@@ -403,16 +403,14 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 // The upside to this is that it is much faster. The downside is that it assumes that you have loaded all of the 
                 // child elements already.
-                long size = 0;
                 if (item.Children.Count == 0)
                 {
-                    var nothing = await Task.Run(() => GetDirectorySize(item));
+                    await Task.Run(() => GetDirectorySize(item));
                 }
                 else
                 {
-                    var nothing = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
+                    await Task.Run(() => item.Children.Sum(child => child.ByteSize));
                 }
-                //_dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)
             {
@@ -425,55 +423,59 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="folder">Root folder path to measure.</param>
         /// <returns>Total file size in bytes.</returns>
-        private static long GetDirectorySize(FileSearchItem folder)
+        private long GetDirectorySize(FileSearchItem folder)
         {
-            folder.UpdateSize(1000000);
-            long size = 0;
-            var directories = new Stack<FileSearchItem>();
-            directories.Push(folder);
-
-            while (directories.Count > 0)
+            if (folder.Name == ".dotnet")
             {
-                var current = directories.Pop();
-
-                try
+                System.Diagnostics.Debug.Print($"We are in .dotnet");
+            }
+            long size = 0;
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                 {
-                    foreach (var file in Directory.EnumerateFiles(current.FilePath))
+                    try
                     {
-                        try
-                        {
-                            var fileInfo = new FileInfo(file);
-                            size += fileInfo.Length;
-                            var temp = new FileSearchItem(fileInfo.Name, fileInfo.FullName, "file", fileInfo.Length, current, true);
-                            current.Children.Add(temp);
-                        }
-                        catch
-                        {
-                            System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
-                        }
+                        var fileInfo = new FileInfo(file);
+                        var temp = new FileSearchItem(fileInfo.Name, fileInfo.FullName, "file", fileInfo.Length, folder, true);
+                        folder.Children.Add(temp);
+                        size += fileInfo.Length;
                     }
-                }
-                catch
-                {
-                    // Access denied or transient IO error; skip files in this directory.
+                    catch
+                    {
+                        System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
+                    }
                 }
 
                 try
                 {
-                    foreach (var dir in Directory.EnumerateDirectories(current.FilePath))
-                    {
-                        var child = new FileSearchItem(System.IO.Path.GetFileName(dir), dir, "folder", 0, current, false);
-                        current.Children.Add(child);
-                        directories.Push(child);
-                    }
+                    _dispatcher.TryEnqueue(() => folder.UpdateSize(size));
                 }
-                catch
+                catch (ArgumentException e)
                 {
-                    // Access denied or transient IO error; skip subdirectories.
+                    System.Diagnostics.Debug.Print($"Couldn't update size for {folder.Name}; error: {e.Message}");
                 }
             }
+            catch
+            {
+                System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip files in this directory: {folder.Name}");
+            }
 
-            return size;
+            try
+            {
+                foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
+                {
+                    var child = new FileSearchItem(System.IO.Path.GetFileName(dir), dir, "folder", 0, folder, false);
+                    long childSize = GetDirectorySize(child);
+                    folder.Children.Add(child);
+                }
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip subdirectories for this directory: {folder.Name}");
+            }
+
+            return folder.ByteSize;
         }
 
         /// <summary>
