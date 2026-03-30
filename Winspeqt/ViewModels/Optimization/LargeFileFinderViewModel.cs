@@ -353,12 +353,13 @@ namespace Winspeqt.ViewModels.Optimization
                     foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         FileSearchItem item;
-                        System.Diagnostics.Debug.Print(dir);
-                        System.Diagnostics.Debug.Print(ActiveNode.FilePath);
                         if (ActiveNode.FilePath != dir)
                         {
-                            var name = System.IO.Path.GetFileName(dir);
-                            item = new FileSearchItem(name, dir, "folder", 0, folder, false);
+                            var fileItem = new System.IO.DirectoryInfo(dir);
+                            if (fileItem.LinkTarget != null) {
+                                continue;
+                            }
+                            item = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
                         }
                         else
                         {
@@ -423,12 +424,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="folder">Root folder path to measure.</param>
         /// <returns>Total file size in bytes.</returns>
-        private long GetDirectorySize(FileSearchItem folder)
+        private void GetDirectorySize(FileSearchItem folder)
         {
-            if (folder.Name == ".dotnet")
-            {
-                System.Diagnostics.Debug.Print($"We are in .dotnet");
-            }
             long size = 0;
             try
             {
@@ -465,8 +462,13 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                 {
-                    var child = new FileSearchItem(System.IO.Path.GetFileName(dir), dir, "folder", 0, folder, false);
-                    long childSize = GetDirectorySize(child);
+                    var fileItem = new System.IO.DirectoryInfo(dir);
+                    if (fileItem.LinkTarget != null)
+                    {
+                        continue;
+                    }
+                    var child = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
+                    GetDirectorySize(child);
                     folder.Children.Add(child);
                 }
             }
@@ -474,8 +476,6 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip subdirectories for this directory: {folder.Name}");
             }
-
-            return folder.ByteSize;
         }
 
         /// <summary>
