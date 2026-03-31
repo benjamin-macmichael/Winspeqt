@@ -303,21 +303,21 @@ namespace Winspeqt.ViewModels.Monitoring
                 tips.Add(new PcTip(
                     PcTipSeverity.Warning,
                     "Your PC hasn't been restarted in over a week",
-                    $"{uptimeFormatted} A restart is one of the quickest fixes you can try.",
+                    $"{uptimeFormatted} A restart is one of the quickest fixes you can try. If this seems longer than expected, Fast Startup may be keeping your previous session alive even after a shutdown — use Restart instead of Shut Down for a full reboot.",
                     "Restart Now",
                     "restart"));
             else if (uptimeDays >= 3)
                 tips.Add(new PcTip(
                     PcTipSeverity.Info,
                     "Consider restarting your PC",
-                    $"{uptimeFormatted} If something is behaving strangely or feeling sluggish, this is always the first thing worth trying.",
+                    $"{uptimeFormatted} If something is behaving strangely or feeling sluggish, this is always the first thing worth trying. If this seems longer than expected, Fast Startup may be keeping your previous session alive even after a shutdown — use Restart instead of Shut Down for a full reboot.",
                     "Restart Now",
                     "restart"));
             else
                 tips.Add(new PcTip(
                     PcTipSeverity.Info,
                     "Restarting is always a good first troubleshooting step",
-                    $"{uptimeFormatted} Some hard-to-find background processes can only be cleared with a reboot. If your PC feels off, a restart is the quickest thing to try.",
+                    $"{uptimeFormatted} Some hard-to-find background processes can only be cleared with a reboot. If your PC feels off, a restart is the quickest thing to try. If this seems longer than expected, Fast Startup may be keeping your previous session alive even after a shutdown — use Restart instead of Shut Down for a full reboot.",
                     "Restart Now",
                     "restart"));
 
