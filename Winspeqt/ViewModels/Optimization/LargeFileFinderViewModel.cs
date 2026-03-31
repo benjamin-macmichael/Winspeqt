@@ -271,20 +271,20 @@ namespace Winspeqt.ViewModels.Optimization
                 FileSearchItem? parent;
                 if (ancestrialFolders.Count > 0)
                 {
-                    parent = ancestrialFolders[ancestrialFolders.Count - 1];
+                    parent = ancestrialFolders[^1];
                 }
                 else
                 {
                     parent = null;
                 }
 
-                var name = System.IO.Path.GetFileName(path);
+                var name = Path.GetFileName(path);
                 var item = new FileSearchItem(name, path, "folder", 0, parent, false);
                 ancestrialFolders.Add(item);
                 PathItems.Add(new PathItem(path, PathItems.Count));
             }
 
-            ActiveNode.Parent = ancestrialFolders[ancestrialFolders.Count - 1];
+            ActiveNode.Parent = ancestrialFolders[^1];
             await RetrieveFolderItems(ActiveNode);
         }
 
@@ -370,7 +370,7 @@ namespace Winspeqt.ViewModels.Optimization
                         FileSearchItem item;
                         if (!ancestors.TryGetValue(dir, out FileSearchItem? value))
                         {
-                            var fileItem = new System.IO.DirectoryInfo(dir);
+                            var fileItem = new DirectoryInfo(dir);
                             if (fileItem.LinkTarget != null) {
                                 continue;
                             }
@@ -387,8 +387,8 @@ namespace Winspeqt.ViewModels.Optimization
 
                     foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                     {
-                        var name = System.IO.Path.GetFileName(file);
-                        var size = new System.IO.FileInfo(file).Length;
+                        var name = Path.GetFileName(file);
+                        var size = new FileInfo(file).Length;
                         channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, folder, true));
                     }
                 }
@@ -441,7 +441,6 @@ namespace Winspeqt.ViewModels.Optimization
         /// <returns>Total file size in bytes.</returns>
         private void PopulateChildren(FileSearchItem folder)
         {
-            long size = 0;
             try
             {
                 foreach (var file in Directory.EnumerateFiles(folder.FilePath))
@@ -449,9 +448,8 @@ namespace Winspeqt.ViewModels.Optimization
                     try
                     {
                         var fileInfo = new FileInfo(file);
-                        var temp = new FileSearchItem(fileInfo.Name, "", "file", fileInfo.Length, folder, true);
-                        folder.Children.Add(temp);
-                        size += fileInfo.Length;
+                        var child = new FileSearchItem(fileInfo.Name, "", "file", fileInfo.Length, folder, true);
+                        folder.Children.Add(child);
                     }
                     catch
                     {
@@ -468,7 +466,7 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                 {
-                    var fileItem = new System.IO.DirectoryInfo(dir);
+                    var fileItem = new DirectoryInfo(dir);
                     if (fileItem.LinkTarget != null)
                     {
                         continue;
@@ -493,8 +491,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <param name="index">Zero-based breadcrumb index to keep as the last entry.</param>
         public void ResetBreadCrumb(int index)
         {
-            IEnumerable<PathItem> test = PathItems.Take(index + 1);
-            PathItems = new ObservableCollection<PathItem>(test);
+            IEnumerable<PathItem> newPath = PathItems.Take(index + 1);
+            PathItems = new ObservableCollection<PathItem>(newPath);
         }
 
         /// <summary>
@@ -504,11 +502,11 @@ namespace Winspeqt.ViewModels.Optimization
         {
             IEnumerable<FileSearchItem> listItems = ActiveNode.Children.Cast<FileSearchItem>();
 
-            if (this.SelectedSortOption == "Name")
+            if (SelectedSortOption == "Name")
             {
                 listItems = listItems.OrderBy(item => item.Name);
             }
-            else if (this.SelectedSortOption == "Size")
+            else if (SelectedSortOption == "Size")
             {
                 listItems = listItems.OrderByDescending(item => item.ByteSize);
             }
