@@ -252,7 +252,7 @@ namespace Winspeqt.ViewModels.Optimization
                 return;
             }
 
-            ActiveNode = new(System.IO.Path.GetFileName(initialFolder), initialFolder, "folder", 0, null, false);
+            ActiveNode = new(System.IO.Path.GetFileName(initialFolder), initialFolder, "folder", 0, null, true);
 
             DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
             List<DirectoryInfo> systemDirectories = [];
@@ -279,7 +279,7 @@ namespace Winspeqt.ViewModels.Optimization
                 }
 
                 var name = System.IO.Path.GetFileName(path);
-                var item = new FileSearchItem(name, path, "folder", 0, parent, false);
+                var item = new FileSearchItem(name, path, "folder", 0, parent, true);
                 ancestrialFolders.Add(item);
                 PathItems.Add(new PathItem(path, PathItems.Count));
             }
@@ -297,6 +297,7 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = true;
             await RetrieveFolderItems(newNode);
             ActiveNode = newNode;
+            SortFiles();
             IsLoading = false;
         }
 
@@ -350,10 +351,19 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 try
                 {
+                    Dictionary<string, FileSearchItem> ancestors = [];
+
+                    FileSearchItem? ancestorNode = ActiveNode;
+
+                    while (ancestorNode != null) {
+                        ancestors[ancestorNode.FilePath] = ancestorNode;
+                        ancestorNode = ancestorNode.Parent;
+                    }
+
                     foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         FileSearchItem item;
-                        if (ActiveNode.FilePath != dir)
+                        if (!ancestors.TryGetValue(dir, out FileSearchItem? value))
                         {
                             var fileItem = new System.IO.DirectoryInfo(dir);
                             if (fileItem.LinkTarget != null) {
@@ -363,7 +373,7 @@ namespace Winspeqt.ViewModels.Optimization
                         }
                         else
                         {
-                            item = ActiveNode;
+                            item = value;
                         }
 
                         channel.Writer.TryWrite(item);
@@ -434,7 +444,7 @@ namespace Winspeqt.ViewModels.Optimization
                     try
                     {
                         var fileInfo = new FileInfo(file);
-                        var temp = new FileSearchItem(fileInfo.Name, fileInfo.FullName, "file", fileInfo.Length, folder, true);
+                        var temp = new FileSearchItem(fileInfo.Name, "", "file", fileInfo.Length, folder, true);
                         folder.Children.Add(temp);
                         size += fileInfo.Length;
                     }
@@ -475,6 +485,9 @@ namespace Winspeqt.ViewModels.Optimization
             catch
             {
                 System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip subdirectories for this directory: {folder.Name}");
+            } finally
+            {
+                _dispatcher.TryEnqueue(() => folder.Finished = true);
             }
         }
 

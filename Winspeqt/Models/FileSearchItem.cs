@@ -63,7 +63,7 @@ namespace Winspeqt.Models
         public bool Finished
         {
             get => _finished;
-            private set
+            set
             {
                 SetProperty(ref _finished, value);
                 OnPropertyChanged(nameof(AnnouncementTextColor));
@@ -141,10 +141,8 @@ namespace Winspeqt.Models
         /// <param name="size">Raw size in bytes.</param>
         public void UpdateSize(long size)
         {
-            Finished = false;
             ByteSize += size;
             Parent?.UpdateSize(size);
-            Finished = true;
         }
     }
 }
