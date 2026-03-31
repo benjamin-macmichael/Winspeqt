@@ -252,7 +252,7 @@ namespace Winspeqt.ViewModels.Optimization
                 return;
             }
 
-            ActiveNode = new(System.IO.Path.GetFileName(initialFolder), initialFolder, "folder", 0, null, true);
+            ActiveNode = new(System.IO.Path.GetFileName(initialFolder), initialFolder, "folder", 0, null, false);
 
             DirectoryInfo? parentDirectory = Directory.GetParent(initialFolder);
             List<DirectoryInfo> systemDirectories = [];
@@ -279,7 +279,7 @@ namespace Winspeqt.ViewModels.Optimization
                 }
 
                 var name = System.IO.Path.GetFileName(path);
-                var item = new FileSearchItem(name, path, "folder", 0, parent, true);
+                var item = new FileSearchItem(name, path, "folder", 0, parent, false);
                 ancestrialFolders.Add(item);
                 PathItems.Add(new PathItem(path, PathItems.Count));
             }
@@ -327,12 +327,17 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = false;
 
             var sizeTaskArray = sizeTasks.ToArray();
-            if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
+            if (sizeTaskArray.Length > 0)
             {
                 // Re-sort once background folder size calculations complete.
                 _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
                 {
-                    _dispatcher.TryEnqueue(SortFiles);
+                    if (SelectedSortOption == "Size")
+                    {
+                        _dispatcher.TryEnqueue(SortFiles);
+                    }
+
+                    _dispatcher.TryEnqueue(() => folder.Finished = true);
                 }, TaskScheduler.Default);
             }
         }
@@ -416,7 +421,7 @@ namespace Winspeqt.ViewModels.Optimization
                 // child elements already.
                 if (item.Children.Count == 0)
                 {
-                    await Task.Run(() => GetDirectorySize(item));
+                    await Task.Run(() => PopulateChildren(item));
                 }
                 else
                 {
@@ -434,7 +439,7 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="folder">Root folder path to measure.</param>
         /// <returns>Total file size in bytes.</returns>
-        private void GetDirectorySize(FileSearchItem folder)
+        private void PopulateChildren(FileSearchItem folder)
         {
             long size = 0;
             try
@@ -453,15 +458,6 @@ namespace Winspeqt.ViewModels.Optimization
                         System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
                     }
                 }
-
-                try
-                {
-                    _dispatcher.TryEnqueue(() => folder.UpdateSize(size));
-                }
-                catch (ArgumentException e)
-                {
-                    System.Diagnostics.Debug.Print($"Couldn't update size for {folder.Name}; error: {e.Message}");
-                }
             }
             catch
             {
@@ -478,7 +474,7 @@ namespace Winspeqt.ViewModels.Optimization
                         continue;
                     }
                     var child = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
-                    GetDirectorySize(child);
+                    PopulateChildren(child);
                     folder.Children.Add(child);
                 }
             }
@@ -535,6 +531,7 @@ namespace Winspeqt.ViewModels.Optimization
             while (clearItem != null)
             {
                 clearItem.Children = [];
+                clearItem.Finished = false;
                 clearItem = clearItem.Parent;
             }
 
