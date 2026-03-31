@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.UI;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
@@ -28,9 +29,13 @@ namespace Winspeqt.Models
         /// <summary>
         /// Reduced numeric size for display, normalized to <see cref="DataLabel"/>.
         /// </summary>
-        public int Size
+        public string Size
         {
-            get => DataSizeConverter.ReduceSize(_size).size;
+            get {
+                var labelData = DataSizeConverter.ReduceSize(ByteSize);
+                DataLabel = labelData.label;
+                return $"{labelData.size} {labelData.label}";
+            }
         }
 
         /// <summary>
@@ -38,22 +43,39 @@ namespace Winspeqt.Models
         /// </summary>
         public long ByteSize
         {
-            get => _size;
+            get {
+                if (Type == "file")
+                {
+                    return _size;
+                } else if (Children != null && Children.Count > 0) 
+                {
+                    long test = Children.Sum(child => child.ByteSize);
+                    return test;
+                } else
+                {
+                    return 0;
+                }
+            }
             set
             {
                 SetProperty(ref _size, value);
                 OnPropertyChanged(nameof(Size));
                 OnPropertyChanged(nameof(AnnouncementTextColor));
-                OnPropertyChanged(nameof(DataLabel));
             }
         }
+
+        private DataSize _dataLabel = Models.Enums.DataSize.B;
 
         /// <summary>
         /// Display unit that matches <see cref="Size"/> (B, KB, MB, GB, TB).
         /// </summary>
         public DataSize DataLabel
         {
-            get => DataSizeConverter.ReduceSize(_size).label;
+            get => _dataLabel;
+            private set { 
+                SetProperty(ref _dataLabel, value);
+                OnPropertyChanged(nameof(AnnouncementTextColor));
+            }
         }
 
         private bool _finished;
@@ -67,6 +89,7 @@ namespace Winspeqt.Models
             {
                 SetProperty(ref _finished, value);
                 OnPropertyChanged(nameof(AnnouncementTextColor));
+                OnPropertyChanged(nameof(Size));
             }
         }
 
@@ -79,7 +102,7 @@ namespace Winspeqt.Models
             {
                 if (_finished)
                 {
-                    // Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
+                    //Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
                     return DataLabel switch
                     {
                         Enums.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
@@ -141,8 +164,8 @@ namespace Winspeqt.Models
         /// <param name="size">Raw size in bytes.</param>
         public void UpdateSize(long size)
         {
-            ByteSize += size;
-            Parent?.UpdateSize(size);
+            //ByteSize += size;
+            //Parent?.UpdateSize(size);
         }
     }
 }

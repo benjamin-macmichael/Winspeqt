@@ -328,9 +328,6 @@
                                             <TextBlock 
                                                 Text="{Binding Size}"
                                                 Foreground="{Binding AnnouncementTextColor}"/>
-                                            <TextBlock 
-                                                Text="{Binding DataLabel}"
-                                                Foreground="{Binding AnnouncementTextColor}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
