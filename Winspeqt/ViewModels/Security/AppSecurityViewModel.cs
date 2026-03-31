@@ -659,7 +659,7 @@ namespace Winspeqt.ViewModels.Security
                         Severity = Microsoft.UI.Xaml.Controls.InfoBarSeverity.Informational,
                         IsOpen = true,
                         Title = "How this works",
-                        Message = "This will download and run the latest installer. Apps originally installed with WinGet will upgrade smoothly. For other apps, the installer usually replaces the old version automatically, but occasionally you may need to uninstall the old version manually (in Windows settings, go to Apps > Installed apps). Your settings and data will be preserved.",
+                        Message = "This will download and run the latest installer. The installer usually replaces the old version automatically, but occasionally you may need to uninstall the old version manually (in Windows settings, go to Apps > Installed apps). Your settings and data are usually preserved, but this depends on the app - consider backing up important data before updating.",
                         IsClosable = false
                     });
 

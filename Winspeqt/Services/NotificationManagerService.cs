@@ -31,7 +31,7 @@ namespace Winspeqt.Services
         //private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(10);   // How often we check if it's time
         //private static readonly TimeSpan NotifyInterval = TimeSpan.FromSeconds(5);    // Min gap between ANY notification
         private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);   // How often we check if it's time
-        private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(3);    // Min gap between ANY notification
+        private static readonly TimeSpan NotifyInterval = TimeSpan.FromDays(6);    // Min gap between ANY notification
 
         private readonly string _stateFilePath;
         private readonly Dictionary<string, Func<Task<(int score, string message)>>> _features = new();
@@ -208,7 +208,7 @@ namespace Winspeqt.Services
                 return (-1, "Open Winspeqt's Large File Finder to check how much space you have left on your drive.");
             });
 
-            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(45), CheckInterval);
+            _timer = new Timer(OnTimerTick, null, TimeSpan.FromSeconds(30), CheckInterval);
             System.Diagnostics.Debug.WriteLine("[NotificationManager] Timer started");
         }
 
