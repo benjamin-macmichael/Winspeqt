@@ -271,20 +271,20 @@ namespace Winspeqt.ViewModels.Optimization
                 FileSearchItem? parent;
                 if (ancestrialFolders.Count > 0)
                 {
-                    parent = ancestrialFolders[ancestrialFolders.Count - 1];
+                    parent = ancestrialFolders[^1];
                 }
                 else
                 {
                     parent = null;
                 }
 
-                var name = System.IO.Path.GetFileName(path);
+                var name = Path.GetFileName(path);
                 var item = new FileSearchItem(name, path, "folder", 0, parent, false);
                 ancestrialFolders.Add(item);
                 PathItems.Add(new PathItem(path, PathItems.Count));
             }
 
-            ActiveNode.Parent = ancestrialFolders[ancestrialFolders.Count - 1];
+            ActiveNode.Parent = ancestrialFolders[^1];
             await RetrieveFolderItems(ActiveNode);
         }
 
@@ -297,6 +297,7 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = true;
             await RetrieveFolderItems(newNode);
             ActiveNode = newNode;
+            SortFiles();
             IsLoading = false;
         }
 
@@ -326,12 +327,17 @@ namespace Winspeqt.ViewModels.Optimization
             IsLoading = false;
 
             var sizeTaskArray = sizeTasks.ToArray();
-            if (SelectedSortOption == "Size" && sizeTaskArray.Length > 0)
+            if (sizeTaskArray.Length > 0)
             {
                 // Re-sort once background folder size calculations complete.
                 _ = Task.WhenAll(sizeTaskArray).ContinueWith(_ =>
                 {
-                    _dispatcher.TryEnqueue(SortFiles);
+                    if (SelectedSortOption == "Size")
+                    {
+                        _dispatcher.TryEnqueue(SortFiles);
+                    }
+
+                    _dispatcher.TryEnqueue(() => folder.Finished = true);
                 }, TaskScheduler.Default);
             }
         }
@@ -350,29 +356,41 @@ namespace Winspeqt.ViewModels.Optimization
             {
                 try
                 {
+                    Dictionary<string, FileSearchItem> ancestors = [];
+
+                    FileSearchItem? ancestorNode = ActiveNode;
+
+                    while (ancestorNode != null)
+                    {
+                        ancestors[ancestorNode.FilePath] = ancestorNode;
+                        ancestorNode = ancestorNode.Parent;
+                    }
+
                     foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
                     {
                         FileSearchItem item;
-                        System.Diagnostics.Debug.Print(dir);
-                        System.Diagnostics.Debug.Print(ActiveNode.FilePath);
-                        if (ActiveNode.FilePath != dir)
+                        if (!ancestors.TryGetValue(dir, out FileSearchItem? value))
                         {
-                            var name = System.IO.Path.GetFileName(dir);
-                            item = new FileSearchItem(name, dir, "folder", 0, folder, false);
+                            var fileItem = new DirectoryInfo(dir);
+                            if (fileItem.LinkTarget != null)
+                            {
+                                continue;
+                            }
+                            item = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
                         }
                         else
                         {
-                            item = ActiveNode;
+                            item = value;
                         }
 
                         channel.Writer.TryWrite(item);
-                        sizeTasks.Add(UpdateFolderSizeAsync(item, dir));
+                        sizeTasks.Add(UpdateFolderSizeAsync(item));
                     }
 
                     foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                     {
-                        var name = System.IO.Path.GetFileName(file);
-                        var size = new System.IO.FileInfo(file).Length;
+                        var name = Path.GetFileName(file);
+                        var size = new FileInfo(file).Length;
                         channel.Writer.TryWrite(new FileSearchItem(name, "", "file", size, folder, true));
                     }
                 }
@@ -397,26 +415,24 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="item">Folder item to update.</param>
         /// <param name="path">Physical directory path for size calculation.</param>
-        private async Task UpdateFolderSizeAsync(FileSearchItem item, string path)
+        private async Task UpdateFolderSizeAsync(FileSearchItem item)
         {
             try
             {
                 // The upside to this is that it is much faster. The downside is that it assumes that you have loaded all of the 
                 // child elements already.
-                long size = 0;
                 if (item.Children.Count == 0)
                 {
-                    size = await Task.Run(() => GetDirectorySize(path));
+                    await Task.Run(() => PopulateChildren(item));
                 }
                 else
                 {
-                    size = await Task.Run(() => item.Children.Sum(child => child.ByteSize));
+                    await Task.Run(() => item.Children.Sum(child => child.ByteSize));
                 }
-                _dispatcher.TryEnqueue(() => item.UpdateSize(size));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", path, ex.ToString());
+                System.Diagnostics.Debug.Print("Error calculating directory size for path {0}: {1}", item.FilePath, ex.ToString());
             }
         }
 
@@ -425,49 +441,51 @@ namespace Winspeqt.ViewModels.Optimization
         /// </summary>
         /// <param name="folder">Root folder path to measure.</param>
         /// <returns>Total file size in bytes.</returns>
-        private static long GetDirectorySize(string folder)
+        private void PopulateChildren(FileSearchItem folder)
         {
-            long size = 0;
-            var directories = new Stack<string>();
-            directories.Push(folder);
-
-            while (directories.Count > 0)
+            try
             {
-                var current = directories.Pop();
-
-                try
+                foreach (var file in Directory.EnumerateFiles(folder.FilePath))
                 {
-                    foreach (var file in Directory.EnumerateFiles(current))
+                    try
                     {
-                        try
-                        {
-                            size += new FileInfo(file).Length;
-                        }
-                        catch
-                        {
-                            System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
-                        }
+                        var fileInfo = new FileInfo(file);
+                        var child = new FileSearchItem(fileInfo.Name, "", "file", fileInfo.Length, folder, true);
+                        folder.Children.Add(child);
                     }
-                }
-                catch
-                {
-                    // Access denied or transient IO error; skip files in this directory.
-                }
-
-                try
-                {
-                    foreach (var dir in Directory.EnumerateDirectories(current))
+                    catch
                     {
-                        directories.Push(dir);
+                        System.Diagnostics.Debug.Print("Failed to get size info for: " + file);
                     }
-                }
-                catch
-                {
-                    // Access denied or transient IO error; skip subdirectories.
                 }
             }
+            catch
+            {
+                System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip files in this directory: {folder.Name}");
+            }
 
-            return size;
+            try
+            {
+                foreach (var dir in Directory.EnumerateDirectories(folder.FilePath))
+                {
+                    var fileItem = new DirectoryInfo(dir);
+                    if (fileItem.LinkTarget != null)
+                    {
+                        continue;
+                    }
+                    var child = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
+                    PopulateChildren(child);
+                    folder.Children.Add(child);
+                }
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip subdirectories for this directory: {folder.Name}");
+            }
+            finally
+            {
+                _dispatcher.TryEnqueue(() => folder.Finished = true);
+            }
         }
 
         /// <summary>
@@ -476,8 +494,8 @@ namespace Winspeqt.ViewModels.Optimization
         /// <param name="index">Zero-based breadcrumb index to keep as the last entry.</param>
         public void ResetBreadCrumb(int index)
         {
-            IEnumerable<PathItem> test = PathItems.Take(index + 1);
-            PathItems = new ObservableCollection<PathItem>(test);
+            IEnumerable<PathItem> newPath = PathItems.Take(index + 1);
+            PathItems = new ObservableCollection<PathItem>(newPath);
         }
 
         /// <summary>
@@ -487,11 +505,11 @@ namespace Winspeqt.ViewModels.Optimization
         {
             IEnumerable<FileSearchItem> listItems = ActiveNode.Children.Cast<FileSearchItem>();
 
-            if (this.SelectedSortOption == "Name")
+            if (SelectedSortOption == "Name")
             {
                 listItems = listItems.OrderBy(item => item.Name);
             }
-            else if (this.SelectedSortOption == "Size")
+            else if (SelectedSortOption == "Size")
             {
                 listItems = listItems.OrderByDescending(item => item.ByteSize);
             }
@@ -514,6 +532,7 @@ namespace Winspeqt.ViewModels.Optimization
             while (clearItem != null)
             {
                 clearItem.Children = [];
+                clearItem.Finished = false;
                 clearItem = clearItem.Parent;
             }
 

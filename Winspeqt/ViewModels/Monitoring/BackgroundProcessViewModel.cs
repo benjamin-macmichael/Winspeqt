@@ -489,14 +489,14 @@ namespace Winspeqt.ViewModels.Monitoring
 
                     switch (process.Category)
                     {
-                        case ProcessCategory.Browser:       BrowserProcesses.Remove(process); break;
-                        case ProcessCategory.Gaming:        GamingProcesses.Remove(process); break;
-                        case ProcessCategory.CloudStorage:  CloudStorageProcesses.Remove(process); break;
+                        case ProcessCategory.Browser: BrowserProcesses.Remove(process); break;
+                        case ProcessCategory.Gaming: GamingProcesses.Remove(process); break;
+                        case ProcessCategory.CloudStorage: CloudStorageProcesses.Remove(process); break;
                         case ProcessCategory.Communication: CommunicationProcesses.Remove(process); break;
-                        case ProcessCategory.SystemServices:SystemServicesProcesses.Remove(process); break;
-                        case ProcessCategory.Development:   DevelopmentProcesses.Remove(process); break;
-                        case ProcessCategory.Media:         MediaProcesses.Remove(process); break;
-                        default:                            OtherProcesses.Remove(process); break;
+                        case ProcessCategory.SystemServices: SystemServicesProcesses.Remove(process); break;
+                        case ProcessCategory.Development: DevelopmentProcesses.Remove(process); break;
+                        case ProcessCategory.Media: MediaProcesses.Remove(process); break;
+                        default: OtherProcesses.Remove(process); break;
                     }
 
                     // Rebuild table groups to remove the process from tree view too

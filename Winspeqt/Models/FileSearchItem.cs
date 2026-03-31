@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.UI;
 using Winspeqt.Helpers;
 using static Winspeqt.Models.Enums;
@@ -9,7 +10,7 @@ namespace Winspeqt.Models
     /// <summary>
     /// Represents a file or folder entry displayed in the Large File Finder list.
     /// </summary>
-    public class FileSearchItem : ObservableObject
+    public partial class FileSearchItem : ObservableObject
     {
         /// <summary>
         /// Display name of the file or folder.
@@ -28,9 +29,14 @@ namespace Winspeqt.Models
         /// <summary>
         /// Reduced numeric size for display, normalized to <see cref="DataLabel"/>.
         /// </summary>
-        public int Size
+        public string Size
         {
-            get => DataSizeConverter.ReduceSize(_size).size;
+            get
+            {
+                var (size, label) = DataSizeConverter.ReduceSize(ByteSize);
+                DataLabel = label;
+                return $"{size} {label}";
+            }
         }
 
         /// <summary>
@@ -38,22 +44,43 @@ namespace Winspeqt.Models
         /// </summary>
         public long ByteSize
         {
-            get => _size;
+            get
+            {
+                if (Type == "file")
+                {
+                    return _size;
+                }
+                else if (Children != null && Children.Count > 0)
+                {
+                    long test = Children.Sum(child => child.ByteSize);
+                    return test;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
             set
             {
                 SetProperty(ref _size, value);
                 OnPropertyChanged(nameof(Size));
                 OnPropertyChanged(nameof(AnnouncementTextColor));
-                OnPropertyChanged(nameof(DataLabel));
             }
         }
+
+        private DataSize _dataLabel = DataSize.B;
 
         /// <summary>
         /// Display unit that matches <see cref="Size"/> (B, KB, MB, GB, TB).
         /// </summary>
         public DataSize DataLabel
         {
-            get => DataSizeConverter.ReduceSize(_size).label;
+            get => _dataLabel;
+            private set
+            {
+                SetProperty(ref _dataLabel, value);
+                OnPropertyChanged(nameof(AnnouncementTextColor));
+            }
         }
 
         private bool _finished;
@@ -63,10 +90,11 @@ namespace Winspeqt.Models
         public bool Finished
         {
             get => _finished;
-            private set
+            set
             {
                 SetProperty(ref _finished, value);
                 OnPropertyChanged(nameof(AnnouncementTextColor));
+                OnPropertyChanged(nameof(Size));
             }
         }
 
@@ -79,14 +107,14 @@ namespace Winspeqt.Models
             {
                 if (_finished)
                 {
-                    // Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
+                    //Smaller sizes are green, medium sizes move toward yellow, and large sizes are red.
                     return DataLabel switch
                     {
-                        Enums.DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
-                        Enums.DataSize.KB => new SolidColorBrush(Color.FromArgb(255, 21, 176, 52)),
-                        Enums.DataSize.MB => new SolidColorBrush(Color.FromArgb(255, 232, 201, 28)),
-                        Enums.DataSize.GB => new SolidColorBrush(Color.FromArgb(255, 214, 9, 9)),
-                        Enums.DataSize.TB => new SolidColorBrush(Color.FromArgb(255, 148, 9, 9)),
+                        DataSize.B => new SolidColorBrush(Color.FromArgb(255, 26, 163, 54)),
+                        DataSize.KB => new SolidColorBrush(Color.FromArgb(255, 21, 176, 52)),
+                        DataSize.MB => new SolidColorBrush(Color.FromArgb(255, 232, 201, 28)),
+                        DataSize.GB => new SolidColorBrush(Color.FromArgb(255, 214, 9, 9)),
+                        DataSize.TB => new SolidColorBrush(Color.FromArgb(255, 148, 9, 9)),
                         _ => new SolidColorBrush(Color.FromArgb(200, 25, 25, 25))
                     };
                 }
@@ -133,16 +161,6 @@ namespace Winspeqt.Models
             ByteSize = size;
             Parent = parent;
             Finished = finished;
-        }
-
-        /// <summary>
-        /// Updates the size and marks the item as finished.
-        /// </summary>
-        /// <param name="size">Raw size in bytes.</param>
-        public void UpdateSize(long size)
-        {
-            ByteSize = size;
-            Finished = true;
         }
     }
 }
