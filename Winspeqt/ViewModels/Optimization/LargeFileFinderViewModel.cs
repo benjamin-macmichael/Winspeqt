@@ -360,7 +360,8 @@ namespace Winspeqt.ViewModels.Optimization
 
                     FileSearchItem? ancestorNode = ActiveNode;
 
-                    while (ancestorNode != null) {
+                    while (ancestorNode != null)
+                    {
                         ancestors[ancestorNode.FilePath] = ancestorNode;
                         ancestorNode = ancestorNode.Parent;
                     }
@@ -371,7 +372,8 @@ namespace Winspeqt.ViewModels.Optimization
                         if (!ancestors.TryGetValue(dir, out FileSearchItem? value))
                         {
                             var fileItem = new DirectoryInfo(dir);
-                            if (fileItem.LinkTarget != null) {
+                            if (fileItem.LinkTarget != null)
+                            {
                                 continue;
                             }
                             item = new FileSearchItem(fileItem.Name, dir, "folder", 0, folder, false);
@@ -479,7 +481,8 @@ namespace Winspeqt.ViewModels.Optimization
             catch
             {
                 System.Diagnostics.Debug.Print($"Access denied or transient IO error; skip subdirectories for this directory: {folder.Name}");
-            } finally
+            }
+            finally
             {
                 _dispatcher.TryEnqueue(() => folder.Finished = true);
             }

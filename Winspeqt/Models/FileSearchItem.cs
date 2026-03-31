@@ -31,7 +31,8 @@ namespace Winspeqt.Models
         /// </summary>
         public string Size
         {
-            get {
+            get
+            {
                 var (size, label) = DataSizeConverter.ReduceSize(ByteSize);
                 DataLabel = label;
                 return $"{size} {label}";
@@ -43,15 +44,18 @@ namespace Winspeqt.Models
         /// </summary>
         public long ByteSize
         {
-            get {
+            get
+            {
                 if (Type == "file")
                 {
                     return _size;
-                } else if (Children != null && Children.Count > 0) 
+                }
+                else if (Children != null && Children.Count > 0)
                 {
                     long test = Children.Sum(child => child.ByteSize);
                     return test;
-                } else
+                }
+                else
                 {
                     return 0;
                 }
@@ -72,7 +76,8 @@ namespace Winspeqt.Models
         public DataSize DataLabel
         {
             get => _dataLabel;
-            private set { 
+            private set
+            {
                 SetProperty(ref _dataLabel, value);
                 OnPropertyChanged(nameof(AnnouncementTextColor));
             }
