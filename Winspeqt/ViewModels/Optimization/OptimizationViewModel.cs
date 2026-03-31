@@ -24,7 +24,7 @@ namespace Winspeqt.ViewModels.Optimization
             set => SetProperty(ref _isScanning, value);
         }
 
-        private string _estimatedTotal = "Calculating...";
+        private string _estimatedTotal = "Scanning your PC for junk...";
         public string EstimatedTotal
         {
             get => _estimatedTotal;
@@ -220,7 +220,7 @@ namespace Winspeqt.ViewModels.Optimization
             _dispatcherQueue.TryEnqueue(() =>
             {
                 IsScanning = true;
-                EstimatedTotal = "Calculating...";
+                EstimatedTotal = "Scanning your PC for junk...";
                 SizeRecycleBin = "...";
                 SizeTempFiles = "...";
                 SizeThumbnailCache = "...";

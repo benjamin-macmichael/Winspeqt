@@ -197,7 +197,8 @@
                                 FontSize="26"
                                 FontWeight="SemiBold"
                                 HorizontalAlignment="Center"
-                                Margin="0,0,0,8"/>
+                                Margin="0,0,0,8"
+                                Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
 
                             <!-- Estimated size -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,0,0,4">
