@@ -24,6 +24,35 @@ namespace Winspeqt.Views.Optimization
         {
             this.Frame.Navigate(typeof(OptimizationDashboardPage));
         }
+
+        private const double ButtonBreakPoint = 1150;
+
+        private void HeaderGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateButtonsArrayLayout(HeaderGrid.ActualWidth);
+        }
+
+        private void HeaderGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateButtonsArrayLayout(e.NewSize.Width);
+        }
+
+        private void UpdateButtonsArrayLayout(double availableWidth)
+        {
+            bool isNarrow = availableWidth < ButtonBreakPoint;
+
+            if (isNarrow)
+            {
+                Grid.SetRow(ButtonsArray, 2);
+                Grid.SetColumn(ButtonsArray, 1);
+                ButtonsArray.Margin = new Thickness(0, 10, 0, 0);
+            } else
+            {
+                Grid.SetRow(ButtonsArray, 0);
+                Grid.SetColumn(ButtonsArray, 2);
+                ButtonsArray.Margin = new Thickness(0, 0, 0, 0);
+            }
+        }
     }
 
     // Converter for tracking button text
