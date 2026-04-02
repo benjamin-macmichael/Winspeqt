@@ -112,7 +112,8 @@
                         <TextBlock 
                             Grid.Column="1"
                             Text="What's Slowing Down My PC?"
-                            Style="{StaticResource PageTitleStyle}"/>
+                            Style="{StaticResource PageTitleStyle}"
+                            TextWrapping="WrapWholeWords"/>
                     </Grid>
                     <TextBlock 
                         Grid.Row="1"

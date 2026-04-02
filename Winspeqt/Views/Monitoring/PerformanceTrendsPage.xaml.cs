@@ -21,6 +21,7 @@ namespace Winspeqt.Views.Monitoring
         private void ChartsGrid_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateChartsLayout(ChartsGrid.ActualWidth);
+            ApplyThemeToAxisText();
         }
 
         private void ChartsGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -70,6 +71,11 @@ namespace Winspeqt.Views.Monitoring
                 Grid.SetColumn(DiskCard, 1);
                 DiskCard.Margin = new Thickness(12, 12, 0, 0);
             }
+        }
+
+        private void ApplyThemeToAxisText()
+        {
+            ViewModel.SetAxes(((FrameworkElement)Content).ActualTheme == ElementTheme.Dark);
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)

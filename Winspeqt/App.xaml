@@ -13,10 +13,12 @@
                 <ResourceDictionary x:Key="Light">
                     <Color x:Key="AppChromeColor">#F0F3F9</Color>
                     <SolidColorBrush x:Key="AppChromeBrush" Color="{StaticResource AppChromeColor}" />
+                    <SolidColorBrush x:Key="TrendChartBackgroundBrush" Color="#FBFBFB"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <Color x:Key="AppChromeColor">#1A1A1A</Color>
                     <SolidColorBrush x:Key="AppChromeBrush" Color="{StaticResource AppChromeColor}" />
+                    <SolidColorBrush x:Key="TrendChartBackgroundBrush" Color="#2B2B2B"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
