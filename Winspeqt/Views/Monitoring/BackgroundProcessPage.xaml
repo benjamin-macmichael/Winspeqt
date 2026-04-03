@@ -333,20 +333,6 @@
                 <!-- View toggle + Refresh -->
                 <StackPanel Grid.Row="0" Grid.Column="2"
                             Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-
-                    <!-- Cards / Table toggle -->
-                    <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1" CornerRadius="8" Padding="3">
-                        <StackPanel Orientation="Horizontal" Spacing="3">
-                            <Button x:Name="CardViewButton"
-                                    Content="Cards" Click="SetCardView_Click"
-                                    FontSize="13" Padding="12,7" CornerRadius="6"/>
-                            <Button x:Name="TableViewButton"
-                                    Content="Table" Click="SetTableView_Click"
-                                    FontSize="13" Padding="12,7" CornerRadius="6"/>
-                        </StackPanel>
-                    </Border>
-
                     <!-- Refresh -->
                     <Button Command="{x:Bind ViewModel.RefreshCommand}" FontSize="16" Padding="16,8">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -389,15 +375,33 @@
             </StackPanel>
 
             <!-- ─── Search bar ────────────────────────────────────────────────── -->
-            <Border Grid.Row="2"
+            <Grid Margin="0,0,0,32" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1" CornerRadius="8" Padding="2" Margin="0,0,0,32">
-                <AutoSuggestBox PlaceholderText="Search processes by name or description..."
+                    BorderThickness="1" CornerRadius="8" Padding="2" Margin="0,0,10,0">
+                    <AutoSuggestBox PlaceholderText="Search processes by name or description..."
                                 QueryIcon="Find"
                                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 VerticalAlignment="Center" Background="Transparent" BorderThickness="0"/>
-            </Border>
+                </Border>
+                <!-- Cards / Table toggle -->
+                <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="3" Grid.Column="1">
+                    <StackPanel Orientation="Horizontal" Spacing="3">
+                        <Button x:Name="CardViewButton"
+                                    Content="Cards" Click="SetCardView_Click"
+                                    FontSize="13" Padding="12,7" CornerRadius="6"/>
+                        <Button x:Name="TableViewButton"
+                                    Content="Table" Click="SetTableView_Click"
+                                    FontSize="13" Padding="12,7" CornerRadius="6"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
             <!-- ════════════════════════════════════════════════════════════════ -->
             <!--  CARD VIEW                                                      -->

@@ -6,7 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    SizeChanged="HeaderGrid_SizeChanged">
 
     <Page.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
@@ -18,7 +19,11 @@
 
     <Grid>
         <!-- Usage Tracking View -->
-        <Grid Visibility="{Binding ShowInstalledAppsView, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+        <Grid 
+            Visibility="{Binding ShowInstalledAppsView, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+            x:Name="HeaderGrid"
+            Loaded="HeaderGrid_Loaded"
+            SizeChanged="HeaderGrid_SizeChanged">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -35,6 +40,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -89,7 +95,7 @@
                     TextWrapping="WrapWholeWords"
                     Margin="0,4,0,0"/>
 
-                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" x:Name="ButtonsArray">
                     <Button Content="View Installed Apps" 
                             Command="{Binding ShowInstalledAppsCommand}"
                             Background="#007ACC"

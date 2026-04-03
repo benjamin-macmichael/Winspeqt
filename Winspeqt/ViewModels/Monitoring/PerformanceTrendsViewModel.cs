@@ -17,7 +17,7 @@ using Winspeqt.Services;
 
 namespace Winspeqt.ViewModels.Monitoring
 {
-    public class PerformanceTrendsViewModel : ObservableObject
+    public partial class PerformanceTrendsViewModel : ObservableObject
     {
         private readonly SystemMonitorService _monitorService;
         private readonly DispatcherQueue _dispatcherQueue;
@@ -25,14 +25,14 @@ namespace Winspeqt.ViewModels.Monitoring
 
         const int _secondsTracked = 60;
 
-        private Queue<double> _cpuUsage = new Queue<double>(new double[_secondsTracked]);
+        private Queue<double> _cpuUsage = new(new double[_secondsTracked]);
         public Queue<double> CpuUsage
         {
             get => _cpuUsage;
             set => SetProperty(ref _cpuUsage, value);
         }
 
-        private ObservableCollection<double> _cpuUsageValues = new();
+        private ObservableCollection<double> _cpuUsageValues = [];
 
         public ObservableCollection<double> CpuUsageValues
         {
@@ -43,10 +43,14 @@ namespace Winspeqt.ViewModels.Monitoring
         private double _totalCpuUsage = 0;
         public double TotalCpuUsage { get => _totalCpuUsage; set => SetProperty(ref _totalCpuUsage, value); }
         public ISeries[] CpuSeries { get; }
-        public IEnumerable<ICartesianAxis> CpuYAxes { get; }
-        public IEnumerable<ICartesianAxis> XAxes { get; }
 
-        private Queue<double> _memoryUsage = new Queue<double>(new double[_secondsTracked]);
+        private IEnumerable<ICartesianAxis> _cpuYAxes = [];
+        public IEnumerable<ICartesianAxis> CpuYAxes { get => _cpuYAxes; set => SetProperty(ref _cpuYAxes, value); }
+
+        private IEnumerable<ICartesianAxis> _XAxes = [];
+        public IEnumerable<ICartesianAxis> XAxes { get => _XAxes; set => SetProperty(ref _XAxes, value); }
+
+        private Queue<double> _memoryUsage = new(new double[_secondsTracked]);
         public Queue<double> MemoryUsage
         {
             get => _memoryUsage;
@@ -78,7 +82,7 @@ namespace Winspeqt.ViewModels.Monitoring
             get => _maxMemory > 0 ? double.Round((double)_currentMemory / _maxMemory * 100, 1) : 0;
         }
 
-        private ObservableCollection<double> _memoryUsageValues = new();
+        private ObservableCollection<double> _memoryUsageValues = [];
 
         public ObservableCollection<double> MemoryUsageValues
         {
@@ -86,17 +90,19 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _memoryUsageValues, value);
         }
 
-        public ISeries[] MemorySeries { get; }
-        public IEnumerable<ICartesianAxis> MemoryYAxes { get; }
+        public ISeries[] MemorySeries { get; set; }
 
-        private Queue<double> _diskUsage = new Queue<double>(new double[_secondsTracked]);
+        private IEnumerable<ICartesianAxis> _memoryYAxes = [];
+        public IEnumerable<ICartesianAxis> MemoryYAxes { get => _memoryYAxes; set => SetProperty(ref _memoryYAxes, value); }
+
+        private Queue<double> _diskUsage = new(new double[_secondsTracked]);
         public Queue<double> DiskUsage
         {
             get => _diskUsage;
             set => SetProperty(ref _diskUsage, value);
         }
 
-        private ObservableCollection<double> _diskUsageValues = new();
+        private ObservableCollection<double> _diskUsageValues = [];
 
         public ObservableCollection<double> DiskUsageValues
         {
@@ -112,17 +118,19 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _diskUsagePercent, value);
         }
 
-        public ISeries[] DiskSeries { get; }
-        public IEnumerable<ICartesianAxis> DiskYAxes { get; }
+        public ISeries[] DiskSeries { get; set; }
 
-        private Queue<double> _networkSent = new Queue<double>(new double[_secondsTracked]);
+        private IEnumerable<ICartesianAxis> _diskYAxes = [];
+        public IEnumerable<ICartesianAxis> DiskYAxes { get => _diskYAxes; set => SetProperty(ref _diskYAxes, value); }
+
+        private Queue<double> _networkSent = new(new double[_secondsTracked]);
         public Queue<double> NetworkSent
         {
             get => _networkSent;
             set => SetProperty(ref _networkSent, value);
         }
 
-        private ObservableCollection<double> _networkSentValues = new();
+        private ObservableCollection<double> _networkSentValues = [];
 
         public ObservableCollection<double> NetworkSentValues
         {
@@ -138,14 +146,14 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _networkSentValue, value);
         }
 
-        private Queue<double> _networkReceived = new Queue<double>(new double[_secondsTracked]);
+        private Queue<double> _networkReceived = new(new double[_secondsTracked]);
         public Queue<double> NetworkReceived
         {
             get => _networkReceived;
             set => SetProperty(ref _networkReceived, value);
         }
 
-        private ObservableCollection<double> _networkReceivedValues = new();
+        private ObservableCollection<double> _networkReceivedValues = [];
 
         public ObservableCollection<double> NetworkReceivedValues
         {
@@ -161,8 +169,10 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _networkReceivedValue, value);
         }
 
-        public ISeries[] NetworkSeries { get; }
-        public IEnumerable<ICartesianAxis> NetworkYAxes { get; }
+        public ISeries[] NetworkSeries { get; set; }
+
+        private IEnumerable<ICartesianAxis> _networkYAxes = [];
+        public IEnumerable<ICartesianAxis> NetworkYAxes { get => _networkYAxes; set => SetProperty(ref _networkYAxes, value); }
 
         private bool _isLoading;
         public bool IsLoading
@@ -178,18 +188,13 @@ namespace Winspeqt.ViewModels.Monitoring
             set => SetProperty(ref _cpuStatusMessage, value);
         }
 
-        public ICommand RefreshCommand { get; }
-        public ICommand EndProcessCommand { get; }
+        public ICommand RefreshCommand { get; set; }
+        public ICommand EndProcessCommand { get; set; }
 
         public PerformanceTrendsViewModel()
         {
             _monitorService = new SystemMonitorService();
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-            var axisTextColor = new SolidColorPaint(SKColor.Parse("#8A8A8A"));
-            const int labelSize = 12;
-            const int nameSize = 18;
-            var yAxisNamePadding = new LiveChartsCore.Drawing.Padding(0, 0, 0, -6);
 
             // Sets the formatting for the graphs
             CpuSeries =
@@ -201,36 +206,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     Stroke = null,
                     GeometryFill = null,
                     GeometryStroke = null,
-                }
-            ];
-
-            CpuYAxes =
-            [
-                new Axis
-                {
-                    MinLimit = 0,
-                    MaxLimit = 100,
-                    Name = "CPU Usage (%)",
-                    NamePaint = axisTextColor,
-                    LabelsPaint = axisTextColor,
-                    TextSize = labelSize,
-                    NameTextSize = nameSize,
-                    NamePadding = yAxisNamePadding,
-                }
-            ];
-
-            XAxes = [
-                new Axis {
-                    MinLimit = 0,
-                    MaxLimit = _secondsTracked,
-                    MinStep = 10,
-                    Labeler = values => (_secondsTracked - values).ToString(),
-                    Name = "Seconds Elapsed",
-                    NamePaint = axisTextColor,
-                    LabelsPaint = axisTextColor,
-                    TextSize = labelSize,
-                    NameTextSize = nameSize,
-                    NamePadding = new LiveChartsCore.Drawing.Padding(0,-10,0,0),
                 }
             ];
 
@@ -246,21 +221,6 @@ namespace Winspeqt.ViewModels.Monitoring
                 }
             ];
 
-            MemoryYAxes =
-            [
-                new Axis
-                {
-                    MinLimit = 0,
-                    MaxLimit = 100,
-                    Name = "Memory Usage (%)",
-                    NamePaint = axisTextColor,
-                    LabelsPaint = axisTextColor,
-                    TextSize = labelSize,
-                    NameTextSize = nameSize,
-                    NamePadding = yAxisNamePadding,
-                }
-            ];
-
             DiskSeries =
             [
                 new LineSeries<double>
@@ -270,21 +230,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     Stroke = null,
                     GeometryFill = null,
                     GeometryStroke = null
-                }
-            ];
-
-            DiskYAxes =
-            [
-                new Axis
-                {
-                    MinLimit = 0,
-                    MaxLimit = 100,
-                    Name = "Disk Activity (%)",
-                    NamePaint = axisTextColor,
-                    LabelsPaint = axisTextColor,
-                    TextSize = labelSize,
-                    NameTextSize = nameSize,
-                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -307,20 +252,6 @@ namespace Winspeqt.ViewModels.Monitoring
                     GeometryFill = null,
                     GeometryStroke = null,
                     Name = "Download"
-                }
-            ];
-
-            NetworkYAxes =
-            [
-                new Axis
-                {
-                    MinLimit = 0,
-                    Name = "Throughput (Mbps)",
-                    NamePaint = axisTextColor,
-                    LabelsPaint = axisTextColor,
-                    TextSize = labelSize,
-                    NameTextSize = nameSize,
-                    NamePadding = yAxisNamePadding,
                 }
             ];
 
@@ -397,9 +328,9 @@ namespace Winspeqt.ViewModels.Monitoring
 
                 try
                 {
-                    var network = await _monitorService.GetNetworkThroughputMbpsAsync();
-                    networkSentMbps = Math.Max(0, network.SentMbps);
-                    networkReceivedMbps = Math.Max(0, network.ReceivedMbps);
+                    var (SentMbps, ReceivedMbps) = await _monitorService.GetNetworkThroughputMbpsAsync();
+                    networkSentMbps = Math.Max(0, SentMbps);
+                    networkReceivedMbps = Math.Max(0, ReceivedMbps);
                 }
                 catch (Exception ex)
                 {
@@ -486,6 +417,88 @@ namespace Winspeqt.ViewModels.Monitoring
         public void StopAutoRefresh()
         {
             _refreshTimer?.Dispose();
+        }
+
+        public void SetAxes(bool isDarkMode)
+        {
+            const int labelSize = 12;
+            const int nameSize = 18;
+            LiveChartsCore.Drawing.Padding yAxisNamePadding = new(0, 0, 0, -6);
+            SolidColorPaint axisTextColor = isDarkMode
+                ? new(SKColor.Parse("#F2F2F2"))
+                : new(SKColor.Parse("#8A8A8A"));
+
+            XAxes = [
+                new Axis {
+                    MinLimit = 0,
+                    MaxLimit = _secondsTracked,
+                    MinStep = 10,
+                    Labeler = values => (_secondsTracked - values).ToString(),
+                    Name = "Seconds Elapsed",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = new LiveChartsCore.Drawing.Padding(0,-10,0,0),
+                }
+            ];
+
+            CpuYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    MaxLimit = 100,
+                    Name = "CPU Usage (%)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = yAxisNamePadding,
+                }
+            ];
+            MemoryYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    MaxLimit = 100,
+                    Name = "Memory Usage (%)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = yAxisNamePadding,
+                }
+            ];
+            DiskYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    MaxLimit = 100,
+                    Name = "Disk Activity (%)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = yAxisNamePadding,
+                }
+            ];
+
+            NetworkYAxes =
+            [
+                new Axis
+                {
+                    MinLimit = 0,
+                    Name = "Throughput (Mbps)",
+                    NamePaint = axisTextColor,
+                    LabelsPaint = axisTextColor,
+                    TextSize = labelSize,
+                    NameTextSize = nameSize,
+                    NamePadding = yAxisNamePadding,
+                }
+            ];
         }
     }
 
