@@ -143,12 +143,28 @@ namespace Winspeqt.Views
         /// </summary>
         private void ApplyThemeChrome()
         {
-            var actualTheme = ((FrameworkElement)Content).ActualTheme;
-            Color chromeColor = actualTheme == ElementTheme.Dark
+            bool isDarkMode = ((FrameworkElement)Content).ActualTheme == ElementTheme.Dark;
+            Color chromeColor = isDarkMode
                 ? Color.FromArgb(255, 26, 26, 26)     // #1A1A1A — matches App.xaml Dark
                 : Color.FromArgb(255, 240, 243, 249);  // #F0F3F9 — matches App.xaml Light
+            Color buttonHover = isDarkMode
+                ? Color.FromArgb(255, 45, 45, 45)
+                : Color.FromArgb(255, 233, 233, 233);
+            Color buttonPress = isDarkMode
+                ? Color.FromArgb(255, 40, 40, 40)
+                : Color.FromArgb(255, 238, 238, 238);
+            Color foreground = isDarkMode
+                ? Color.FromArgb(255, 255, 255, 255)
+                : Color.FromArgb(255, 0, 0, 0);
             AppWindow.TitleBar.ButtonBackgroundColor = chromeColor;
+            AppWindow.TitleBar.ButtonHoverBackgroundColor = buttonHover;
+            AppWindow.TitleBar.ButtonPressedBackgroundColor = buttonPress;
             AppWindow.TitleBar.ButtonInactiveBackgroundColor = chromeColor;
+            AppWindow.TitleBar.ButtonForegroundColor = foreground;
+            AppWindow.TitleBar.ButtonHoverForegroundColor = foreground;
+            AppWindow.TitleBar.ButtonPressedForegroundColor = foreground;
+            AppWindow.TitleBar.ButtonInactiveForegroundColor = foreground;
+            titleBar.Foreground = new SolidColorBrush(foreground);
             nvCategories.Background = new SolidColorBrush(chromeColor);
             AppTitleBar.Background = new SolidColorBrush(chromeColor);
         }
@@ -167,8 +183,9 @@ namespace Winspeqt.Views
             }
             else
             {
-                titleBar.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
+                titleBar.Foreground = ((FrameworkElement)Content).ActualTheme == ElementTheme.Dark
+                    ? new SolidColorBrush(Color.FromArgb(255, 255, 255, 255))
+                    : new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
             }
         }
 
